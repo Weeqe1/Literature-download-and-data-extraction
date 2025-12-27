@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+pyyaml>=6.0
+tqdm>=4.66
+pyarrow>=17.0
+pdfplumber>=0.11
+PyMuPDF>=1.24
+camelot-py[cv]>=0.11
+opencv-python>=4.10
+pytesseract>=0.3.10
+openai>=1.45

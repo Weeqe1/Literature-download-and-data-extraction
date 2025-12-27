@@ -1,0 +1,23 @@
+aliases:
+  colloid_env:
+  - COLLOID_ENV
+  - colloid env
+  - colloidEnv
+  - colloid_env
+  ligands:
+  - LIGANDS
+  - ligands
+  materials:
+  - MATERIALS
+  - materials
+  paper_meta:
+  - PAPER_META
+  - paper meta
+  - paperMeta
+  - paper_meta
+  process:
+  - PROCESS
+  - process
+  targets:
+  - TARGETS
+  - targets

@@ -1,0 +1,16 @@
+field_aliases:
+  QY: [PLQY, ΦF, quantum_yield, photoluminescence_quantum_yield]
+  abs_peak_nm: [lambda_abs, λ_abs, absorption_peak, abs_max]
+  emi_peak_nm: [lambda_em, λ_em, emission_peak, PL_max]
+  lifetime_ns: [τ, lifetime, tau]
+  stokes_nm: [Stokes_shift_nm, Stokes]
+
+units:
+  percent: ['%', 'percent', 'pct']
+  nm: ['nm', 'nanometer', 'nanometre']
+  ns: ['ns']
+  min: ['min', 'minute']
+  mV: ['mV']
+
+normalize_rules:
+  - {field: QY, to_unit: '%', multiplier: 100.0, if_leq: 1.0}

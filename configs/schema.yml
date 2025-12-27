@@ -1,0 +1,53 @@
+version: 0.1.0
+paper_meta:
+  - {name: title, type: str}
+  - {name: doi, type: str}
+  - {name: year, type: int}
+  - {name: journal, type: str}
+
+materials:
+  - {name: core_type, type: enum, enum: [QD, Perovskite, CD, UCNP, AIE-dot, P-dot, SiO2-dye]}
+  - {name: composition_core, type: str}
+  - {name: shell_type, type: str}
+  - {name: composition_shell, type: str}
+  - {name: shell_thickness_nm, type: float, unit: nm}
+  - {name: core_size_nm, type: float, unit: nm}
+  - {name: aspect_ratio, type: float}
+  - {name: dopants, type: str}
+  - {name: defect_passivation, type: bool}
+
+ligands:
+  - {name: ligands_smiles_list, type: list_str}
+  - {name: ligand_classes, type: list_str}
+  - {name: ligand_chainlen_stats, type: dict}
+  - {name: ligand_pKa_stats, type: dict}
+  - {name: ligand_logP_stats, type: dict}
+
+process:
+  - {name: max_temp_C, type: float, unit: C}
+  - {name: hold_time_min, type: float, unit: min}
+  - {name: cooling_rate, type: float, unit: C/min}
+  - {name: precursor_ratios, type: dict}
+  - {name: solvent_system, type: str}
+  - {name: halide_exchange_ratio, type: float}
+  - {name: wash_count, type: int}
+
+colloid_env:
+  - {name: zeta_mV, type: float, unit: mV}
+  - {name: hydrodynamic_diameter_nm, type: float, unit: nm}
+  - {name: PDI, type: float}
+  - {name: environment_pH, type: float}
+  - {name: ionic_strength, type: float}
+  - {name: protein_percent, type: float, unit: '%'}
+
+targets:
+  - {name: abs_peak_nm, type: float, unit: nm}
+  - {name: emi_peak_nm, type: float, unit: nm}
+  - {name: stokes_nm, type: float, unit: nm}
+  - {name: QY, type: float, unit: '%'}
+  - {name: lifetime_ns, type: float, unit: ns}
+  - {name: photobleach_t_half_min, type: float, unit: min}
+  - {name: brightness, type: float}
+  - {name: SBR, type: float}
+  - {name: localization, type: str}
+  - {name: toxicity_class, type: str}
