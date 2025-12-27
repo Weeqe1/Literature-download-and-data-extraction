@@ -1,4 +1,4 @@
-# nfp_etl_multi/model_ensemble.py
+# etl_ensemble/consensus_engine.py
 """Utilities to compare outputs from multiple models and decide agreement.
 Simple field-wise comparison with numeric tolerances and exact match for strings.
 """

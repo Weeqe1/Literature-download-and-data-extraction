@@ -1,5 +1,4 @@
-
-# nfp_etl/pdf_ingest.py (patched)
+# etl_core/pdf_parser.py
 import os, json, re
 from pathlib import Path
 from typing import Dict, Any, List

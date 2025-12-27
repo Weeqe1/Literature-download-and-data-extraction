@@ -1,4 +1,4 @@
-# nfp_etl_multi/reextractor.py
+# etl_ensemble/focused_reextractor.py
 """Focused re-extraction: given disagreements, ask models to re-extract focusing on those fields.
 """
 from typing import List, Dict, Any

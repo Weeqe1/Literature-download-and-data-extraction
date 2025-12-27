@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# run_pipeline_multi.py - simple driver for multi-model extraction
+# run_etl_ensemble.py - Multi-model extraction driver
 import os, argparse, json, yaml, time
 from pathlib import Path
 
-from nfp_etl_multi.multi_model_client import MultiModelClient
-from nfp_etl_multi.model_ensemble import compare_outputs
-from nfp_etl_multi.reextractor import reextract
-from nfp_etl_multi.review_manager import save_review_case
+from etl_ensemble.llm_multi_client import MultiModelClient
+from etl_ensemble.consensus_engine import compare_outputs
+from etl_ensemble.focused_reextractor import reextract
+from etl_ensemble.human_review_manager import save_review_case
 
 def load_config(cfg_path):
     with open(cfg_path, 'r', encoding='utf-8') as f:
@@ -49,7 +49,7 @@ def run_one_pdf(pdf_path, cfg, prompt_text, output_dir):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pdf_dir', default='data/pdfs')
-    parser.add_argument('--cfg', default='configs/multi_models.yml')
+    parser.add_argument('--cfg', default='configs/llm_backends.yml')
     parser.add_argument('--out_dir', default='data/outputs/multi')
     parser.add_argument('--prompt_file', default='configs/prompts/paper_summarize.md')
     args = parser.parse_args()

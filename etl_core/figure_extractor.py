@@ -1,5 +1,4 @@
-
-# nfp_etl/figure_extractor.py (patched)
+# etl_core/figure_extractor.py
 import os, json
 from pathlib import Path
 from typing import Dict, Any, List

@@ -1,4 +1,4 @@
-# nfp_etl/llm_summarizer.py
+# etl_core/llm_field_extractor.py
 """Wrapper summarizer that accepts optional fourth argument and normalizes LLM output.
 
 Expected usage:
@@ -13,13 +13,13 @@ from typing import Optional, Dict, Any
 import json, os
 
 try:
-    from .llm_client import LLMClient
+    from .llm_openai_client import LLMClient
 except Exception:
     # fallback to top-level import
-    from llm_client import LLMClient
+    from llm_openai_client import LLMClient
 
 try:
-    from .normalizer import normalize_llm_output
+    from .output_normalizer import normalize_llm_output
 except Exception:
     def normalize_llm_output(x): return x
 

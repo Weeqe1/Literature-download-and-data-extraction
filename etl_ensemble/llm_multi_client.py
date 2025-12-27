@@ -1,14 +1,14 @@
-# nfp_etl_multi/multi_model_client.py
+# etl_ensemble/llm_multi_client.py
 """Unified interface to call multiple LLM backends.
 This implementation supports OpenAI, Gemini, DeepSeek, and Grok models through configurable backends.
 """
 import os, json
 from typing import Dict, Any, Optional
 try:
-    from nfp_etl.llm_client import LLMClient
+    from etl_core.llm_openai_client import LLMClient
 except Exception:
     # fallback if package import path differs
-    from llm_client import LLMClient
+    from llm_openai_client import LLMClient
 
 class MultiModelClient:
     def __init__(self, config: Dict[str, Any]):

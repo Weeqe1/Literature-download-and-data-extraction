@@ -1,0 +1,25 @@
+# configs/multi_models.yml
+# Configure model backends and model names. For proprietary backends set API keys as env vars or in configs/openai_config.json etc.
+models:
+  - id: openai_chatgpt
+    provider: openai
+    model_name: gpt-5.1-mini
+    api_key_env: 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
+  - id: google_gemini
+    provider: gemini
+    model_name: gemini-1.5
+    api_key_env: AIzaSyBH9qaSvvf102shfZXRSRU3KuxRygFaNx0
+  - id: deepseek
+    provider: deepseek
+    model_name: deepseek-latest
+    api_key_env: sk-27c17caaca054bf895d8438ca2c42bf7
+  - id: grok
+    provider: grok
+    model_name: grok-1
+    api_key_env: xai-L0ejHGykAAtSQuL1XSTVmaDMUdLprw9EklX7vSl1V6Kla2lNoC9OlWg4mZvLHul4Y4NPV3WJw04TRM8N
+
+# thresholds for numerical agreement (relative error fraction)
+thresholds:
+  numeric_relative_tol: 0.01   # 1%
+  numeric_abs_tol: 1.0        # absolute tolerance for small numbers (e.g., nm)
+  confidence_min: 0.0         # minimum confidence to consider value (0-1)

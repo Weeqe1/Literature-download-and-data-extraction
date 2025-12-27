@@ -3,7 +3,7 @@ import argparse, sys
 from pathlib import Path
 from tqdm import tqdm
 
-from . import pdf_ingest, table_extractor, figure_extractor, spectrum_digitizer, llm_summarizer, merger
+from . import pdf_parser, table_extractor, figure_extractor, spectrum_digitizer, llm_field_extractor, record_merger
 
 # nfp_etl/cli.py (文件最顶部，其他 import 之前)
 import warnings
@@ -30,7 +30,7 @@ def run(args):
         for pdf in tqdm(sorted(pdf_dir.glob("*.pdf"))):
             paper_id = pdf.stem
             staging_dir = staging_root / paper_id
-            layout_path = pdf_ingest.run(str(pdf), str(staging_dir))
+            layout_path = pdf_parser.run(str(pdf), str(staging_dir))
 
             tables_meta = []
             if args.enable_table:
@@ -52,10 +52,10 @@ def run(args):
 
             text_json = staging_dir / "text_structured.json"
             # 关键点：如果 LLM 不可用，则 summarize_text_blocks 会抛异常，直接终止整个程序。
-            llm_summarizer.summarize_text_blocks(str(layout_path), "configs/schema.yml", "configs/prompts", str(text_json))
+            llm_field_extractor.summarize_text_blocks(str(layout_path), "configs/schema.yml", "configs/prompts", str(text_json))
 
             main_csv = out_dir / "nfp_samples.csv"
-            merger.merge_records(str(text_json), tables_meta, spectrum_meta, str(main_csv))
+            record_merger.merge_records(str(text_json), tables_meta, spectrum_meta, str(main_csv))
 
         print(f"Done. Output: {out_dir}")
     except Exception as e:

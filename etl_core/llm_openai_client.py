@@ -1,9 +1,10 @@
 
+# etl_core/llm_openai_client.py
 import os, json
 from typing import Any, Dict, List, Optional
 
-# --- 自动加载 configs/openai_config.json ---
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", "openai_config.json")
+# --- 自动加载 configs/api_keys.json ---
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", "api_keys.json")
 if os.path.exists(CONFIG_PATH):
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -13,10 +14,10 @@ if os.path.exists(CONFIG_PATH):
         if cfg.get("OPENAI_MODEL"):
             os.environ["OPENAI_MODEL"] = cfg["OPENAI_MODEL"]
     except Exception as e:
-        raise RuntimeError(f"Failed to read configs/openai_config.json: {e}")
+        raise RuntimeError(f"Failed to read configs/api_keys.json: {e}")
 else:
     # 硬性要求存在配置文件
-    raise RuntimeError("configs/openai_config.json not found. Please create it with OPENAI_API_KEY and OPENAI_MODEL.")
+    raise RuntimeError("configs/api_keys.json not found. Please create it with OPENAI_API_KEY and OPENAI_MODEL.")
 
 def _safe_import(name: str):
     try:
@@ -29,7 +30,7 @@ openai_pkg = _safe_import("openai")
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL")  # 必须存在
 DEFAULT_KEY = os.getenv("OPENAI_API_KEY")  # 必须存在
 if not DEFAULT_KEY or not DEFAULT_MODEL:
-    raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please set them in configs/openai_config.json.")
+    raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please set them in configs/api_keys.json.")
 
 class LLMClient:
     """

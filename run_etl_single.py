@@ -1,5 +1,5 @@
 import os
-from nfp_etl import cli
+from etl_core import cli
 
 if __name__ == "__main__":
     # ==== 可根据需要修改路径 ====
