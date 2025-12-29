@@ -3,21 +3,40 @@
 import os, json
 from typing import Any, Dict, List, Optional
 
-# --- 自动加载 configs/api_keys.json ---
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", "api_keys.json")
-if os.path.exists(CONFIG_PATH):
+# --- 自动加载 configs/extraction/llm_backends.yml 中的 OpenAI 配置 ---
+try:
+    import yaml
+except Exception:
+    yaml = None
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", "extraction", "llm_backends.yml")
+
+def _load_openai_config_from_backends():
+    """从 llm_backends.yml 中提取 OpenAI 配置"""
+    if yaml is None:
+        raise RuntimeError("PyYAML not installed. Please `pip install pyyaml`.")
+    if not os.path.exists(CONFIG_PATH):
+        raise RuntimeError(f"configs/extraction/llm_backends.yml not found.")
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            cfg = json.load(f)
-        if cfg.get("OPENAI_API_KEY"):
-            os.environ["OPENAI_API_KEY"] = cfg["OPENAI_API_KEY"]
-        if cfg.get("OPENAI_MODEL"):
-            os.environ["OPENAI_MODEL"] = cfg["OPENAI_MODEL"]
+            cfg = yaml.safe_load(f)
+        models = cfg.get("models", [])
+        # 查找 OpenAI 配置
+        for m in models:
+            if m.get("provider") == "openai":
+                api_key = m.get("api_key_env", "")
+                model_name = m.get("model_name", "gpt-4o")
+                return api_key, model_name
+        raise RuntimeError("No OpenAI model found in llm_backends.yml")
     except Exception as e:
-        raise RuntimeError(f"Failed to read configs/api_keys.json: {e}")
-else:
-    # 硬性要求存在配置文件
-    raise RuntimeError("configs/api_keys.json not found. Please create it with OPENAI_API_KEY and OPENAI_MODEL.")
+        raise RuntimeError(f"Failed to read llm_backends.yml: {e}")
+
+# 加载配置
+_api_key, _model_name = _load_openai_config_from_backends()
+if _api_key:
+    os.environ["OPENAI_API_KEY"] = _api_key
+if _model_name:
+    os.environ["OPENAI_MODEL"] = _model_name
 
 def _safe_import(name: str):
     try:
@@ -27,10 +46,10 @@ def _safe_import(name: str):
 
 openai_pkg = _safe_import("openai")
 
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL")  # 必须存在
-DEFAULT_KEY = os.getenv("OPENAI_API_KEY")  # 必须存在
+DEFAULT_MODEL = os.getenv("OPENAI_MODEL")
+DEFAULT_KEY = os.getenv("OPENAI_API_KEY")
 if not DEFAULT_KEY or not DEFAULT_MODEL:
-    raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please set them in configs/api_keys.json.")
+    raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please configure OpenAI in configs/extraction/llm_backends.yml.")
 
 class LLMClient:
     """

@@ -1,4 +1,4 @@
-# nfp_etl_multi/review_manager.py
+# etl_ensemble/human_review_manager.py
 """Track files requiring human review and write logs."""
 import os, json
 from datetime import datetime

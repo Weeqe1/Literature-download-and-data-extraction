@@ -49,7 +49,7 @@ except Exception:
 # -------------
 # Config Loading
 # -------------
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "configs", "harvest_config.yml")
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "configs", "harvest", "harvest_config.yml")
 _config = {}
 
 def load_config():

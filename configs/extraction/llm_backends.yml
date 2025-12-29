@@ -1,5 +1,5 @@
-# configs/multi_models.yml
-# Configure model backends and model names. For proprietary backends set API keys as env vars or in configs/openai_config.json etc.
+# configs/llm_backends.yml
+# Configure model backends for multi-model PDF extraction. Set API keys below or as env vars.
 models:
   - id: openai_chatgpt
     provider: openai
