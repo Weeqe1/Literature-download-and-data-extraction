@@ -5,7 +5,7 @@ This implementation supports OpenAI, Gemini, DeepSeek, and Grok models through c
 import os, json
 from typing import Dict, Any, Optional
 try:
-    from etl_core.llm_openai_client import LLMClient
+    from .llm_openai_client import LLMClient
 except Exception:
     # fallback if package import path differs
     from llm_openai_client import LLMClient

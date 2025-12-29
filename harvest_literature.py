@@ -1,19 +1,19 @@
-# pdf_download.py
+# harvest_literature.py
 # Harvester for literature across OpenAlex, WoS, Semantic Scholar, PubMed, arXiv, Crossref.
 # Features:
 #  - Split long keywords into clauses by top-level OR (preserve internal AND)
 #  - Two-phase search per clause: title-only then title+abstract
-#  - Search order configurable (default: OpenAlex, WoS, Semantic Scholar, PubMed, arXiv, Crossref)
+#  - Search order configurable (via configs/harvest_config.yml)
 #  - Merge + deduplicate works, use Crossref to fill missing DOIs
 #  - Incremental mode: read existing Excel, skip already-recorded DOIs
 #  - Download OA PDFs (Unpaywall / best_oa_location / pdf_url fields), save PDFs
 #  - PDF integrity check and removal of broken PDFs + update Excel
-#  - Output Excel with extended columns (title, abstract, journal, year, doi, authors, affiliations, cited_by_count, open_access_status)
+#  - Output Excel with extended columns
 #
-# Usage: edit parameters in main() and run in PyCharm (do NOT rely on python xxx.py invocation from terminal)
+# Configuration: Edit configs/harvest_config.yml to customize search parameters
 #
 # Dependencies:
-# pip install requests tqdm pandas PyPDF2 python-dateutil rapidfuzz tenacity lxml
+# pip install requests tqdm pandas PyPDF2 python-dateutil rapidfuzz tenacity lxml pyyaml
 
 import os
 import re
@@ -27,6 +27,7 @@ import pandas as pd
 from tqdm import tqdm
 from dateutil import parser as dtparser
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
 # optional: PyPDF2 for PDF validation
 try:
     from PyPDF2 import PdfReader
@@ -39,19 +40,62 @@ try:
 except Exception:
     fuzz = None
 
+# Optional YAML for config loading
+try:
+    import yaml
+except Exception:
+    yaml = None
+
 # -------------
-# Config
+# Config Loading
 # -------------
-# Env keys (prefer to set in PyCharm Run Configuration -> Environment variables)
-WOS_API_KEY = os.environ.get("WOS_API_KEY", "66330c65e1e2258a48717815e13522dd47aa66bf")
-SEMANTIC_SCHOLAR_API_KEY = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "6FApqCo4WU7rH035oNAPN3VJF8ifEGYO9cAkfrUF")
-# default email for Unpaywall and polite API use
-DEFAULT_EMAIL = "wangqi@ahut.edu.cn"
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "configs", "harvest_config.yml")
+_config = {}
+
+def load_config():
+    """Load configuration from configs/harvest_config.yml"""
+    global _config
+    if yaml is None:
+        print("[Warning] PyYAML not installed. Using default config values.")
+        return {}
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                _config = yaml.safe_load(f) or {}
+            print(f"[Config] Loaded configuration from {CONFIG_PATH}")
+        except Exception as e:
+            print(f"[Warning] Failed to load config: {e}. Using defaults.")
+            _config = {}
+    else:
+        print(f"[Warning] Config file not found: {CONFIG_PATH}. Using defaults.")
+        _config = {}
+    return _config
+
+def get_config(key_path: str, default=None):
+    """Get a config value by dot-separated path, e.g. 'search.year_from'"""
+    keys = key_path.split(".")
+    val = _config
+    for k in keys:
+        if isinstance(val, dict) and k in val:
+            val = val[k]
+        else:
+            return default
+    return val if val is not None else default
+
+# Load config on module import
+load_config()
+
+# -------------
+# Config Values (from file or defaults)
+# -------------
+WOS_API_KEY = os.environ.get("WOS_API_KEY", get_config("api_keys.wos", ""))
+SEMANTIC_SCHOLAR_API_KEY = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", get_config("api_keys.semantic_scholar", ""))
+DEFAULT_EMAIL = get_config("api_keys.contact_email", "wangqi@ahut.edu.cn")
 
 # HTTP session
 SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "pdf_download_harvester/1.0 (mailto:%s)" % DEFAULT_EMAIL})
-REQS_PER_SECOND = 4
+SESSION.headers.update({"User-Agent": "harvest_literature/1.0 (mailto:%s)" % DEFAULT_EMAIL})
+REQS_PER_SECOND = get_config("runtime.requests_per_second", 4)
 MIN_SLEEP = 1.0 / max(1, REQS_PER_SECOND)
 
 def rate_limit():
@@ -990,29 +1034,38 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
 # Main orchestration
 # -----------------------
 def main():
-    # ========== User-editable parameters ==========
-    # Primary long keywords string (as you provided). The script will split it into clauses per top-level OR.
-    keywords = '("nano fluorescent probe") OR ("nanoscale fluorescent probe") OR ("fluorescent nanoprobe") OR ("optical nanoprobe") OR ("fluorescent nanosensor") OR ("fluorescent nanoparticle" AND "probe") OR ("quantum dot" AND "fluorescent probe") OR ("carbon dot" AND "fluorescent probe") OR ("upconversion nanoparticle" AND "fluorescent probe") OR ("gold nanocluster" AND "fluorescence") OR ("silica nanoparticle" AND "fluorescent probe") OR ("polymeric nanoparticle" AND "fluorescent probe") OR ("MnO nanoparticle" AND "fluorescence") OR ("lanthanide nanoprobe") OR ("fluorescent nano biosensor") OR ("targeted fluorescent nanoprobe") OR ("ratiometric fluorescent nanoprobe") OR ("activatable fluorescent probe" AND "nano") OR ("fluorescence imaging" AND "nanoprobe") OR ("fluorescent nanoprobe" AND "detection") OR ("fluorescent nanoprobe" AND "sensor") OR ("nanoparticle" AND "fluorescence imaging" AND "probe") OR ("nanomaterial" AND "fluorescence detection")'
-
-    # Email used for Unpaywall and Crossref polite requests
-    mailto = "wangqi@ahut.edu.cn"  # set to your email
+    # ========== Parameters from config file ==========
+    # Keywords from config (or fallback to default)
+    keywords_raw = get_config("search.keywords", "")
+    if keywords_raw:
+        # Clean up YAML multiline string (remove extra newlines)
+        keywords = " ".join(keywords_raw.strip().split("\n"))
+    else:
+        # Fallback default keywords
+        keywords = '("nano fluorescent probe") OR ("nanoscale fluorescent probe") OR ("fluorescent nanoprobe")'
+    
+    # Email for Unpaywall and Crossref polite requests
+    mailto = get_config("api_keys.contact_email", DEFAULT_EMAIL)
 
     # Output directory & excel path
-    out_base = "PDF_download"
-    excel_path = os.path.join(out_base, "nano_fluorescent_probes.xlsx")
+    out_base = get_config("output.base_dir", "outputs/literature")
+    excel_filename = get_config("output.excel_filename", "nano_fluorescent_probes.xlsx")
+    excel_path = os.path.join(out_base, excel_filename)
 
-    # Sources and order (you asked: OpenAlex, WoS, Semantic Scholar, PubMed, arXiv, Crossref)
-    sources_order = ["openalex", "wos", "semantic_scholar", "pubmed", "arxiv", "crossref"]
+    # Sources and order
+    sources_order = get_config("search.sources_order", ["openalex", "wos", "semantic_scholar", "pubmed", "arxiv", "crossref"])
 
     # Limits
-    max_results_per_clause = 200   # per-source per-clause cap
-    max_total = 10000
-    max_clauses = 50  # cap clauses derived from split
-    year_from = 2000
-    year_to = 2030
+    max_results_per_clause = get_config("search.max_results_per_clause", 200)
+    max_total = get_config("search.max_total", 10000)
+    max_clauses = get_config("search.max_clauses", 50)
+    year_from = get_config("search.year_from", 2000)
+    year_to = get_config("search.year_to", 2030)
 
-    # incremental: read existing Excel and skip DOIs
-    incremental = True
+    # Incremental mode
+    incremental = get_config("runtime.incremental", True)
+    verbose = get_config("runtime.verbose", True)
+    
     ensure_dir(out_base)
     existing_dois = set()
     if incremental and os.path.exists(excel_path):
