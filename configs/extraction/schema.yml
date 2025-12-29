@@ -1,53 +1,169 @@
-version: 0.1.0
+# Nano Fluorescent Probe Extraction Schema
+# Version 2.0 - Comprehensive ML-Ready Schema
+# 适用于纳米荧光探针机器学习数据库构建
+
+version: 2.0.0
+
+# ============================================================
+# 1. 论文元数据 (Paper Metadata)
+# ============================================================
 paper_meta:
-  - {name: title, type: str}
-  - {name: doi, type: str}
-  - {name: year, type: int}
-  - {name: journal, type: str}
+  - {name: title, type: str, desc: "论文标题"}
+  - {name: doi, type: str, desc: "DOI标识符"}
+  - {name: year, type: int, desc: "发表年份"}
+  - {name: journal, type: str, desc: "期刊名称"}
+  - {name: first_author, type: str, desc: "第一作者"}
+  - {name: corresponding_author, type: str, desc: "通讯作者"}
 
-materials:
-  - {name: core_type, type: enum, enum: [QD, Perovskite, CD, UCNP, AIE-dot, P-dot, SiO2-dye]}
-  - {name: composition_core, type: str}
-  - {name: shell_type, type: str}
-  - {name: composition_shell, type: str}
-  - {name: shell_thickness_nm, type: float, unit: nm}
-  - {name: core_size_nm, type: float, unit: nm}
-  - {name: aspect_ratio, type: float}
-  - {name: dopants, type: str}
-  - {name: defect_passivation, type: bool}
+# ============================================================
+# 2. 材料类型与组成 (Material Composition)
+# ============================================================
+material_composition:
+  - name: probe_category
+    type: enum
+    desc: "探针大类"
+    enum: [QD, Perovskite, CD, UCNP, AIE-dot, P-dot, MOF, SiO2-dye, Au-NC, Ag-NC, Graphene-QD, MXene, Other]
+  - {name: core_material, type: str, desc: "核心材料化学式 (如 CdSe, CsPbBr3)"}
+  - {name: shell_material, type: str, desc: "壳层材料化学式 (如 ZnS, ZnSe)"}
+  - {name: shell_layers, type: int, desc: "壳层数量 (0=无壳)"}
+  - {name: alloy_composition, type: str, desc: "合金成分 (如 CdSeS)"}
+  - {name: dopant_elements, type: list_str, desc: "掺杂元素列表"}
+  - {name: dopant_concentration_percent, type: float, unit: "%", desc: "掺杂浓度"}
+  - {name: chemical_formula, type: str, desc: "完整化学式"}
 
-ligands:
-  - {name: ligands_smiles_list, type: list_str}
-  - {name: ligand_classes, type: list_str}
-  - {name: ligand_chainlen_stats, type: dict}
-  - {name: ligand_pKa_stats, type: dict}
-  - {name: ligand_logP_stats, type: dict}
+# ============================================================
+# 3. 形态与结构 (Morphology & Structure)
+# ============================================================
+morphology_structure:
+  - {name: core_diameter_nm, type: float, unit: nm, desc: "核心直径"}
+  - {name: shell_thickness_nm, type: float, unit: nm, desc: "壳层厚度"}
+  - {name: total_diameter_nm, type: float, unit: nm, desc: "总粒径"}
+  - {name: length_nm, type: float, unit: nm, desc: "长度 (棒状/线状)"}
+  - {name: aspect_ratio, type: float, desc: "长径比"}
+  - name: morphology
+    type: enum
+    desc: "形貌类型"
+    enum: [spherical, rod, plate, cubic, tetrapod, wire, core-shell, hollow, irregular]
+  - name: crystal_structure
+    type: enum
+    desc: "晶体结构"
+    enum: [zinc_blende, wurtzite, cubic_perovskite, orthorhombic, tetragonal, amorphous]
+  - {name: size_distribution_std_nm, type: float, unit: nm, desc: "尺寸分布标准差"}
+  - {name: polydispersity_index, type: float, desc: "多分散指数 (PDI)"}
 
-process:
-  - {name: max_temp_C, type: float, unit: C}
-  - {name: hold_time_min, type: float, unit: min}
-  - {name: cooling_rate, type: float, unit: C/min}
-  - {name: precursor_ratios, type: dict}
-  - {name: solvent_system, type: str}
-  - {name: halide_exchange_ratio, type: float}
-  - {name: wash_count, type: int}
+# ============================================================
+# 4. 合成工艺参数 (Synthesis Parameters)
+# ============================================================
+synthesis_parameters:
+  - name: synthesis_method
+    type: enum
+    desc: "合成方法"
+    enum: [hot_injection, heat_up, solvothermal, hydrothermal, microwave, sonochemical, electrochemical, laser_ablation, pyrolysis, coprecipitation, sol-gel]
+  - {name: reaction_temperature_C, type: float, unit: "°C", desc: "反应温度"}
+  - {name: nucleation_temperature_C, type: float, unit: "°C", desc: "成核温度"}
+  - {name: growth_temperature_C, type: float, unit: "°C", desc: "生长温度"}
+  - {name: reaction_time_min, type: float, unit: min, desc: "反应时间"}
+  - {name: heating_rate_C_per_min, type: float, unit: "°C/min", desc: "升温速率"}
+  - name: cooling_method
+    type: enum
+    desc: "冷却方式"
+    enum: [natural, ice_bath, water_bath, air_quench]
+  - {name: precursor_cation, type: str, desc: "阳离子前驱体"}
+  - {name: precursor_anion, type: str, desc: "阴离子前驱体"}
+  - {name: precursor_molar_ratio, type: str, desc: "前驱体摩尔比 (如 Cd:Se=1:2)"}
+  - {name: solvent, type: str, desc: "溶剂"}
+  - {name: coordinating_ligand, type: str, desc: "配位配体"}
+  - name: reaction_atmosphere
+    type: enum
+    desc: "反应气氛"
+    enum: [N2, Ar, air, vacuum]
+  - {name: pH_value, type: float, desc: "pH值"}
+  - {name: injection_rate_mL_per_min, type: float, unit: "mL/min", desc: "注射速率"}
 
-colloid_env:
-  - {name: zeta_mV, type: float, unit: mV}
-  - {name: hydrodynamic_diameter_nm, type: float, unit: nm}
-  - {name: PDI, type: float}
-  - {name: environment_pH, type: float}
-  - {name: ionic_strength, type: float}
-  - {name: protein_percent, type: float, unit: '%'}
+# ============================================================
+# 5. 表面化学与配体 (Surface Chemistry)
+# ============================================================
+surface_chemistry:
+  - {name: surface_ligand, type: str, desc: "表面配体名称"}
+  - name: ligand_type
+    type: enum
+    desc: "配体类型"
+    enum: [carboxylic_acid, amine, thiol, phosphine, polymer, silica, PEG, peptide, antibody]
+  - {name: ligand_chain_length, type: int, desc: "配体碳链长度"}
+  - {name: ligand_molecular_weight, type: float, unit: Da, desc: "配体分子量"}
+  - name: surface_charge_type
+    type: enum
+    desc: "表面电荷"
+    enum: [positive, negative, neutral, zwitterionic]
+  - {name: zeta_potential_mV, type: float, unit: mV, desc: "Zeta电位"}
+  - {name: hydrodynamic_diameter_nm, type: float, unit: nm, desc: "水动力学直径"}
+  - {name: surface_coverage_per_nm2, type: float, unit: "/nm²", desc: "配体覆盖密度"}
+  - name: passivation_strategy
+    type: enum
+    desc: "钝化策略"
+    enum: [oleic_acid, thiol, silica_coating, polymer_encapsulation, halide, none]
 
-targets:
-  - {name: abs_peak_nm, type: float, unit: nm}
-  - {name: emi_peak_nm, type: float, unit: nm}
-  - {name: stokes_nm, type: float, unit: nm}
-  - {name: QY, type: float, unit: '%'}
-  - {name: lifetime_ns, type: float, unit: ns}
-  - {name: photobleach_t_half_min, type: float, unit: min}
-  - {name: brightness, type: float}
-  - {name: SBR, type: float}
-  - {name: localization, type: str}
-  - {name: toxicity_class, type: str}
+# ============================================================
+# 6. 光学性能 (Optical Properties) - 核心目标变量
+# ============================================================
+optical_properties:
+  - {name: absorption_peak_nm, type: float, unit: nm, desc: "吸收峰波长"}
+  - {name: absorption_onset_nm, type: float, unit: nm, desc: "吸收起始波长"}
+  - {name: absorption_fwhm_nm, type: float, unit: nm, desc: "吸收峰半峰宽"}
+  - {name: molar_extinction_coefficient, type: float, unit: "L/(mol·cm)", desc: "摩尔消光系数"}
+  - {name: emission_peak_nm, type: float, unit: nm, desc: "发射峰波长"}
+  - {name: emission_fwhm_nm, type: float, unit: nm, desc: "发射峰半峰宽"}
+  - {name: stokes_shift_nm, type: float, unit: nm, desc: "斯托克斯位移"}
+  - {name: quantum_yield_percent, type: float, unit: "%", desc: "量子产率 (0-100)"}
+  - {name: fluorescence_lifetime_ns, type: float, unit: ns, desc: "荧光寿命"}
+  - {name: radiative_rate_ns_inv, type: float, unit: "ns⁻¹", desc: "辐射速率"}
+  - {name: non_radiative_rate_ns_inv, type: float, unit: "ns⁻¹", desc: "非辐射速率"}
+  - {name: two_photon_cross_section_GM, type: float, unit: GM, desc: "双光子吸收截面"}
+  - {name: brightness, type: float, desc: "亮度 (ε × QY)"}
+  - {name: blinking_on_time_fraction, type: float, desc: "闪烁开态比例"}
+
+# ============================================================
+# 7. 稳定性指标 (Stability Metrics)
+# ============================================================
+stability_metrics:
+  - {name: photostability_half_life_min, type: float, unit: min, desc: "光稳定性半衰期"}
+  - {name: photobleaching_rate_per_hour, type: float, unit: "%/h", desc: "光漂白速率"}
+  - {name: thermal_stability_max_C, type: float, unit: "°C", desc: "热稳定性上限温度"}
+  - {name: ph_stability_min, type: float, desc: "pH稳定下限"}
+  - {name: ph_stability_max, type: float, desc: "pH稳定上限"}
+  - {name: colloidal_stability_days, type: float, unit: day, desc: "胶体稳定性天数"}
+  - {name: air_stability_hours, type: float, unit: h, desc: "空气稳定性"}
+  - {name: storage_temperature_C, type: float, unit: "°C", desc: "存储温度"}
+
+# ============================================================
+# 8. 生物应用特性 (Biological Application)
+# ============================================================
+biological_application:
+  - {name: cytotoxicity_IC50_ug_mL, type: float, unit: "μg/mL", desc: "细胞毒性 IC50"}
+  - {name: cell_viability_percent, type: float, unit: "%", desc: "细胞存活率"}
+  - {name: incubation_concentration_ug_mL, type: float, unit: "μg/mL", desc: "孵育浓度"}
+  - {name: cell_line, type: str, desc: "细胞系 (如 HeLa, A549)"}
+  - {name: incubation_time_h, type: float, unit: h, desc: "孵育时间"}
+  - {name: targeting_ligand, type: str, desc: "靶向配体 (如 folic acid, RGD)"}
+  - {name: target_analyte, type: str, desc: "检测目标物 (如 pH, H2O2, Zn2+)"}
+  - {name: detection_limit, type: float, desc: "检测限数值"}
+  - {name: detection_limit_unit, type: str, desc: "检测限单位 (nM, μM, ppm)"}
+  - {name: linear_range_low, type: float, desc: "线性范围下限"}
+  - {name: linear_range_high, type: float, desc: "线性范围上限"}
+  - {name: response_time_s, type: float, unit: s, desc: "响应时间"}
+  - {name: signal_to_background_ratio, type: float, desc: "信背比 (SBR)"}
+  - name: imaging_modality
+    type: enum
+    desc: "成像模式"
+    enum: [fluorescence, confocal, two_photon, STED, PALM, STORM, in_vivo, NIR]
+  - {name: penetration_depth_mm, type: float, unit: mm, desc: "组织穿透深度"}
+
+# ============================================================
+# 9. 电子结构 (Electronic Structure)
+# ============================================================
+electronic_structure:
+  - {name: bandgap_eV, type: float, unit: eV, desc: "带隙能量"}
+  - {name: conduction_band_eV, type: float, unit: eV, desc: "导带位置"}
+  - {name: valence_band_eV, type: float, unit: eV, desc: "价带位置"}
+  - {name: exciton_binding_energy_meV, type: float, unit: meV, desc: "激子结合能"}
+  - {name: bohr_radius_nm, type: float, unit: nm, desc: "激子玻尔半径"}
