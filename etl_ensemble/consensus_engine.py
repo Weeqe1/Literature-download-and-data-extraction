@@ -31,11 +31,19 @@ def compare_field_values(vals: List[Dict[str, Any]], numeric_rel=0.01, numeric_a
         value = None
         # handle structured resp where value may be nested
         resp = v.get('resp')
-        if isinstance(resp, dict) and isinstance(resp.get(v.get('field')), dict) and 'value' in resp.get(v.get('field')):
+        if not isinstance(resp, dict):
+            continue
+            
+        # NEW: Skip models that returned an error
+        if 'error' in resp and resp['error']:
+            continue
+            
+        if isinstance(resp.get(v.get('field')), dict) and 'value' in resp.get(v.get('field')):
             value = resp.get(v.get('field'))['value']
         else:
             # attempt to read v['value'] or resp[f]
-            value = v.get('value') if 'value' in v else resp.get(v.get('field')) if isinstance(resp, dict) else resp
+            value = v.get('value') if 'value' in v else resp.get(v.get('field'))
+            
         if value is None:
             continue
         cleaned.append({'model_id': v.get('model_id'), 'value': value, 'raw': v})
