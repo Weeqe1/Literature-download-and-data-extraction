@@ -107,7 +107,13 @@ def run_single_stage(
         
         return resp
     except Exception as e:
-        if verbose:
+        error_str = str(e).lower()
+        # Detect if error is related to image/multimodal not supported
+        if images and any(kw in error_str for kw in ['image', 'multimodal', 'vision', 'unsupported', 'content_type']):
+            if verbose:
+                print(f"      ⚠️ Stage {stage_name} failed: Model may not support image input.")
+                print(f"         Consider using a multimodal model (GPT-4o, GPT-4V, Gemini 1.5 Pro) for Stage 7.")
+        elif verbose:
             print(f"      Stage {stage_name} failed: {e}")
         raise
 
@@ -188,7 +194,7 @@ def run_staged_extraction(
         print(f"  [2/4] Running staged extraction with {model_id}...")
     
     # Step 3: Run each stage and collect samples
-    stages_to_process = stages_to_run or [1, 2, 3, 4, 5, 6]  # Default: stages 1-6 (no images)
+    stages_to_process = stages_to_run or [1, 2, 3, 4, 5, 6, 7]  # Default: all 7 stages including image analysis
     all_stage_samples = {}  # stage_name -> list of samples
     paper_metadata = {}  # Stage 1 metadata (shared across samples)
     stage_results = {}
@@ -294,7 +300,7 @@ def main():
     parser.add_argument('--cfg', default='configs/extraction/llm_backends.yml', help='LLM backends config')
     parser.add_argument('--stages_dir', default='configs/extraction/stages', help='Directory containing stage prompts')
     parser.add_argument('--out_dir', default='outputs/extraction', help='Output directory')
-    parser.add_argument('--stages', type=str, default='1,2,3,4,5,6', help='Comma-separated stage numbers to run (e.g., "1,4" for metadata and optical only)')
+    parser.add_argument('--stages', type=str, default='1,2,3,4,5,6,7', help='Comma-separated stage numbers to run (e.g., "1,4" for metadata and optical only)')
     parser.add_argument('--limit', type=int, default=0, help='Limit number of PDFs to process (0 = no limit)')
     parser.add_argument('--verbose', action='store_true', default=True, help='Verbose output')
     args = parser.parse_args()
