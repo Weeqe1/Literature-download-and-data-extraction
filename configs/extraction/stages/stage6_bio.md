@@ -2,13 +2,17 @@
 
 You are extracting **biological and sensing application data** from a scientific paper about nano fluorescent probes.
 
-## Task
-Extract ONLY the following fields. Return a JSON object with these exact keys.
+## IMPORTANT: Multi-Sample Handling
+If the paper describes **multiple distinct probe samples** tested in biological applications, return an **array of objects**. Use the same `sample_id` from previous stages.
 
-## Fields to Extract
+## Task
+Extract the following fields for EACH distinct probe sample.
+
+## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `sample_id` | string | **REQUIRED** - Match sample_id from previous stages |
 | `cytotoxicity_IC50_ug_mL` | number | Cytotoxicity IC50 (μg/mL) |
 | `cell_viability_percent` | number | Cell viability (%) |
 | `incubation_concentration_ug_mL` | number | Incubation concentration (μg/mL) |
@@ -31,4 +35,19 @@ Extract ONLY the following fields. Return a JSON object with these exact keys.
 
 ## Response Format
 
-Return ONLY valid JSON with the above keys. Use `null` for fields not found.
+Return a JSON object with a `samples` array:
+```json
+{
+  "samples": [
+    {
+      "sample_id": "CdSe/ZnS-520",
+      "cell_line": "HeLa",
+      "cell_viability_percent": 95,
+      "target_analyte": "pH",
+      ...
+    }
+  ]
+}
+```
+
+Use `null` for fields not found.

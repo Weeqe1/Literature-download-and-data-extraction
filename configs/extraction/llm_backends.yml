@@ -15,7 +15,7 @@ models:
     provider: deepseek
     model_name: deepseek-chat
     api_key_env: sk-27c17caaca054bf895d8438ca2c42bf7
-    enabled: false
+    enabled: true
   - id: grok
     provider: grok
     model_name: grok-3-mini

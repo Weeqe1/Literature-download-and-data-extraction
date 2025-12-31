@@ -2,13 +2,17 @@
 
 You are extracting **synthesis and reaction parameters** from a scientific paper about nano fluorescent probes.
 
-## Task
-Extract ONLY the following fields. Return a JSON object with these exact keys.
+## IMPORTANT: Multi-Sample Handling
+If the paper describes **multiple distinct probe samples** with different synthesis conditions, return an **array of objects**, one for each sample. Use the same `sample_id` as in Stage 2.
 
-## Fields to Extract
+## Task
+Extract the following fields for EACH distinct probe sample.
+
+## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `sample_id` | string | **REQUIRED** - Match the sample_id from Stage 2 |
 | `synthesis_method` | enum | hot_injection, heat_up, solvothermal, hydrothermal, microwave, sonochemical, electrochemical, laser_ablation, pyrolysis, coprecipitation, sol-gel |
 | `reaction_temperature_C` | number | Reaction temperature (°C) |
 | `nucleation_temperature_C` | number | Nucleation temperature (°C) |
@@ -27,4 +31,18 @@ Extract ONLY the following fields. Return a JSON object with these exact keys.
 
 ## Response Format
 
-Return ONLY valid JSON with the above keys. Use `null` for fields not found.
+Return a JSON object with a `samples` array:
+```json
+{
+  "samples": [
+    {
+      "sample_id": "CdSe/ZnS-520",
+      "synthesis_method": "hot_injection",
+      "reaction_temperature_C": 280,
+      ...
+    }
+  ]
+}
+```
+
+If all samples share the same synthesis parameters, you may return a single object. Use `null` for fields not found.

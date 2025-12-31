@@ -92,6 +92,110 @@ def detect_figure_captions(text: str) -> List[str]:
     return captions
 
 
+def extract_images_from_pdf(
+    pdf_path: str,
+    max_images: int = 10,
+    min_width: int = 100,
+    min_height: int = 100,
+    output_format: str = "png"
+) -> List[Dict[str, Any]]:
+    """Extract images from PDF using PyMuPDF (fitz).
+    
+    Args:
+        pdf_path: Path to PDF file
+        max_images: Maximum number of images to extract
+        min_width: Minimum image width to include
+        min_height: Minimum image height to include
+        output_format: Image format (png or jpeg)
+        
+    Returns:
+        List of dicts with:
+            - page: Page number
+            - index: Image index on page
+            - width: Image width
+            - height: Image height
+            - base64: Base64 encoded image data
+            - format: Image format (png/jpeg)
+    """
+    import base64
+    import io
+    
+    images = []
+    
+    if not fitz:
+        return images
+    
+    try:
+        doc = fitz.open(pdf_path)
+        image_count = 0
+        
+        for page_num, page in enumerate(doc, start=1):
+            if image_count >= max_images:
+                break
+                
+            # Get list of images on this page
+            image_list = page.get_images(full=True)
+            
+            for img_index, img_info in enumerate(image_list):
+                if image_count >= max_images:
+                    break
+                    
+                xref = img_info[0]  # Image xref
+                
+                try:
+                    # Extract image
+                    base_image = doc.extract_image(xref)
+                    image_bytes = base_image["image"]
+                    image_ext = base_image["ext"]
+                    width = base_image.get("width", 0)
+                    height = base_image.get("height", 0)
+                    
+                    # Filter by size
+                    if width < min_width or height < min_height:
+                        continue
+                    
+                    # Convert to base64
+                    # For multimodal LLM, we need PNG or JPEG
+                    if image_ext.lower() in ["png", "jpeg", "jpg"]:
+                        b64_data = base64.b64encode(image_bytes).decode('utf-8')
+                        mime_type = f"image/{image_ext.lower()}"
+                        if image_ext.lower() == "jpg":
+                            mime_type = "image/jpeg"
+                    else:
+                        # Convert other formats to PNG using PIL if available
+                        try:
+                            from PIL import Image
+                            img = Image.open(io.BytesIO(image_bytes))
+                            buffer = io.BytesIO()
+                            img.save(buffer, format="PNG")
+                            b64_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                            mime_type = "image/png"
+                        except ImportError:
+                            # Skip if PIL not available
+                            continue
+                    
+                    images.append({
+                        "page": page_num,
+                        "index": img_index,
+                        "width": width,
+                        "height": height,
+                        "base64": b64_data,
+                        "mime_type": mime_type,
+                        "size_bytes": len(image_bytes)
+                    })
+                    image_count += 1
+                    
+                except Exception:
+                    continue
+        
+        doc.close()
+        
+    except Exception as e:
+        pass
+    
+    return images
+
+
 def parse_pdf(pdf_path: str) -> Dict[str, Any]:
     """Main function to parse PDF and extract all relevant content.
     

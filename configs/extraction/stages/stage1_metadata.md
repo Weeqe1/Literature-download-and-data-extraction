@@ -3,7 +3,7 @@
 You are extracting **basic bibliographic metadata** from a scientific paper about nano fluorescent probes.
 
 ## Task
-Extract ONLY the following 6 fields. Return a JSON object with these exact keys.
+Extract the paper metadata. Return a JSON object with these exact keys.
 
 ## Fields to Extract
 
@@ -15,6 +15,7 @@ Extract ONLY the following 6 fields. Return a JSON object with these exact keys.
 | `journal` | string | Journal name |
 | `first_author` | string | First author name |
 | `corresponding_author` | string | Corresponding author name |
+| `sample_count` | integer | Number of distinct probe samples described in the paper |
 
 ## Response Format
 
@@ -26,7 +27,8 @@ Return ONLY valid JSON:
   "year": 2024,
   "journal": "...",
   "first_author": "...",
-  "corresponding_author": "..."
+  "corresponding_author": "...",
+  "sample_count": 3
 }
 ```
 

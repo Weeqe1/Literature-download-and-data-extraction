@@ -2,13 +2,17 @@
 
 You are extracting **material and structural information** from a scientific paper about nano fluorescent probes.
 
-## Task
-Extract ONLY the following fields. Return a JSON object with these exact keys.
+## IMPORTANT: Multi-Sample Handling
+If the paper describes **multiple distinct probe samples** (e.g., different sizes, compositions, or formulations), return an **array of objects**, one for each sample.
 
-## Fields to Extract
+## Task
+Extract the following fields for EACH distinct probe sample in the paper.
+
+## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `sample_id` | string | **REQUIRED** - Unique identifier for this sample (e.g., "QD-520", "CdSe-2nm", "Sample A") |
 | `probe_category` | enum | Type: QD, Perovskite, CD, UCNP, AIE-dot, P-dot, MOF, SiO2-dye, Au-NC, Ag-NC, Graphene-QD, MXene, Other |
 | `core_material` | string | Core material formula (e.g., CdSe, CsPbBr3) |
 | `shell_material` | string | Shell material formula (e.g., ZnS) |
@@ -29,4 +33,27 @@ Extract ONLY the following fields. Return a JSON object with these exact keys.
 
 ## Response Format
 
-Return ONLY valid JSON with the above keys. Use `null` for fields not found.
+Return a JSON object with a `samples` array:
+```json
+{
+  "samples": [
+    {
+      "sample_id": "CdSe/ZnS-520",
+      "probe_category": "QD",
+      "core_material": "CdSe",
+      "emission_peak_nm": 520,
+      ...
+    },
+    {
+      "sample_id": "CdSe/ZnS-580",
+      "probe_category": "QD",
+      "core_material": "CdSe",
+      "emission_peak_nm": 580,
+      ...
+    }
+  ]
+}
+```
+
+If only ONE sample is described, still return it in the `samples` array with one element.
+Use `null` for fields not found.

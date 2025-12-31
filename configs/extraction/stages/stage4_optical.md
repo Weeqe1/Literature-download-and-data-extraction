@@ -2,13 +2,17 @@
 
 You are extracting **optical and photophysical properties** from a scientific paper about nano fluorescent probes. This is the MOST IMPORTANT stage for machine learning applications.
 
-## Task
-Extract ONLY the following fields. Return a JSON object with these exact keys.
+## IMPORTANT: Multi-Sample Handling
+If the paper describes **multiple distinct probe samples** with different optical properties, return an **array of objects**, one for each sample. Use the same `sample_id` from previous stages.
 
-## Fields to Extract
+## Task
+Extract the following fields for EACH distinct probe sample.
+
+## Fields to Extract (per sample)
 
 | Field | Type | Unit | Description |
 |-------|------|------|-------------|
+| `sample_id` | string | - | **REQUIRED** - Match sample_id from previous stages |
 | `absorption_peak_nm` | number | nm | Absorption peak wavelength |
 | `absorption_onset_nm` | number | nm | Absorption onset wavelength |
 | `absorption_fwhm_nm` | number | nm | Absorption FWHM |
@@ -28,8 +32,30 @@ Extract ONLY the following fields. Return a JSON object with these exact keys.
 ## Important Notes
 - Quantum yield should be in percentage (0-100), not fraction (0-1)
 - If QY is given as fraction (e.g., 0.85), convert to percentage (85%)
-- Look for values in figures, tables, and experimental sections
+- Different samples often have different emission peaks - extract each separately
 
 ## Response Format
 
-Return ONLY valid JSON with the above keys. Use `null` for fields not found.
+Return a JSON object with a `samples` array:
+```json
+{
+  "samples": [
+    {
+      "sample_id": "CdSe/ZnS-520",
+      "emission_peak_nm": 520,
+      "quantum_yield_percent": 65,
+      "fluorescence_lifetime_ns": 22.5,
+      ...
+    },
+    {
+      "sample_id": "CdSe/ZnS-580",
+      "emission_peak_nm": 580,
+      "quantum_yield_percent": 72,
+      "fluorescence_lifetime_ns": 28.1,
+      ...
+    }
+  ]
+}
+```
+
+Use `null` for fields not found.

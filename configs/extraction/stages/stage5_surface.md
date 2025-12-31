@@ -2,13 +2,17 @@
 
 You are extracting **surface chemistry and stability metrics** from a scientific paper about nano fluorescent probes.
 
-## Task
-Extract ONLY the following fields. Return a JSON object with these exact keys.
+## IMPORTANT: Multi-Sample Handling
+If the paper describes **multiple distinct probe samples** with different surface properties, return an **array of objects**. Use the same `sample_id` from previous stages.
 
-## Fields to Extract
+## Task
+Extract the following fields for EACH distinct probe sample.
+
+## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `sample_id` | string | **REQUIRED** - Match sample_id from previous stages |
 | `surface_ligand` | string | Surface ligand name |
 | `ligand_type` | enum | carboxylic_acid, amine, thiol, phosphine, polymer, silica, PEG, peptide, antibody |
 | `ligand_chain_length` | integer | Ligand carbon chain length |
@@ -29,4 +33,18 @@ Extract ONLY the following fields. Return a JSON object with these exact keys.
 
 ## Response Format
 
-Return ONLY valid JSON with the above keys. Use `null` for fields not found.
+Return a JSON object with a `samples` array:
+```json
+{
+  "samples": [
+    {
+      "sample_id": "CdSe/ZnS-520",
+      "surface_ligand": "oleic acid",
+      "zeta_potential_mV": -25.3,
+      ...
+    }
+  ]
+}
+```
+
+Use `null` for fields not found.
