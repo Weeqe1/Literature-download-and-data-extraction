@@ -21,23 +21,14 @@ search:
   # 搜索关键词（支持布尔表达式 AND/OR/NOT）
   # 使用 YAML 多行字符串格式
   keywords: |
-    ("nano fluorescent probe") OR ("nanoscale fluorescent probe") OR 
-    ("fluorescent nanoprobe") OR ("optical nanoprobe") OR 
-    ("fluorescent nanosensor") OR ("fluorescent nanoparticle" AND "probe") OR 
-    ("quantum dot" AND "fluorescent probe") OR ("carbon dot" AND "fluorescent probe") OR 
-    ("upconversion nanoparticle" AND "fluorescent probe") OR 
-    ("gold nanocluster" AND "fluorescence") OR 
-    ("silica nanoparticle" AND "fluorescent probe") OR 
+    ("nano fluorescent probe") OR 
+    ("nanoscale fluorescent probe") OR 
+    ("fluorescent nanoprobe") OR 
+    ("fluorescent nanosensor") OR 
+    ("quantum dot" AND "fluorescent probe") OR 
+    ("upconversion nanoparticle fluorescent probe") OR 
     ("polymeric nanoparticle" AND "fluorescent probe") OR 
-    ("MnO nanoparticle" AND "fluorescence") OR ("lanthanide nanoprobe") OR 
-    ("fluorescent nano biosensor") OR ("targeted fluorescent nanoprobe") OR 
-    ("ratiometric fluorescent nanoprobe") OR 
-    ("activatable fluorescent probe" AND "nano") OR 
-    ("fluorescence imaging" AND "nanoprobe") OR 
-    ("fluorescent nanoprobe" AND "detection") OR 
-    ("fluorescent nanoprobe" AND "sensor") OR 
-    ("nanoparticle" AND "fluorescence imaging" AND "probe") OR 
-    ("nanomaterial" AND "fluorescence detection")
+    ("targeted fluorescent nanoprobe")
 
   # 数据源及优先级顺序
   sources_order:
@@ -45,18 +36,18 @@ search:
     - wos
     - semantic_scholar
     - pubmed
-    - arxiv
+    #- arxiv
     - crossref
 
   # 年份范围
   year_from: 2000
-  year_to: 2030
+  year_to: 2028
 
   # 每个子句每个数据源的最大结果数
-  max_results_per_clause: 200
+  max_results_per_clause: 1000
   
   # 最大子句数（从关键词拆分）
-  max_clauses: 50
+  max_clauses: 10
   
   # 总结果数上限
   max_total: 10000
@@ -82,7 +73,7 @@ runtime:
   incremental: true
   
   # 每秒请求数（用于速率限制）
-  requests_per_second: 4
+  requests_per_second: 2
   
   # 下载超时时间（秒）
   download_timeout: 60

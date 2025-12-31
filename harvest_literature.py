@@ -1013,19 +1013,17 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
             continue
         to_keep.append(row)
     if backup:
-        bak = excel_path + ".bak." + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        try:
-            shutil.copy2(excel_path, bak)
-            if verbose:
-                print("[PDF-Check] backed up original excel to:", bak)
-        except Exception:
-            pass
-    # write updated excel
+        # 原始文件保持原名，检查后的文件添加_check后缀
+        base_name = excel_path.rsplit('.xlsx', 1)[0]
+        checked_path = base_name + '_check.xlsx'
+    else:
+        checked_path = excel_path
+    # write updated excel (checked version)
     if to_keep:
         new_df = pd.DataFrame(to_keep)
     else:
         new_df = pd.DataFrame(columns=df.columns)
-    new_df.to_excel(excel_path, index=False)
+    new_df.to_excel(checked_path, index=False)
     if verbose:
         print(f"[PDF-Check] completed: {checked} checked, {removed} removed.")
     return checked, removed
@@ -1120,7 +1118,7 @@ def main():
 
     # assemble and attempt download of OA PDFs
     print("[Download] attempting to download OA PDFs and assembling table...")
-    df_final = download_pdfs_and_assemble(merged, out_base, mailto=mailto, email=mailto, verbose=True)
+    df_final = download_pdfs_and_assemble(merged, out_base, mailto=mailto, email=mailto)
 
     # merge with existing excel (incremental)
     if incremental and os.path.exists(excel_path):

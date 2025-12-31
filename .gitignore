@@ -1,1 +1,15 @@
+# IDE
 /.idea
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 输出文件（大文件不上传）
+outputs/literature/PDF/
+PDF_download/
+
+# 临时文件
+*.bak.*
+*.tmp
