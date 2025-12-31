@@ -211,10 +211,10 @@ def run_one_pdf(pdf_path: str, cfg: Dict[str, Any], prompt_template: str,
 
 def main():
     parser = argparse.ArgumentParser(description='Multi-model PDF information extraction')
-    parser.add_argument('--pdf_dir', default='data/pdfs', help='Directory containing PDF files')
+    parser.add_argument('--pdf_dir', default='outputs/literature/PDF', help='Directory containing PDF files')
     parser.add_argument('--cfg', default='configs/extraction/llm_backends.yml', help='LLM backends config')
     parser.add_argument('--schema', default='configs/extraction/schema.yml', help='Extraction schema')
-    parser.add_argument('--out_dir', default='data/outputs/extraction', help='Output directory')
+    parser.add_argument('--out_dir', default='outputs/extraction', help='Output directory')
     parser.add_argument('--prompt_file', default='configs/extraction/prompts/paper_summarize.md', help='Prompt template')
     parser.add_argument('--verbose', action='store_true', default=True, help='Verbose output')
     args = parser.parse_args()

@@ -18,39 +18,39 @@ class MultiModelClient:
         # cache clients per provider
         self._clients = {}
 
+    def _get_api_key(self, api_key_val: Optional[str]) -> Optional[str]:
+        """优先判断是否是 API Key，如果看起来像环境变量名则从环境读取"""
+        if not api_key_val:
+            return None
+        # 简单的启发式判断：如果包含横杠或长度较长，且不全是全大写+下划线，则视为 Key
+        # 或者直接尝试读取环境变量，如果读取不到则视为 Key 本身
+        env_val = os.getenv(api_key_val)
+        if env_val:
+            return env_val
+        return api_key_val
+
     def _get_client_for(self, provider: str, model_name: Optional[str]=None, api_key_env: Optional[str]=None):
-        # Return a specific client based on the provider
+        api_key = self._get_api_key(api_key_env)
+        
         if provider == 'openai':
-            return LLMClient()
+            return LLMClient(api_key=api_key, model=model_name)
         elif provider == 'gemini':
-            return self._get_gemini_client(model_name, api_key_env)
+            if not api_key:
+                raise ValueError("Gemini API key not found in config or env")
+            # Gemini 可以通过 Google 提供的 OpenAI 兼容网关调用
+            # 或者是如果您使用的是某些第三方转发，可以在此处设置 base_url
+            # 目前暂时抛出异常或设置标准 OpenAI 客户端（如果用户配置了兼容地址）
+            return LLMClient(api_key=api_key, model=model_name, base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
         elif provider == 'deepseek':
-            return self._get_deepseek_client(model_name, api_key_env)
+            if not api_key:
+                raise ValueError("DeepSeek API key not found in config or env")
+            return LLMClient(api_key=api_key, model=model_name, base_url="https://api.deepseek.com")
         elif provider == 'grok':
-            return self._get_grok_client(model_name, api_key_env)
+            if not api_key:
+                raise ValueError("Grok API key not found in config or env")
+            return LLMClient(api_key=api_key, model=model_name, base_url="https://api.x.ai/v1")
         else:
             raise ValueError(f"Unsupported provider: {provider}")
-
-    def _get_gemini_client(self, model_name, api_key_env):
-        # Simulated Gemini API client (replace with actual implementation)
-        gemini_api_key = os.getenv(api_key_env)
-        if not gemini_api_key:
-            raise ValueError("Gemini API key not found")
-        return LLMClient()
-
-    def _get_deepseek_client(self, model_name, api_key_env):
-        # Simulated DeepSeek API client (replace with actual implementation)
-        deepseek_api_key = os.getenv(api_key_env)
-        if not deepseek_api_key:
-            raise ValueError("DeepSeek API key not found")
-        return LLMClient()
-
-    def _get_grok_client(self, model_name, api_key_env):
-        # Simulated Grok API client (replace with actual implementation)
-        grok_api_key = os.getenv(api_key_env)
-        if not grok_api_key:
-            raise ValueError("Grok API key not found")
-        return LLMClient()
 
     def extract(self, model_id: str, prompt: str, schema: Optional[Dict]=None, images: Optional[list]=None) -> Dict[str, Any]:
         # Find model config

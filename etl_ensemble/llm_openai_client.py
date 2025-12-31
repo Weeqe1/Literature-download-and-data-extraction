@@ -57,14 +57,15 @@ class LLMClient:
     - 若 OpenAI SDK 不可用、密钥/模型缺失或网络异常，均抛出 RuntimeError 阻止流水线继续。
     - 优先尝试 Responses API 的结构化输出；若 SDK 不支持，再使用 Chat Completions 的 JSON 模式；两者若失败即报错。
     """
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, base_url: Optional[str] = None):
         self.api_key = api_key or DEFAULT_KEY
         self.model = model or DEFAULT_MODEL
+        self.base_url = base_url
         if not openai_pkg:
             raise RuntimeError("openai package not installed. Please `pip install openai>=1.25`.")
         try:
             from openai import OpenAI
-            self.client = OpenAI(api_key=self.api_key)
+            self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
         # 探测支持模式
