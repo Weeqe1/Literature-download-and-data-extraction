@@ -2,17 +2,18 @@
 
 You are extracting **optical and photophysical properties** from a scientific paper about nano fluorescent probes. This is the MOST IMPORTANT stage for machine learning applications.
 
-## IMPORTANT: Multi-Sample Handling
-If the paper describes **multiple distinct probe samples** with different optical properties, return an **array of objects**, one for each sample. Use the same `sample_id` from previous stages.
+## CRITICAL: Sample ID Consistency
 
-## Task
-Extract the following fields for EACH distinct probe sample.
+**Use the EXACT SAME `sample_id` as defined in Stage 2 (Material stage).**
+
+**Format reminder**: `{CoreMaterial}_{ShellMaterial}_{Size}nm` or `{CoreMaterial}_{Modifier}`
+- Examples: `CdSe_ZnS_5nm`, `Fe3O4_silica_FITC`, `CdTe_gelatin`
 
 ## Fields to Extract (per sample)
 
 | Field | Type | Unit | Description |
 |-------|------|------|-------------|
-| `sample_id` | string | - | **REQUIRED** - Match sample_id from previous stages |
+| `sample_id` | string | - | **REQUIRED** - MUST match Stage 2 exactly |
 | `absorption_peak_nm` | number | nm | Absorption peak wavelength |
 | `absorption_onset_nm` | number | nm | Absorption onset wavelength |
 | `absorption_fwhm_nm` | number | nm | Absorption FWHM |
@@ -36,22 +37,14 @@ Extract the following fields for EACH distinct probe sample.
 
 ## Response Format
 
-Return a JSON object with a `samples` array:
 ```json
 {
   "samples": [
     {
-      "sample_id": "CdSe/ZnS-520",
+      "sample_id": "CdSe_ZnS_5nm",
       "emission_peak_nm": 520,
       "quantum_yield_percent": 65,
       "fluorescence_lifetime_ns": 22.5,
-      ...
-    },
-    {
-      "sample_id": "CdSe/ZnS-580",
-      "emission_peak_nm": 580,
-      "quantum_yield_percent": 72,
-      "fluorescence_lifetime_ns": 28.1,
       ...
     }
   ]

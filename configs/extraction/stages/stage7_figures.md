@@ -2,6 +2,13 @@
 
 You are analyzing **figures and spectra images** from a scientific paper about nano fluorescent probes.
 
+## CRITICAL: Sample ID Consistency
+
+**Use the EXACT SAME `sample_id` as defined in Stage 2 (Material stage).**
+
+**Format reminder**: `{CoreMaterial}_{ShellMaterial}_{Size}nm` or `{CoreMaterial}_{Modifier}`
+- Examples: `CdSe_ZnS_5nm`, `Fe3O4_silica_FITC`, `CdTe_gelatin`
+
 ## Task
 Examine the provided images and extract quantitative data visible in figures, charts, and spectra.
 
@@ -18,13 +25,11 @@ Examine the provided images and extract quantitative data visible in figures, ch
 
 ## Response Format
 
-Return a JSON object with a `samples` array. Use the same `sample_id` from previous stages when possible:
-
 ```json
 {
   "samples": [
     {
-      "sample_id": "CdSe/ZnS-520",
+      "sample_id": "CdSe_ZnS_5nm",
       "emission_peak_nm": 520,
       "emission_fwhm_nm": 28,
       "core_diameter_nm": 3.5,
@@ -38,6 +43,7 @@ Return a JSON object with a `samples` array. Use the same `sample_id` from previ
 ```
 
 ## Important Notes
+- **Use SAME sample_id as Stage 2** - this is critical for data merging
 - Read numerical values directly from axis labels and data points
 - Note the source figure for each extracted value in `_data_source`
 - If multiple samples are shown in one figure, extract data for each separately

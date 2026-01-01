@@ -2,17 +2,20 @@
 
 You are extracting **synthesis and reaction parameters** from a scientific paper about nano fluorescent probes.
 
-## IMPORTANT: Multi-Sample Handling
-If the paper describes **multiple distinct probe samples** with different synthesis conditions, return an **array of objects**, one for each sample. Use the same `sample_id` as in Stage 2.
+## CRITICAL: Sample ID Consistency
 
-## Task
-Extract the following fields for EACH distinct probe sample.
+**Use the EXACT SAME `sample_id` as defined in Stage 2 (Material stage).**
+
+**Format reminder**: `{CoreMaterial}_{ShellMaterial}_{Size}nm` or `{CoreMaterial}_{Modifier}`
+- Examples: `CdSe_ZnS_5nm`, `Fe3O4_silica_FITC`, `CdTe_gelatin`
+
+If the same synthesis procedure applies to multiple samples, create one entry for each sample with their respective `sample_id`.
 
 ## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sample_id` | string | **REQUIRED** - Match the sample_id from Stage 2 |
+| `sample_id` | string | **REQUIRED** - MUST match Stage 2 exactly |
 | `synthesis_method` | enum | hot_injection, heat_up, solvothermal, hydrothermal, microwave, sonochemical, electrochemical, laser_ablation, pyrolysis, coprecipitation, sol-gel |
 | `reaction_temperature_C` | number | Reaction temperature (°C) |
 | `nucleation_temperature_C` | number | Nucleation temperature (°C) |
@@ -31,18 +34,18 @@ Extract the following fields for EACH distinct probe sample.
 
 ## Response Format
 
-Return a JSON object with a `samples` array:
 ```json
 {
   "samples": [
     {
-      "sample_id": "CdSe/ZnS-520",
+      "sample_id": "CdSe_ZnS_5nm",
       "synthesis_method": "hot_injection",
       "reaction_temperature_C": 280,
+      "reaction_time_min": 30,
       ...
     }
   ]
 }
 ```
 
-If all samples share the same synthesis parameters, you may return a single object. Use `null` for fields not found.
+Use `null` for fields not found.

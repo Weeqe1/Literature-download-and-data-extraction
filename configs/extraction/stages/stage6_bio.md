@@ -2,17 +2,18 @@
 
 You are extracting **biological and sensing application data** from a scientific paper about nano fluorescent probes.
 
-## IMPORTANT: Multi-Sample Handling
-If the paper describes **multiple distinct probe samples** tested in biological applications, return an **array of objects**. Use the same `sample_id` from previous stages.
+## CRITICAL: Sample ID Consistency
 
-## Task
-Extract the following fields for EACH distinct probe sample.
+**Use the EXACT SAME `sample_id` as defined in Stage 2 (Material stage).**
+
+**Format reminder**: `{CoreMaterial}_{ShellMaterial}_{Size}nm` or `{CoreMaterial}_{Modifier}`
+- Examples: `CdSe_ZnS_5nm`, `Fe3O4_silica_FITC`, `CdTe_gelatin`
 
 ## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sample_id` | string | **REQUIRED** - Match sample_id from previous stages |
+| `sample_id` | string | **REQUIRED** - MUST match Stage 2 exactly |
 | `cytotoxicity_IC50_ug_mL` | number | Cytotoxicity IC50 (μg/mL) |
 | `cell_viability_percent` | number | Cell viability (%) |
 | `incubation_concentration_ug_mL` | number | Incubation concentration (μg/mL) |
@@ -35,12 +36,11 @@ Extract the following fields for EACH distinct probe sample.
 
 ## Response Format
 
-Return a JSON object with a `samples` array:
 ```json
 {
   "samples": [
     {
-      "sample_id": "CdSe/ZnS-520",
+      "sample_id": "CdSe_ZnS_5nm",
       "cell_line": "HeLa",
       "cell_viability_percent": 95,
       "target_analyte": "pH",

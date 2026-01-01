@@ -2,17 +2,18 @@
 
 You are extracting **surface chemistry and stability metrics** from a scientific paper about nano fluorescent probes.
 
-## IMPORTANT: Multi-Sample Handling
-If the paper describes **multiple distinct probe samples** with different surface properties, return an **array of objects**. Use the same `sample_id` from previous stages.
+## CRITICAL: Sample ID Consistency
 
-## Task
-Extract the following fields for EACH distinct probe sample.
+**Use the EXACT SAME `sample_id` as defined in Stage 2 (Material stage).**
+
+**Format reminder**: `{CoreMaterial}_{ShellMaterial}_{Size}nm` or `{CoreMaterial}_{Modifier}`
+- Examples: `CdSe_ZnS_5nm`, `Fe3O4_silica_FITC`, `CdTe_gelatin`
 
 ## Fields to Extract (per sample)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sample_id` | string | **REQUIRED** - Match sample_id from previous stages |
+| `sample_id` | string | **REQUIRED** - MUST match Stage 2 exactly |
 | `surface_ligand` | string | Surface ligand name |
 | `ligand_type` | enum | carboxylic_acid, amine, thiol, phosphine, polymer, silica, PEG, peptide, antibody |
 | `ligand_chain_length` | integer | Ligand carbon chain length |
@@ -33,12 +34,11 @@ Extract the following fields for EACH distinct probe sample.
 
 ## Response Format
 
-Return a JSON object with a `samples` array:
 ```json
 {
   "samples": [
     {
-      "sample_id": "CdSe/ZnS-520",
+      "sample_id": "CdSe_ZnS_5nm",
       "surface_ligand": "oleic acid",
       "zeta_potential_mV": -25.3,
       ...
