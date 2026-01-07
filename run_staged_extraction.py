@@ -32,6 +32,59 @@ STAGES = [
     {"id": 7, "name": "figures", "file": "stage7_figures.md", "desc": "图片分析", "multimodal": True},
 ]
 
+# 完整的 Schema 字段列表（用于确保输出包含所有字段，缺失的显示为 null）
+FULL_SCHEMA_FIELDS = [
+    # 样品标识
+    "sample_id",
+    # 材料与结构 (Stage 2)
+    "probe_category", "core_material", "shell_material", "shell_layers",
+    "alloy_composition", "dopant_elements", "dopant_concentration_percent",
+    "chemical_formula", "core_diameter_nm", "shell_thickness_nm",
+    "total_diameter_nm", "length_nm", "aspect_ratio", "morphology",
+    "crystal_structure", "size_distribution_std_nm", "polydispersity_index",
+    # 合成参数 (Stage 3)
+    "synthesis_method", "reaction_temperature_C", "nucleation_temperature_C",
+    "growth_temperature_C", "reaction_time_min", "heating_rate_C_per_min",
+    "cooling_method", "precursor_cation", "precursor_anion",
+    "precursor_molar_ratio", "solvent", "coordinating_ligand",
+    "reaction_atmosphere", "pH_value", "injection_rate_mL_per_min",
+    # 光学性能 (Stage 4)
+    "absorption_peak_nm", "absorption_onset_nm", "absorption_fwhm_nm",
+    "molar_extinction_coefficient", "emission_peak_nm", "emission_fwhm_nm",
+    "stokes_shift_nm", "quantum_yield_percent", "fluorescence_lifetime_ns",
+    "radiative_rate_ns_inv", "non_radiative_rate_ns_inv",
+    "two_photon_cross_section_GM", "brightness", "blinking_on_time_fraction",
+    "bandgap_eV",
+    # 表面化学与稳定性 (Stage 5)
+    "surface_ligand", "ligand_type", "ligand_chain_length",
+    "ligand_molecular_weight", "surface_charge_type", "zeta_potential_mV",
+    "hydrodynamic_diameter_nm", "surface_coverage_per_nm2",
+    "passivation_strategy", "photostability_half_life_min",
+    "photobleaching_rate_per_hour", "thermal_stability_max_C",
+    "ph_stability_min", "ph_stability_max", "colloidal_stability_days",
+    "air_stability_hours", "storage_temperature_C",
+    # 生物应用 (Stage 6)
+    "cytotoxicity_IC50_ug_mL", "cell_viability_percent",
+    "incubation_concentration_ug_mL", "cell_line", "incubation_time_h",
+    "targeting_ligand", "target_analyte", "detection_limit",
+    "detection_limit_unit", "linear_range_low", "linear_range_high",
+    "response_time_s", "signal_to_background_ratio", "imaging_modality",
+    "penetration_depth_mm", "conduction_band_eV", "valence_band_eV",
+    "exciton_binding_energy_meV", "bohr_radius_nm",
+]
+
+
+def fill_missing_fields(sample: Dict[str, Any]) -> Dict[str, Any]:
+    """Ensure all schema fields are present in sample, filling missing with null."""
+    filled = {}
+    for field in FULL_SCHEMA_FIELDS:
+        filled[field] = sample.get(field, None)
+    # Add any extra fields that were extracted but not in schema
+    for key, value in sample.items():
+        if key not in filled:
+            filled[key] = value
+    return filled
+
 
 def load_config(cfg_path: str) -> Dict[str, Any]:
     """Load YAML configuration file."""
@@ -182,20 +235,20 @@ def run_staged_extraction(
         if verbose:
             print(f"        Found {len(pdf_images)} images")
     
-    # Step 2: Get enabled model
+    # Step 2: Get enabled models
     enabled_models = [m for m in cfg.get('models', []) if m.get('enabled', True)]
     if not enabled_models:
         return {"status": "error", "message": "No enabled models in llm_backends.yml"}
     
-    model_id = enabled_models[0]['id']
+    model_ids = [m['id'] for m in enabled_models]
     mmc = MultiModelClient(cfg)
     
     if verbose:
-        print(f"  [2/4] Running staged extraction with {model_id}...")
+        print(f"  [2/4] Running staged extraction with {len(model_ids)} model(s): {', '.join(model_ids)}")
     
-    # Step 3: Run each stage and collect samples
-    stages_to_process = stages_to_run or [1, 2, 3, 4, 5, 6, 7]  # Default: all 7 stages including image analysis
-    all_stage_samples = {}  # stage_name -> list of samples
+    # Step 3: Run each stage with ALL models and collect samples
+    stages_to_process = stages_to_run or [1, 2, 3, 4, 5, 6, 7]  # Default: all 7 stages
+    all_stage_samples = {}  # stage_name -> list of samples (merged from all models)
     paper_metadata = {}  # Stage 1 metadata (shared across samples)
     stage_results = {}
     total_stages = len([s for s in STAGES if s["id"] in stages_to_process])
@@ -209,38 +262,49 @@ def run_staged_extraction(
         if verbose:
             print(f"        Stage {current_stage_num}/{total_stages}: {stage['desc']}...")
         
-        try:
-            stage_prompt = load_stage_prompt(stages_dir, stage["file"])
-            
-            # Pass images only for multimodal stages
-            stage_images = pdf_images if stage.get("multimodal") else None
-            result = run_single_stage(mmc, model_id, stage_prompt, pdf_text, stage["name"], images=stage_images, verbose=verbose)
-            
-            if isinstance(result, dict):
-                # Stage 1 (metadata) is special - shared across all samples
-                if stage["id"] == 1:
-                    paper_metadata = {k: v for k, v in result.items() if v is not None}
-                    stage_results[stage["name"]] = result
-                    non_null = sum(1 for v in result.values() if v is not None)
-                    if verbose:
-                        print(f"          -> Extracted {non_null} metadata fields")
-                else:
-                    # Stages 2-6: expect {samples: [...]} format
-                    samples = result.get('samples', [])
-                    if not samples and result:
-                        # Fallback: treat as single sample if no 'samples' key
-                        samples = [result]
-                    
-                    all_stage_samples[stage["name"]] = samples
-                    stage_results[stage["name"]] = {"sample_count": len(samples)}
-                    
-                    if verbose:
-                        print(f"          -> Extracted {len(samples)} sample(s)")
-            
-        except Exception as e:
-            if verbose:
-                print(f"          -> Failed: {e}")
-            stage_results[stage["name"]] = {"error": str(e)}
+        stage_prompt = load_stage_prompt(stages_dir, stage["file"])
+        stage_images = pdf_images if stage.get("multimodal") else None
+        
+        # Collect results from ALL models for this stage
+        model_results = []
+        for model_id in model_ids:
+            try:
+                if verbose:
+                    print(f"          -> Calling {model_id}...")
+                result = run_single_stage(mmc, model_id, stage_prompt, pdf_text, stage["name"], images=stage_images, verbose=False)
+                if result:
+                    model_results.append({"model_id": model_id, "result": result})
+            except Exception as e:
+                if verbose:
+                    print(f"          -> {model_id} failed: {e}")
+        
+        # Merge results from all models
+        if model_results:
+            if stage["id"] == 1:
+                # Stage 1 (metadata) - use first successful result
+                paper_metadata = model_results[0]["result"]
+                stage_results[stage["name"]] = {"models_used": [r["model_id"] for r in model_results]}
+                if verbose:
+                    print(f"          -> Metadata from {model_results[0]['model_id']}")
+            else:
+                # Stages 2-7: merge samples from all models
+                merged_stage_samples = []
+                for mr in model_results:
+                    samples = mr["result"].get('samples', [])
+                    if not samples and mr["result"]:
+                        samples = [mr["result"]]
+                    for s in samples:
+                        if isinstance(s, dict):
+                            s['_extracted_by'] = mr["model_id"]
+                            merged_stage_samples.append(s)
+                
+                all_stage_samples[stage["name"]] = merged_stage_samples
+                stage_results[stage["name"]] = {
+                    "models_used": [r["model_id"] for r in model_results],
+                    "total_samples": len(merged_stage_samples)
+                }
+                if verbose:
+                    print(f"          -> {len(merged_stage_samples)} sample(s) from {len(model_results)} model(s)")
     
     # Step 4: Merge samples by sample_id
     if verbose:
@@ -248,11 +312,15 @@ def run_staged_extraction(
     
     merged_samples = merge_samples_by_id(all_stage_samples)
     
-    # Add paper metadata to each sample
+    # Add paper metadata to each sample and fill missing fields with null
+    filled_samples = []
     for sample in merged_samples:
         sample.update({f"paper_{k}": v for k, v in paper_metadata.items() if k != 'sample_count'})
         sample['_source_pdf'] = pdf_path
         sample['_model'] = model_id
+        # Fill all missing schema fields with null
+        filled_sample = fill_missing_fields(sample)
+        filled_samples.append(filled_sample)
     
     if verbose:
         print(f"  [4/4] Saving results...")
@@ -262,18 +330,19 @@ def run_staged_extraction(
     
     # Count total non-null fields across all samples
     total_fields = sum(
-        sum(1 for k, v in sample.items() if not k.startswith('_') and v is not None)
-        for sample in merged_samples
+        sum(1 for k, v in sample.items() if not k.startswith('_') and not k.startswith('paper_') and v is not None)
+        for sample in filled_samples
     )
     
     output = {
         'pdf': pdf_path,
         'paper_metadata': paper_metadata,
-        'samples': merged_samples,
+        'samples': filled_samples,
         'meta': {
-            'model_id': model_id,
+            'models_used': model_ids,
             'stages': list(stage_results.keys()),
-            'sample_count': len(merged_samples),
+            'stage_details': stage_results,
+            'sample_count': len(filled_samples),
             'total_fields_extracted': total_fields
         }
     }

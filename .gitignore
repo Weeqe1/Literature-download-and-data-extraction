@@ -13,3 +13,6 @@ PDF_download/
 # 临时文件
 *.bak.*
 *.tmp
+
+# 配置文件（包含敏感密钥）
+configs/extraction/llm_backends.yml

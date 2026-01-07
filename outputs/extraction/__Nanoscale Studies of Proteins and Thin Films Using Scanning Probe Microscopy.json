@@ -1,0 +1,163 @@
+{
+  "pdf": "outputs\\literature\\PDF\\__Nanoscale Studies of Proteins and Thin Films Using Scanning Probe Microscopy.pdf",
+  "paper_metadata": {
+    "title": "Nanoscale Studies of Proteins and Thin Films Using Scanning Probe Microscopy",
+    "doi": "https://repository.lsu.edu/gradschool_dissertations/4300",
+    "year": 2017,
+    "journal": "LSU Doctoral Dissertations",
+    "first_author": "Zachary Lane Highland",
+    "corresponding_author": null,
+    "sample_count": null
+  },
+  "samples": [
+    {
+      "sample_id": "default",
+      "probe_category": null,
+      "core_material": null,
+      "shell_material": null,
+      "shell_layers": null,
+      "alloy_composition": null,
+      "dopant_elements": null,
+      "dopant_concentration_percent": null,
+      "chemical_formula": null,
+      "core_diameter_nm": null,
+      "shell_thickness_nm": null,
+      "total_diameter_nm": null,
+      "length_nm": null,
+      "aspect_ratio": null,
+      "morphology": null,
+      "crystal_structure": null,
+      "size_distribution_std_nm": null,
+      "polydispersity_index": null,
+      "synthesis_method": null,
+      "reaction_temperature_C": null,
+      "nucleation_temperature_C": null,
+      "growth_temperature_C": null,
+      "reaction_time_min": null,
+      "heating_rate_C_per_min": null,
+      "cooling_method": null,
+      "precursor_cation": null,
+      "precursor_anion": null,
+      "precursor_molar_ratio": null,
+      "solvent": null,
+      "coordinating_ligand": null,
+      "reaction_atmosphere": null,
+      "pH_value": null,
+      "injection_rate_mL_per_min": null,
+      "absorption_peak_nm": null,
+      "absorption_onset_nm": null,
+      "absorption_fwhm_nm": null,
+      "molar_extinction_coefficient": null,
+      "emission_peak_nm": null,
+      "emission_fwhm_nm": null,
+      "stokes_shift_nm": null,
+      "quantum_yield_percent": null,
+      "fluorescence_lifetime_ns": null,
+      "radiative_rate_ns_inv": null,
+      "non_radiative_rate_ns_inv": null,
+      "two_photon_cross_section_GM": null,
+      "brightness": null,
+      "blinking_on_time_fraction": null,
+      "bandgap_eV": null,
+      "surface_ligand": null,
+      "ligand_type": null,
+      "ligand_chain_length": null,
+      "ligand_molecular_weight": null,
+      "surface_charge_type": null,
+      "zeta_potential_mV": null,
+      "hydrodynamic_diameter_nm": null,
+      "surface_coverage_per_nm2": null,
+      "passivation_strategy": null,
+      "photostability_half_life_min": null,
+      "photobleaching_rate_per_hour": null,
+      "thermal_stability_max_C": null,
+      "ph_stability_min": null,
+      "ph_stability_max": null,
+      "colloidal_stability_days": null,
+      "air_stability_hours": null,
+      "storage_temperature_C": null,
+      "cytotoxicity_IC50_ug_mL": null,
+      "cell_viability_percent": null,
+      "incubation_concentration_ug_mL": null,
+      "cell_line": null,
+      "incubation_time_h": null,
+      "targeting_ligand": null,
+      "target_analyte": null,
+      "detection_limit": null,
+      "detection_limit_unit": null,
+      "linear_range_low": null,
+      "linear_range_high": null,
+      "response_time_s": null,
+      "signal_to_background_ratio": null,
+      "imaging_modality": null,
+      "penetration_depth_mm": null,
+      "conduction_band_eV": null,
+      "valence_band_eV": null,
+      "exciton_binding_energy_meV": null,
+      "bohr_radius_nm": null,
+      "samples": [],
+      "_extracted_by": "deepseek",
+      "paper_title": "Nanoscale Studies of Proteins and Thin Films Using Scanning Probe Microscopy",
+      "paper_doi": "https://repository.lsu.edu/gradschool_dissertations/4300",
+      "paper_year": 2017,
+      "paper_journal": "LSU Doctoral Dissertations",
+      "paper_first_author": "Zachary Lane Highland",
+      "paper_corresponding_author": null,
+      "_source_pdf": "outputs\\literature\\PDF\\__Nanoscale Studies of Proteins and Thin Films Using Scanning Probe Microscopy.pdf",
+      "_model": "deepseek"
+    }
+  ],
+  "meta": {
+    "models_used": [
+      "google_gemini",
+      "deepseek"
+    ],
+    "stages": [
+      "metadata",
+      "material",
+      "synthesis",
+      "optical",
+      "surface",
+      "bio"
+    ],
+    "stage_details": {
+      "metadata": {
+        "models_used": [
+          "deepseek"
+        ]
+      },
+      "material": {
+        "models_used": [
+          "deepseek"
+        ],
+        "total_samples": 1
+      },
+      "synthesis": {
+        "models_used": [
+          "deepseek"
+        ],
+        "total_samples": 1
+      },
+      "optical": {
+        "models_used": [
+          "deepseek"
+        ],
+        "total_samples": 1
+      },
+      "surface": {
+        "models_used": [
+          "deepseek"
+        ],
+        "total_samples": 1
+      },
+      "bio": {
+        "models_used": [
+          "deepseek"
+        ],
+        "total_samples": 1
+      }
+    },
+    "sample_count": 1,
+    "total_fields_extracted": 2
+  }
+}
