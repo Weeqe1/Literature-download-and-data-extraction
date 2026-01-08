@@ -100,7 +100,6 @@ NFP-PDF-to-DB/
 ```bash
 # 克隆项目
 git clone https://github.com/your-repo/nfp-pdf-to-db.git
-cd nfp-pdf-to-db
 
 # 创建虚拟环境
 conda create -n nfp_etl python=3.10
