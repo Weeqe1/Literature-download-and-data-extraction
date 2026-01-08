@@ -9,6 +9,7 @@ __pycache__/
 # 输出文件（大文件不上传）
 outputs/literature/PDF/
 PDF_download/
+outputs/
 
 # 临时文件
 *.bak.*
