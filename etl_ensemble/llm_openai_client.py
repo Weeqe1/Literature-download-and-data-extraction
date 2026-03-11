@@ -1,6 +1,8 @@
 
 # etl_ensemble/llm_openai_client.py
 import os, json
+import diskcache
+cache = diskcache.Cache(".api_cache") # API Caching
 from typing import Any, Dict, List, Optional
 
 # --- 自动加载 configs/extraction/llm_backends.yml 中的 OpenAI 配置 ---

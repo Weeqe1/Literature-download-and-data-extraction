@@ -75,7 +75,13 @@ class MultiModelClient:
             else:
                 resp = client.structured(prompt, schema=schema, images=images)
         except Exception as e:
-            resp = {"error": str(e)}
+            print(f"Model {model_id} failed, trying fallback... ({e})")
+            # Cascade Routing for LLMs
+            try:
+                fallback_client = self._get_client_for('openai', model_name='gpt-4o-mini', api_key_env='OPENAI_API_KEY')
+                resp = fallback_client.structured(prompt, schema=schema or {"type":"object"}, images=images)
+            except Exception as fallback_e:
+                resp = {"error": str(e), "fallback_error": str(fallback_e)}
         # restore env
         if prev_model is None:
             os.environ.pop('OPENAI_MODEL', None)

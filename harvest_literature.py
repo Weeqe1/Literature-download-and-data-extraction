@@ -20,6 +20,9 @@ import re
 import time
 import shutil
 import requests
+import asyncio
+import aiohttp
+import concurrent.futures # Async IO for downloads
 import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from urllib.parse import quote_plus

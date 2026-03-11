@@ -196,6 +196,13 @@ def extract_images_from_pdf(
     return images
 
 
+def chunk_text_rag(text: str, chunk_size: int = 2000, overlap: int = 200) -> list:
+    """Lightweight RAG text chunking"""
+    chunks = []
+    for i in range(0, max(1, len(text)), max(1, chunk_size - overlap)):
+        chunks.append(text[i:i + chunk_size])
+    return chunks
+
 def parse_pdf(pdf_path: str) -> Dict[str, Any]:
     """Main function to parse PDF and extract all relevant content.
     
