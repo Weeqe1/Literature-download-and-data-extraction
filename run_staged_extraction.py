@@ -12,6 +12,7 @@ import json
 import yaml
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+import concurrent.futures
 
 # Fix Windows console encoding issues
 if sys.stdout.encoding != 'utf-8':
@@ -171,16 +172,19 @@ def run_single_stage(
         raise
 
 
-def merge_samples_by_id(all_stage_samples: Dict[str, List[Dict]]) -> List[Dict[str, Any]]:
-    """Merge samples from different stages by sample_id.
+def merge_samples_by_id(all_stage_samples: Dict[str, List[Dict]], model_ids: List[str]) -> List[Dict[str, Any]]:
+    """Merge samples from different stages by sample_id, respecting model priority.
     
     Args:
         all_stage_samples: Dict mapping stage_name -> list of sample dicts
+        model_ids: List of model IDs in priority order (0 = highest)
         
     Returns:
         List of merged sample dicts
     """
     merged = {}  # sample_id -> merged dict
+    priority_map = {m_id: i for i, m_id in enumerate(model_ids)}
+    field_priority = {}  # sample_id -> {field: priority}
     
     for stage_name, samples in all_stage_samples.items():
         if not isinstance(samples, list):
@@ -189,14 +193,21 @@ def merge_samples_by_id(all_stage_samples: Dict[str, List[Dict]]) -> List[Dict[s
             if not isinstance(sample, dict):
                 continue
             sample_id = sample.get('sample_id', 'default')
+            model_id = sample.get('_extracted_by', 'unknown')
+            curr_prio = priority_map.get(model_id, 999)
+            
             if sample_id not in merged:
                 merged[sample_id] = {'sample_id': sample_id}
-            # Merge fields from this stage
+                field_priority[sample_id] = {}
+                
+            # Merge fields based on model priority (lower number = better)
             for k, v in sample.items():
-                if v is not None and k not in merged[sample_id]:
+                if v is None:
+                    continue
+                exist_prio = field_priority[sample_id].get(k, 999)
+                if curr_prio <= exist_prio:
                     merged[sample_id][k] = v
-                elif v is not None and merged[sample_id].get(k) is None:
-                    merged[sample_id][k] = v
+                    field_priority[sample_id][k] = curr_prio
     
     return list(merged.values())
 
@@ -265,18 +276,30 @@ def run_staged_extraction(
         stage_prompt = load_stage_prompt(stages_dir, stage["file"])
         stage_images = pdf_images if stage.get("multimodal") else None
         
-        # Collect results from ALL models for this stage
-        model_results = []
-        for model_id in model_ids:
-            try:
-                if verbose:
-                    print(f"          -> Calling {model_id}...")
-                result = run_single_stage(mmc, model_id, stage_prompt, pdf_text, stage["name"], images=stage_images, verbose=False)
-                if result:
-                    model_results.append({"model_id": model_id, "result": result})
-            except Exception as e:
-                if verbose:
-                    print(f"          -> {model_id} failed: {e}")
+        # Collect results from ALL models concurrently for this stage
+        if verbose:
+            print(f"          -> Concurrently calling {len(model_ids)} models...")
+            
+        model_results_raw = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(model_ids), 10)) as executor:
+            future_to_model = {
+                executor.submit(run_single_stage, mmc, m_id, stage_prompt, pdf_text, stage["name"], stage_images, False): m_id
+                for m_id in model_ids
+            }
+            for future in concurrent.futures.as_completed(future_to_model):
+                m_id = future_to_model[future]
+                try:
+                    result = future.result()
+                    if result:
+                        model_results_raw.append({"model_id": m_id, "result": result})
+                        if verbose:
+                            print(f"          -> {m_id} completed successfully")
+                except Exception as e:
+                    if verbose:
+                        print(f"          -> {m_id} failed: {e}")
+        
+        # Sort model_results by original priority (model_ids order)
+        model_results = sorted(model_results_raw, key=lambda x: model_ids.index(x["model_id"]))
         
         # Merge results from all models
         if model_results:
@@ -308,16 +331,16 @@ def run_staged_extraction(
     
     # Step 4: Merge samples by sample_id
     if verbose:
-        print(f"  [3/4] Merging samples by sample_id...")
+        print(f"  [3/4] Merging samples by sample_id (priority-based)...")
     
-    merged_samples = merge_samples_by_id(all_stage_samples)
+    merged_samples = merge_samples_by_id(all_stage_samples, model_ids)
     
     # Add paper metadata to each sample and fill missing fields with null
     filled_samples = []
     for sample in merged_samples:
         sample.update({f"paper_{k}": v for k, v in paper_metadata.items() if k != 'sample_count'})
         sample['_source_pdf'] = pdf_path
-        sample['_model'] = model_id
+        sample['_models_used'] = model_ids
         # Fill all missing schema fields with null
         filled_sample = fill_missing_fields(sample)
         filled_samples.append(filled_sample)
