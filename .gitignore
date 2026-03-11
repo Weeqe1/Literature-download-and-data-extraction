@@ -12,6 +12,7 @@ PDF_download/
 outputs/
 
 # 临时文件
+.api_cache/
 *.bak.*
 *.tmp
 
