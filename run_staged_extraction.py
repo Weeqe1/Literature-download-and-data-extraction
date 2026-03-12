@@ -24,13 +24,7 @@ from etl_ensemble.llm_multi_client import MultiModelClient
 
 # 定义 7 个提取阶段（Stage 7 为多模态图片分析）
 STAGES = [
-    {"id": 1, "name": "metadata", "file": "stage1_metadata.md", "desc": "论文元数据", "multimodal": False},
-    {"id": 2, "name": "material", "file": "stage2_material.md", "desc": "材料与结构", "multimodal": False},
-    {"id": 3, "name": "synthesis", "file": "stage3_synthesis.md", "desc": "合成参数", "multimodal": False},
-    {"id": 4, "name": "optical", "file": "stage4_optical.md", "desc": "光学性能", "multimodal": False},
-    {"id": 5, "name": "surface", "file": "stage5_surface.md", "desc": "表面与稳定性", "multimodal": False},
-    {"id": 6, "name": "bio", "file": "stage6_bio.md", "desc": "生物应用", "multimodal": False},
-    {"id": 7, "name": "figures", "file": "stage7_figures.md", "desc": "图片分析", "multimodal": True},
+    {"id": 1, "name": "core_extraction", "file": "stage1_core_extraction.md", "desc": "Core 12-Field Extraction", "multimodal": False}
 ]
 
 # 完整的 Schema 字段列表（用于确保输出包含所有字段，缺失的显示为 null）
@@ -258,7 +252,7 @@ def run_staged_extraction(
         print(f"  [2/4] Running staged extraction with {len(model_ids)} model(s): {', '.join(model_ids)}")
     
     # Step 3: Run each stage with ALL models and collect samples
-    stages_to_process = stages_to_run or [1, 2, 3, 4, 5, 6, 7]  # Default: all 7 stages
+    stages_to_process = stages_to_run or [1]
     all_stage_samples = {}  # stage_name -> list of samples (merged from all models)
     paper_metadata = {}  # Stage 1 metadata (shared across samples)
     stage_results = {}
@@ -446,6 +440,11 @@ def main():
     print(f"  Errors:       {results_summary['error']}")
     print(f"  Total fields: {results_summary['total_fields']}")
     print("="*50)
+    out_csv = os.path.join(os.path.dirname(args.out_dir) if args.out_dir.endswith('extraction') else args.out_dir, 'nfp_ml_ready_dataset.csv')
+    try:
+        build_clean_dataset.build_dataset(args.out_dir, out_csv)
+    except Exception as e:
+        print('Failed to build dataset:', e)
 
 
 if __name__ == '__main__':
