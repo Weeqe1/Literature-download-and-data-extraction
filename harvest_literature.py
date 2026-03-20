@@ -697,22 +697,102 @@ def get_unpaywall_pdf_by_doi(doi: str, email: str):
         return None, False
 
 # -----------------------
-# Helper: download file
+# Helper: download file (with retry and cleanup)
 # -----------------------
-def download_file(url: str, out_path: str, timeout: int = 60) -> bool:
+def _cleanup_partial_file(out_path: str):
+    """Remove a partially downloaded file if it exists."""
     try:
-        rate_limit()
-        with requests.get(url, stream=True, timeout=timeout) as r:
-            if r.status_code != 200:
-                return False
-            ensure_dir(os.path.dirname(out_path))
-            with open(out_path, "wb") as fh:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:
-                        fh.write(chunk)
-        return True
-    except Exception:
+        if os.path.exists(out_path):
+            os.remove(out_path)
+    except OSError:
+        pass
+
+def download_file(url: str, out_path: str, timeout: int = 60, max_retries: int = 3, verbose: bool = False) -> bool:
+    """Download a file from URL with retry logic and partial file cleanup.
+    
+    Args:
+        url: URL to download
+        out_path: Local file path to save to
+        timeout: Request timeout in seconds
+        max_retries: Maximum number of retry attempts
+        verbose: Print retry messages
+        
+    Returns:
+        True if download succeeded, False otherwise
+    """
+    if not url:
         return False
+    
+    ensure_dir(os.path.dirname(out_path))
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            rate_limit()
+            with requests.get(url, stream=True, timeout=timeout) as r:
+                # 4xx/5xx errors: don't retry client errors (404, 403, etc.)
+                if r.status_code == 404 or r.status_code == 403:
+                    if verbose:
+                        print(f"  [Download] HTTP {r.status_code} for {url[:80]}...")
+                    return False
+                if r.status_code != 200:
+                    if verbose:
+                        print(f"  [Download] HTTP {r.status_code} (attempt {attempt}/{max_retries})")
+                    if attempt < max_retries:
+                        time.sleep(2 ** attempt)  # exponential backoff
+                        continue
+                    return False
+                
+                # Stream download to file
+                with open(out_path, "wb") as fh:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if chunk:
+                            fh.write(chunk)
+                
+                # Verify file is not empty
+                if os.path.getsize(out_path) < 100:
+                    if verbose:
+                        print(f"  [Download] Downloaded file too small ({os.path.getsize(out_path)} bytes), discarding")
+                    _cleanup_partial_file(out_path)
+                    if attempt < max_retries:
+                        time.sleep(2 ** attempt)
+                        continue
+                    return False
+                
+                return True
+                
+        except requests.exceptions.ConnectionError as e:
+            if verbose:
+                print(f"  [Download] Connection error (attempt {attempt}/{max_retries}): {e}")
+            _cleanup_partial_file(out_path)
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)  # exponential backoff
+                continue
+            
+        except requests.exceptions.Timeout as e:
+            if verbose:
+                print(f"  [Download] Timeout (attempt {attempt}/{max_retries}): {e}")
+            _cleanup_partial_file(out_path)
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            
+        except requests.exceptions.RequestException as e:
+            if verbose:
+                print(f"  [Download] Request error (attempt {attempt}/{max_retries}): {e}")
+            _cleanup_partial_file(out_path)
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            
+        except OSError as e:
+            if verbose:
+                print(f"  [Download] File system error: {e}")
+            _cleanup_partial_file(out_path)
+            return False  # disk errors don't retry
+    
+    # All retries exhausted
+    _cleanup_partial_file(out_path)
+    return False
 
 def ensure_dir(path: str):
     if path:
@@ -931,45 +1011,222 @@ def fill_missing_dois(rows: List[Dict[str, Any]], mailto: Optional[str] = None, 
     return rows
 
 # -----------------------
-# Download OA PDFs and assemble final DataFrame
+# Download OA PDFs and assemble final DataFrame (with checkpoint + concurrency)
 # -----------------------
-def download_pdfs_and_assemble(works: List[dict], out_dir: str, mailto: Optional[str] = None, email: Optional[str] = None) -> pd.DataFrame:
+
+def _check_disk_space(path: str, min_mb: int = 500) -> bool:
+    """Check if there's enough disk space at the given path."""
+    try:
+        import shutil
+        total, used, free = shutil.disk_usage(path)
+        free_mb = free / (1024 * 1024)
+        return free_mb >= min_mb
+    except OSError:
+        return True  # can't check, assume OK
+
+def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bool]:
+    """Try to find a downloadable PDF URL for a work."""
+    pdf_url = row.get("pdf_url")
+    is_oa = False
+    
+    if pdf_url:
+        is_oa = True
+        return pdf_url, is_oa
+    
+    if doi:
+        pdf_url, is_oa = get_unpaywall_pdf_by_doi(doi, email)
+    
+    return pdf_url, is_oa
+
+def _download_single_work(args: Tuple) -> Dict[str, Any]:
+    """Download a single work's PDF. Designed for use with ThreadPoolExecutor."""
+    w, pdf_dir, email = args
+    row = work_to_row(w)
+    doi = doi_normalize(row.get("doi") or "")
+    
+    pdf_url, is_oa = _resolve_pdf_url(row, doi, email)
+    row["is_oa"] = bool(is_oa)
+    
+    if pdf_url:
+        fn_title = sanitize_filename(
+            f"{row.get('year')}_{row.get('journal')}_{row.get('title') or row.get('display_name') or 'paper'}.pdf"
+        )
+        out_file = os.path.join(pdf_dir, fn_title)
+        ok = download_file(pdf_url, out_file, max_retries=3, verbose=False)
+        row["pdf_path"] = out_file if ok else None
+    else:
+        row["pdf_path"] = None
+    
+    return row
+
+def _save_checkpoint(rows: List[Dict], cols: List[str], excel_path: str):
+    """Save current progress as a checkpoint Excel file."""
+    try:
+        df = pd.DataFrame(rows)
+        for c in cols:
+            if c not in df.columns:
+                df[c] = None
+        df = df[cols]
+        df.to_excel(excel_path, index=False)
+    except OSError as e:
+        print(f"  [Checkpoint] Failed to save: {e}")
+
+def download_pdfs_and_assemble(
+    works: List[dict],
+    out_dir: str,
+    mailto: Optional[str] = None,
+    email: Optional[str] = None,
+    max_workers: int = 4,
+    checkpoint_interval: int = 100,
+    checkpoint_path: Optional[str] = None,
+    verbose: bool = True
+) -> pd.DataFrame:
+    """Download OA PDFs and assemble final DataFrame.
+    
+    Features:
+    - Concurrent downloading with ThreadPoolExecutor
+    - Periodic checkpoint saves to Excel
+    - Disk space monitoring
+    - Retry with exponential backoff on download failures
+    
+    Args:
+        works: List of work dicts to process
+        out_dir: Output directory for Excel and PDFs
+        mailto: Email for Unpaywall/Crossref polite requests
+        email: Email for Unpaywall
+        max_workers: Number of concurrent download threads (1 = sequential)
+        checkpoint_interval: Save checkpoint every N downloads
+        checkpoint_path: Path for checkpoint Excel (default: out_dir/_checkpoint.xlsx)
+        verbose: Print progress messages
     """
-    For each work, attempt to find OA PDF (via oa fields, openAccessPdf, or Unpaywall) and download.
-    Build rows and write PDF files into out_dir/PDFs/.
-    """
+    import concurrent.futures
+    
     ensure_dir(out_dir)
     pdf_dir = os.path.join(out_dir, "PDF")
     ensure_dir(pdf_dir)
+    
+    email_addr = email or mailto or DEFAULT_EMAIL
+    
+    if not checkpoint_path:
+        checkpoint_path = os.path.join(out_dir, "_checkpoint.xlsx")
+    
+    cols = [
+        "title", "abstract", "journal", "year", "doi", "authors",
+        "affiliations", "cited_by_count", "open_access_status", "is_oa",
+        "pdf_path", "source"
+    ]
+    
+    # Load existing checkpoint to resume
+    existing_dois = {}
+    if os.path.exists(checkpoint_path):
+        try:
+            df_ckpt = pd.read_excel(checkpoint_path)
+            for _, row in df_ckpt.iterrows():
+                d = doi_normalize(str(row.get("doi", "")) if pd.notna(row.get("doi")) else "")
+                if d:
+                    existing_dois[d] = True
+            if verbose:
+                print(f"  [Resume] Loaded {len(existing_dois)} DOIs from checkpoint")
+        except Exception:
+            pass
+    
+    # Filter out already-processed works
+    works_to_process = []
+    pre_rows = []
+    for w in works:
+        doi = doi_normalize(w.get("doi") or "")
+        if doi and doi in existing_dois:
+            # Already processed, skip
+            continue
+        works_to_process.append(w)
+    
+    if verbose:
+        print(f"  [Download] {len(works_to_process)} works to process (of {len(works)} total)")
+    
+    if not works_to_process:
+        # Everything already processed, load checkpoint
+        if os.path.exists(checkpoint_path):
+            df = pd.read_excel(checkpoint_path)
+            for c in cols:
+                if c not in df.columns:
+                    df[c] = None
+            return df[cols]
+        return pd.DataFrame(columns=cols)
+    
+    # Check disk space before starting
+    if not _check_disk_space(pdf_dir, min_mb=500):
+        print("  [Warning] Low disk space (<500MB free). Downloads may fail.")
+    
     rows = []
-    for w in tqdm(works, desc="[Download] Processing & Downloading"):
-        row = work_to_row(w)
-        doi = doi_normalize(row.get("doi") or "")
-        pdf_url = row.get("pdf_url")
-        # If not pdf_url, try Unpaywall by DOI
-        is_oa = False
-        if not pdf_url and doi:
-            pdf_url, is_oa = get_unpaywall_pdf_by_doi(doi, email or mailto or DEFAULT_EMAIL)
-        elif pdf_url:
-            is_oa = True
-        row["is_oa"] = bool(is_oa)
-        # attempt download
-        out_file = None
-        if pdf_url:
-            fn_title = sanitize_filename(f"{row.get('year')}_{row.get('journal')}_{row.get('title') or row.get('display_name') or 'paper'}.pdf")
-            out_file = os.path.join(pdf_dir, fn_title)
-            ok = download_file(pdf_url, out_file)
-            if not ok:
-                # try heuristics: some OA urls are HTML landing pages; skip
-                out_file = None
-            else:
-                row["pdf_path"] = out_file
-        else:
-            row["pdf_path"] = None
-        rows.append(row)
+    download_args = [(w, pdf_dir, email_addr) for w in works_to_process]
+    
+    if max_workers <= 1:
+        # Sequential download with checkpoint
+        for i, args in enumerate(tqdm(download_args, desc="[Download] Sequential"), 1):
+            row = _download_single_work(args)
+            rows.append(row)
+            
+            # Periodic checkpoint
+            if i % checkpoint_interval == 0:
+                if verbose:
+                    print(f"  [Checkpoint] Saving progress ({i}/{len(download_args)})...")
+                all_rows = rows  # in sequential mode, rows is complete so far
+                _save_checkpoint(all_rows, cols, checkpoint_path)
+            
+            # Periodic disk check
+            if i % 500 == 0:
+                if not _check_disk_space(pdf_dir, min_mb=200):
+                    print(f"  [Warning] Disk space critically low after {i} downloads. Stopping.")
+                    break
+    else:
+        # Concurrent download
+        completed = 0
+        failed = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_idx = {
+                executor.submit(_download_single_work, args): i
+                for i, args in enumerate(download_args)
+            }
+            
+            with tqdm(total=len(download_args), desc=f"[Download] {max_workers} threads") as pbar:
+                for future in concurrent.futures.as_completed(future_to_idx):
+                    try:
+                        row = future.result()
+                        rows.append(row)
+                        if row.get("pdf_path"):
+                            completed += 1
+                        else:
+                            failed += 1
+                    except Exception as e:
+                        failed += 1
+                        if verbose and failed <= 5:
+                            print(f"  [Download] Worker error: {e}")
+                    
+                    pbar.update(1)
+                    
+                    # Periodic checkpoint
+                    total_done = completed + failed
+                    if total_done % checkpoint_interval == 0 and total_done > 0:
+                        _save_checkpoint(rows, cols, checkpoint_path)
+                        if verbose:
+                            pbar.set_postfix(ok=completed, fail=failed)
+                    
+                    # Periodic disk check
+                    if total_done % 500 == 0:
+                        if not _check_disk_space(pdf_dir, min_mb=200):
+                            print(f"  [Warning] Disk space critically low. Cancelling remaining downloads.")
+                            for f in future_to_idx:
+                                f.cancel()
+                            break
+        
+        if verbose:
+            print(f"  [Download] Complete: {completed} succeeded, {failed} failed")
+    
+    # Save final checkpoint
+    _save_checkpoint(rows, cols, checkpoint_path)
+    
+    # Build final DataFrame
     df = pd.DataFrame(rows)
-    # order columns
-    cols = ["title","abstract","journal","year","doi","authors","affiliations","cited_by_count","open_access_status","is_oa","pdf_path","source"]
     for c in cols:
         if c not in df.columns:
             df[c] = None
@@ -1121,7 +1378,19 @@ def main():
 
     # assemble and attempt download of OA PDFs
     print("[Download] attempting to download OA PDFs and assembling table...")
-    df_final = download_pdfs_and_assemble(merged, out_base, mailto=mailto, email=mailto)
+    
+    # Download configuration
+    max_workers = get_config("runtime.max_concurrent_downloads", 4)
+    checkpoint_interval = get_config("runtime.checkpoint_interval", 100)
+    checkpoint_path = os.path.join(out_base, "_checkpoint.xlsx")
+    
+    df_final = download_pdfs_and_assemble(
+        merged, out_base, mailto=mailto, email=mailto,
+        max_workers=max_workers,
+        checkpoint_interval=checkpoint_interval,
+        checkpoint_path=checkpoint_path,
+        verbose=verbose
+    )
 
     # merge with existing excel (incremental)
     if incremental and os.path.exists(excel_path):

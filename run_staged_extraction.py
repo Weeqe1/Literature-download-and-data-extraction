@@ -110,17 +110,41 @@ def load_stage_prompt(stages_dir: str, stage_file: str) -> str:
         return f.read()
 
 
-def build_stage_prompt(stage_prompt: str, pdf_text: str, max_text_length: int = 30000) -> str:
-    """Build the full extraction prompt with PDF content."""
-    # Truncate text if too long
+def build_stage_prompt(
+    stage_prompt: str,
+    pdf_text: str,
+    schema_fields: Optional[List[str]] = None,
+    max_text_length: int = 30000
+) -> str:
+    """Build the full extraction prompt with PDF content and schema context.
+    
+    Args:
+        stage_prompt: The stage-specific prompt template
+        pdf_text: Extracted PDF text content
+        schema_fields: List of expected output field names (for context)
+        max_text_length: Maximum PDF text length before truncation
+        
+    Returns:
+        Complete prompt string
+    """
+    # Truncate text if too long (keep beginning and end for context)
     if len(pdf_text) > max_text_length:
         half = max_text_length // 2
         truncated_text = pdf_text[:half] + "\n\n...[TRUNCATED]...\n\n" + pdf_text[-half:]
     else:
         truncated_text = pdf_text
     
+    # Build schema summary for LLM context
+    schema_hint = ""
+    if schema_fields:
+        schema_hint = f"""
+## EXPECTED OUTPUT FIELDS
+Your JSON output should contain these fields (use null for missing numeric values, "Not Specified" for missing strings):
+{', '.join(schema_fields)}
+"""
+    
     return f"""{stage_prompt}
-
+{schema_hint}
 ---
 
 ## Paper Content
@@ -136,6 +160,7 @@ def run_single_stage(
     pdf_text: str,
     stage_name: str,
     images: Optional[List[Dict[str, Any]]] = None,
+    schema_fields: Optional[List[str]] = None,
     verbose: bool = True
 ) -> Dict[str, Any]:
     """Run a single extraction stage.
@@ -147,9 +172,10 @@ def run_single_stage(
         pdf_text: Extracted text from PDF
         stage_name: Name of this stage
         images: List of image dicts with 'base64' and 'mime_type' keys (for multimodal stages)
+        schema_fields: List of expected output field names
         verbose: Print progress
     """
-    full_prompt = build_stage_prompt(stage_prompt, pdf_text)
+    full_prompt = build_stage_prompt(stage_prompt, pdf_text, schema_fields=schema_fields)
     
     # Convert images to data URLs for multimodal LLM
     image_urls = None
@@ -311,7 +337,7 @@ def run_staged_extraction(
         model_results_raw = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(model_ids), 10)) as executor:
             future_to_model = {
-                executor.submit(run_single_stage, mmc, m_id, stage_prompt, pdf_text, stage["name"], stage_images, False): m_id
+                executor.submit(run_single_stage, mmc, m_id, stage_prompt, pdf_text, stage["name"], stage_images, schema_fields, False): m_id
                 for m_id in model_ids
             }
             for future in concurrent.futures.as_completed(future_to_model):

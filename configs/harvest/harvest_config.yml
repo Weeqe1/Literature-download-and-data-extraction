@@ -83,3 +83,12 @@ runtime:
   
   # 是否显示详细输出
   verbose: true
+
+  # PDF 下载重试次数
+  download_retries: 3
+  
+  # 检查点保存间隔（每下载 N 篇保存一次）
+  checkpoint_interval: 100
+  
+  # 并发下载线程数（1 = 顺序下载）
+  max_concurrent_downloads: 4
