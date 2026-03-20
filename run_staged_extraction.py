@@ -2,7 +2,7 @@
 # run_staged_extraction.py - Multi-stage PDF information extraction
 """
 分阶段提取流水线：
-将 90+ 字段拆分为 6 个阶段，每阶段聚焦 10-17 个相关字段。
+将字段拆分为多个阶段，每阶段聚焦相关字段。
 各阶段提取结果合并为最终 JSON 输出。
 """
 import os
@@ -22,59 +22,66 @@ from etl_ensemble.pdf_parser import parse_pdf, truncate_text, extract_images_fro
 from etl_ensemble.llm_multi_client import MultiModelClient
 
 
-# 定义 7 个提取阶段（Stage 7 为多模态图片分析）
+# 定义提取阶段（Stage 2 为多模态图片分析）
 STAGES = [
-    {"id": 1, "name": "core_extraction", "file": "stage1_core_extraction.md", "desc": "Core 12-Field Extraction", "multimodal": False}
-]
-
-# 完整的 Schema 字段列表（用于确保输出包含所有字段，缺失的显示为 null）
-FULL_SCHEMA_FIELDS = [
-    # 样品标识
-    "sample_id",
-    # 材料与结构 (Stage 2)
-    "probe_category", "core_material", "shell_material", "shell_layers",
-    "alloy_composition", "dopant_elements", "dopant_concentration_percent",
-    "chemical_formula", "core_diameter_nm", "shell_thickness_nm",
-    "total_diameter_nm", "length_nm", "aspect_ratio", "morphology",
-    "crystal_structure", "size_distribution_std_nm", "polydispersity_index",
-    # 合成参数 (Stage 3)
-    "synthesis_method", "reaction_temperature_C", "nucleation_temperature_C",
-    "growth_temperature_C", "reaction_time_min", "heating_rate_C_per_min",
-    "cooling_method", "precursor_cation", "precursor_anion",
-    "precursor_molar_ratio", "solvent", "coordinating_ligand",
-    "reaction_atmosphere", "pH_value", "injection_rate_mL_per_min",
-    # 光学性能 (Stage 4)
-    "absorption_peak_nm", "absorption_onset_nm", "absorption_fwhm_nm",
-    "molar_extinction_coefficient", "emission_peak_nm", "emission_fwhm_nm",
-    "stokes_shift_nm", "quantum_yield_percent", "fluorescence_lifetime_ns",
-    "radiative_rate_ns_inv", "non_radiative_rate_ns_inv",
-    "two_photon_cross_section_GM", "brightness", "blinking_on_time_fraction",
-    "bandgap_eV",
-    # 表面化学与稳定性 (Stage 5)
-    "surface_ligand", "ligand_type", "ligand_chain_length",
-    "ligand_molecular_weight", "surface_charge_type", "zeta_potential_mV",
-    "hydrodynamic_diameter_nm", "surface_coverage_per_nm2",
-    "passivation_strategy", "photostability_half_life_min",
-    "photobleaching_rate_per_hour", "thermal_stability_max_C",
-    "ph_stability_min", "ph_stability_max", "colloidal_stability_days",
-    "air_stability_hours", "storage_temperature_C",
-    # 生物应用 (Stage 6)
-    "cytotoxicity_IC50_ug_mL", "cell_viability_percent",
-    "incubation_concentration_ug_mL", "cell_line", "incubation_time_h",
-    "targeting_ligand", "target_analyte", "detection_limit",
-    "detection_limit_unit", "linear_range_low", "linear_range_high",
-    "response_time_s", "signal_to_background_ratio", "imaging_modality",
-    "penetration_depth_mm", "conduction_band_eV", "valence_band_eV",
-    "exciton_binding_energy_meV", "bohr_radius_nm",
+    {"id": 1, "name": "core_extraction", "file": "stage1_core_extraction.md", "desc": "Core 12-Field Extraction", "multimodal": False},
+    {"id": 2, "name": "figure_analysis", "file": "stage2_figure_analysis.md", "desc": "Multimodal Figure Analysis", "multimodal": True}
 ]
 
 
-def fill_missing_fields(sample: Dict[str, Any]) -> Dict[str, Any]:
-    """Ensure all schema fields are present in sample, filling missing with null."""
+def load_schema_from_yaml(schema_path: str) -> Dict[str, Any]:
+    """Load schema definition from schema.yml file.
+    
+    Returns:
+        Dict with 'paper_meta' and 'probe_features' field definitions
+    """
+    if not os.path.exists(schema_path):
+        raise FileNotFoundError(f"Schema file not found: {schema_path}")
+    
+    with open(schema_path, 'r', encoding='utf-8') as f:
+        schema = yaml.safe_load(f)
+    
+    return schema
+
+
+def get_schema_field_names(schema: Dict[str, Any]) -> List[str]:
+    """Extract all field names from schema definition.
+    
+    Args:
+        schema: Loaded schema dict with 'paper_meta' and 'probe_features' keys
+        
+    Returns:
+        List of field names (e.g., ['title', 'doi', 'year', 'core_material', ...])
+    """
+    fields = []
+    
+    # Paper metadata fields
+    for field_def in schema.get('paper_meta', []):
+        if isinstance(field_def, dict) and 'name' in field_def:
+            fields.append(field_def['name'])
+    
+    # Probe feature fields
+    for field_def in schema.get('probe_features', []):
+        if isinstance(field_def, dict) and 'name' in field_def:
+            fields.append(field_def['name'])
+    
+    return fields
+
+
+def fill_missing_fields(sample: Dict[str, Any], schema_fields: List[str]) -> Dict[str, Any]:
+    """Ensure all schema fields are present in sample, filling missing with null.
+    
+    Args:
+        sample: Extracted sample dict
+        schema_fields: List of field names from schema.yml
+        
+    Returns:
+        Sample dict with all schema fields present
+    """
     filled = {}
-    for field in FULL_SCHEMA_FIELDS:
+    for field in schema_fields:
         filled[field] = sample.get(field, None)
-    # Add any extra fields that were extracted but not in schema
+    # Add any extra fields that were extracted but not in schema (e.g., metadata)
     for key, value in sample.items():
         if key not in filled:
             filled[key] = value
@@ -83,8 +90,15 @@ def fill_missing_fields(sample: Dict[str, Any]) -> Dict[str, Any]:
 
 def load_config(cfg_path: str) -> Dict[str, Any]:
     """Load YAML configuration file."""
-    with open(cfg_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
+    try:
+        with open(cfg_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f) or {}
+    except yaml.YAMLError as e:
+        print(f"[Error] Invalid YAML in {cfg_path}: {e}")
+        return {}
+    except IOError as e:
+        print(f"[Error] Cannot read {cfg_path}: {e}")
+        return {}
 
 
 def load_stage_prompt(stages_dir: str, stage_file: str) -> str:
@@ -154,13 +168,23 @@ def run_single_stage(
             raise RuntimeError(f"Model error: {resp['error']}")
         
         return resp
+    except RuntimeError:
+        raise
+    except ValueError as e:
+        if verbose:
+            print(f"      Stage {stage_name} value error: {e}")
+        raise
+    except KeyError as e:
+        if verbose:
+            print(f"      Stage {stage_name} missing key: {e}")
+        raise
     except Exception as e:
         error_str = str(e).lower()
         # Detect if error is related to image/multimodal not supported
         if images and any(kw in error_str for kw in ['image', 'multimodal', 'vision', 'unsupported', 'content_type']):
             if verbose:
                 print(f"      ⚠️ Stage {stage_name} failed: Model may not support image input.")
-                print(f"         Consider using a multimodal model (GPT-4o, GPT-4V, Gemini 1.5 Pro) for Stage 7.")
+                print(f"         Consider using a multimodal model (GPT-4o, GPT-4V, Gemini 1.5 Pro) for Stage 2.")
         elif verbose:
             print(f"      Stage {stage_name} failed: {e}")
         raise
@@ -211,10 +235,20 @@ def run_staged_extraction(
     cfg: Dict[str, Any],
     stages_dir: str,
     output_dir: str,
+    schema_path: str,
     stages_to_run: Optional[List[int]] = None,
     verbose: bool = True
 ) -> Dict[str, Any]:
     """Run multi-stage extraction on a single PDF with multi-sample support."""
+    
+    # Load schema from YAML
+    try:
+        schema = load_schema_from_yaml(schema_path)
+        schema_fields = get_schema_field_names(schema)
+        if verbose:
+            print(f"        Loaded {len(schema_fields)} fields from schema.yml")
+    except (FileNotFoundError, yaml.YAMLError) as e:
+        return {"status": "error", "message": f"Schema load error: {e}"}
     
     # Step 1: Parse PDF
     if verbose:
@@ -336,7 +370,7 @@ def run_staged_extraction(
         sample['_source_pdf'] = pdf_path
         sample['_models_used'] = model_ids
         # Fill all missing schema fields with null
-        filled_sample = fill_missing_fields(sample)
+        filled_sample = fill_missing_fields(sample, schema_fields)
         filled_samples.append(filled_sample)
     
     if verbose:
@@ -384,9 +418,10 @@ def main():
     parser = argparse.ArgumentParser(description='Multi-stage PDF information extraction')
     parser.add_argument('--pdf_dir', default='outputs/literature/PDF', help='Directory containing PDF files')
     parser.add_argument('--cfg', default='configs/extraction/llm_backends.yml', help='LLM backends config')
+    parser.add_argument('--schema', default='configs/extraction/schema.yml', help='Schema definition file')
     parser.add_argument('--stages_dir', default='configs/extraction/stages', help='Directory containing stage prompts')
     parser.add_argument('--out_dir', default='outputs/extraction', help='Output directory')
-    parser.add_argument('--stages', type=str, default='1,2,3,4,5,6,7', help='Comma-separated stage numbers to run (e.g., "1,4" for metadata and optical only)')
+    parser.add_argument('--stages', type=str, default='1,2', help='Comma-separated stage numbers to run (e.g., "1,2")')
     parser.add_argument('--limit', type=int, default=0, help='Limit number of PDFs to process (0 = no limit)')
     parser.add_argument('--verbose', action='store_true', default=True, help='Verbose output')
     args = parser.parse_args()
@@ -422,13 +457,22 @@ def main():
         print(f"\n[{i}/{len(pdfs)}] Processing: {pdf_path.name}")
         try:
             result = run_staged_extraction(
-                str(pdf_path), cfg, args.stages_dir, args.out_dir,
+                str(pdf_path), cfg, args.stages_dir, args.out_dir, args.schema,
                 stages_to_run=stages_to_run, verbose=args.verbose
             )
             status = result.get('status', 'error')
             results_summary[status] = results_summary.get(status, 0) + 1
             results_summary['total_fields'] += result.get('total_fields', 0)
             print(f"  Result: {status}")
+        except FileNotFoundError as e:
+            print(f"  Error: File not found - {e}")
+            results_summary['error'] += 1
+        except yaml.YAMLError as e:
+            print(f"  Error: Invalid YAML config - {e}")
+            results_summary['error'] += 1
+        except ValueError as e:
+            print(f"  Error: Invalid value - {e}")
+            results_summary['error'] += 1
         except Exception as e:
             print(f"  Error: {e}")
             results_summary['error'] += 1
