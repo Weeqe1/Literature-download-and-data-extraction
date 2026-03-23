@@ -270,11 +270,8 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
     if mailto:
         params["mailto"] = mailto
     
-    # Use appropriate search parameter based on title_only flag
-    if title_only:
-        params["title.search"] = clause
-    else:
-        params["default.search"] = clause
+    # Use search param (OpenAlex API uses 'search' parameter)
+    params["search"] = clause
     if year_from and year_to:
         params["filter"] = f"publication_year:{year_from}-{year_to}"
     elif year_from:
@@ -1400,28 +1397,32 @@ def main():
         merged = qc.validate_and_clean_metadata(merged)
         print(f"[Quality] cleaned {len(merged)} works")
         
-        # Quality filtering
-        print("[Quality] filtering literature by relevance and completeness...")
-        min_relevance = get_config("quality.min_relevance", 0.3)
-        min_completeness = get_config("quality.min_completeness", 0.5)
-        min_overall = get_config("quality.min_overall", 0.4)
-        
-        filtered_works, stats = qc.filter_literature(
-            merged,
-            min_relevance=min_relevance,
-            min_completeness=min_completeness,
-            min_overall=min_overall
-        )
-        
-        print(f"[Quality] Filter results:")
-        print(f"  Input: {stats['total_input']}")
-        print(f"  Passed: {stats['passed_filter']}")
-        print(f"  Rejected by relevance: {stats['rejected_by_relevance']}")
-        print(f"  Rejected by completeness: {stats['rejected_by_completeness']}")
-        print(f"  Rejected by overall: {stats['rejected_by_overall']}")
-        print(f"  Quality: High={stats['high_quality_count']}, Medium={stats['medium_quality_count']}, Low={stats['low_quality_count']}")
-        
-        merged = filtered_works
+        # Quality filtering (if enabled)
+        quality_enabled = get_config("quality.enabled", False)
+        if quality_enabled:
+            print("[Quality] filtering literature by relevance and completeness...")
+            min_relevance = get_config("quality.min_relevance", 0.05)
+            min_completeness = get_config("quality.min_completeness", 0.1)
+            min_overall = get_config("quality.min_overall", 0.1)
+            
+            filtered_works, stats = qc.filter_literature(
+                merged,
+                min_relevance=min_relevance,
+                min_completeness=min_completeness,
+                min_overall=min_overall
+            )
+            
+            print(f"[Quality] Filter results:")
+            print(f"  Input: {stats['total_input']}")
+            print(f"  Passed: {stats['passed_filter']}")
+            print(f"  Rejected by relevance: {stats['rejected_by_relevance']}")
+            print(f"  Rejected by completeness: {stats['rejected_by_completeness']}")
+            print(f"  Rejected by overall: {stats['rejected_by_overall']}")
+            print(f"  Quality: High={stats['high_quality_count']}, Medium={stats['medium_quality_count']}, Low={stats['low_quality_count']}")
+            
+            merged = filtered_works
+        else:
+            print("[Quality] quality filtering disabled (set quality.enabled=true to enable)")
     except ImportError:
         print("[Warning] quality_control module not found, skipping quality filtering")
 
