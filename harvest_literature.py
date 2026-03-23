@@ -254,29 +254,27 @@ def openalex_get(params: dict):
         raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
     return r.json()
 
-def search_openalex_clause(clause: str, max_results: int = 200, title_only: bool = False, year_from: Optional[int] = None, year_to: Optional[int] = None, mailto: Optional[str] = None) -> List[dict]:
+def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bool = False, year_from: Optional[int] = None, year_to: Optional[int] = None, mailto: Optional[str] = None) -> List[dict]:
     """
-    Search OpenAlex for a clause. If title_only True, use title.search; otherwise search abstract as well.
+    Search OpenAlex for a clause. If title_only True, use title.search; otherwise use default.search (title+abstract).
     Returns list of works (raw dicts).
     """
     results = []
     per_page = 50
     page = 1
-    field_names = []
-    if title_only:
-        field_names.append("title.search")
-    else:
-        # will try title.search and abstract.search separately in caller
-        field_names = [None]  # fallback to broad search
-    # But we implement two runs in caller; here do a broad call
+    
     params = {"per-page": per_page, "page": page, "select": ",".join([
         "id","doi","display_name","title","abstract_inverted_index","publication_year","publication_date",
         "best_oa_location","open_access","authorships","type","language","is_paratext","cited_by_count"
     ])}
     if mailto:
         params["mailto"] = mailto
-    # Use search param (OpenAlex supports 'search' and 'filter')
-    params["search"] = clause
+    
+    # Use appropriate search parameter based on title_only flag
+    if title_only:
+        params["title.search"] = clause
+    else:
+        params["default.search"] = clause
     if year_from and year_to:
         params["filter"] = f"publication_year:{year_from}-{year_to}"
     elif year_from:
@@ -421,8 +419,6 @@ def search_wos_clause(clause: str, max_results: int = 200, year_from: Optional[i
             if len(results) >= max_results:
                 break
         page += 1
-        if page > 20:
-            break
     return results[:max_results]
 
 # -----------------------
@@ -440,7 +436,7 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
         return []
     base = "https://api.semanticscholar.org/graph/v1/paper/search"
     fields = "title,abstract,year,venue,authors,externalIds,isOpenAccess,openAccessPdf"
-    params = {"query": clause, "limit": min(max_results, 100), "fields": fields}
+    params = {"query": clause, "limit": min(max_results, 10000), "fields": fields}
     headers = {"x-api-key": api_key, "User-Agent": "pdf_download_harvester/1.0"}
     attempts = 0
     backoff = 1.0
@@ -609,39 +605,72 @@ def search_arxiv_clause(clause: str, max_results: int = 100, title_only: bool = 
 # -----------------------
 CROSSREF_API = "https://api.crossref.org/works"
 def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional[str] = None) -> List[dict]:
-    params = {"query": clause, "rows": min(max_results, 1000)}
-    if mailto:
-        params["mailto"] = mailto
-    try:
-        rate_limit()
-        r = requests.get(CROSSREF_API, params=params, timeout=30)
-        if r.status_code != 200:
-            return []
-        js = r.json()
-        items = js.get("message", {}).get("items", [])[:max_results]
-        out = []
-        for it in items:
-            doi = it.get("DOI")
-            title = (it.get("title") or [None])[0]
-            abstract = it.get("abstract")
-            issued = it.get("issued", {}).get("date-parts", [])
-            year = issued[0][0] if issued and issued[0] else None
-            journal = (it.get("container-title") or [None])[0]
-            authors = []
-            for a in it.get("author", []) or []:
-                authors.append(" ".join([a.get("given",""), a.get("family","")]).strip())
-            out.append({
-                "source":"crossref",
-                "doi":doi,
-                "display_name": title,
-                "abstract_text": re.sub(r'<[^>]+>', '', abstract) if abstract else None,
-                "publication_year": year,
-                "journal": journal,
-                "authors_list": authors
-            })
-        return out
-    except Exception:
+    """Search Crossref with pagination support to fetch up to max_results items.
+    
+    Crossref API has a maximum of 1000 items per request. This function implements
+    pagination using offset parameter to fetch beyond the first 1000 results.
+    """
+    if max_results <= 0:
         return []
+    
+    out = []
+    offset = 0
+    rows_per_page = 1000  # Crossref API maximum
+    
+    while len(out) < max_results:
+        # Calculate rows for this request
+        rows = min(rows_per_page, max_results - len(out))
+        
+        params = {
+            "query": clause,
+            "rows": rows,
+            "offset": offset
+        }
+        if mailto:
+            params["mailto"] = mailto
+        
+        try:
+            rate_limit()
+            r = requests.get(CROSSREF_API, params=params, timeout=30)
+            if r.status_code != 200:
+                break
+            
+            js = r.json()
+            items = js.get("message", {}).get("items", [])
+            if not items:
+                break
+            
+            for it in items:
+                doi = it.get("DOI")
+                title = (it.get("title") or [None])[0]
+                abstract = it.get("abstract")
+                issued = it.get("issued", {}).get("date-parts", [])
+                year = issued[0][0] if issued and issued[0] else None
+                journal = (it.get("container-title") or [None])[0]
+                authors = []
+                for a in it.get("author", []) or []:
+                    authors.append(" ".join([a.get("given",""), a.get("family","")]).strip())
+                out.append({
+                    "source":"crossref",
+                    "doi":doi,
+                    "display_name": title,
+                    "abstract_text": re.sub(r'<[^>]+>', '', abstract) if abstract else None,
+                    "publication_year": year,
+                    "journal": journal,
+                    "authors_list": authors
+                })
+            
+            # Update offset for next page
+            offset += len(items)
+            
+            # If we got fewer items than requested, we've reached the end
+            if len(items) < rows:
+                break
+                
+        except Exception:
+            break
+    
+    return out[:max_results]
 
 def crossref_find_doi_by_title(title: str, mailto: Optional[str] = None) -> Optional[str]:
     if not title:
@@ -1362,6 +1391,39 @@ def main():
     # Fill missing DOIs via Crossref
     print("[Fill] filling missing DOIs via Crossref title lookup...")
     merged = fill_missing_dois(merged, mailto=mailto, verbose=True)
+
+    # Quality control: validate, clean, and filter literature
+    print("[Quality] validating and cleaning metadata...")
+    try:
+        from quality_control import LiteratureQualityController
+        qc = LiteratureQualityController()
+        merged = qc.validate_and_clean_metadata(merged)
+        print(f"[Quality] cleaned {len(merged)} works")
+        
+        # Quality filtering
+        print("[Quality] filtering literature by relevance and completeness...")
+        min_relevance = get_config("quality.min_relevance", 0.3)
+        min_completeness = get_config("quality.min_completeness", 0.5)
+        min_overall = get_config("quality.min_overall", 0.4)
+        
+        filtered_works, stats = qc.filter_literature(
+            merged,
+            min_relevance=min_relevance,
+            min_completeness=min_completeness,
+            min_overall=min_overall
+        )
+        
+        print(f"[Quality] Filter results:")
+        print(f"  Input: {stats['total_input']}")
+        print(f"  Passed: {stats['passed_filter']}")
+        print(f"  Rejected by relevance: {stats['rejected_by_relevance']}")
+        print(f"  Rejected by completeness: {stats['rejected_by_completeness']}")
+        print(f"  Rejected by overall: {stats['rejected_by_overall']}")
+        print(f"  Quality: High={stats['high_quality_count']}, Medium={stats['medium_quality_count']}, Low={stats['low_quality_count']}")
+        
+        merged = filtered_works
+    except ImportError:
+        print("[Warning] quality_control module not found, skipping quality filtering")
 
     # remove works whose DOI already in incremental set
     if incremental and existing_dois:

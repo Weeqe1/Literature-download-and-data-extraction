@@ -44,7 +44,7 @@ search:
   year_to: 2028
 
   # 每个子句每个数据源的最大结果数
-  max_results_per_clause: 1000
+  max_results_per_clause: 10000
   
   # 最大子句数（从关键词拆分）
   max_clauses: 10
@@ -92,3 +92,16 @@ runtime:
   
   # 并发下载线程数（1 = 顺序下载）
   max_concurrent_downloads: 4
+
+# ==================================================
+# 质量控制设置
+# ==================================================
+quality:
+  # 最低相关性分数 (0-1，0.3为宽松，0.5为中等，0.7为严格)
+  min_relevance: 0.3
+  
+  # 最低完整性分数 (0-1)
+  min_completeness: 0.5
+  
+  # 最低综合评分 (0-1)
+  min_overall: 0.4
