@@ -880,6 +880,26 @@ def search_crossref_clause(
     offset = 0
     rows_per_page = 500
     top_score: Optional[float] = None
+    scanned_raw = 0
+    page_count = 0
+
+    # Internal pre-filter to avoid returning broad noisy pages to outer pipeline.
+    positives, negatives, has_and = parse_clause_units(clause)
+
+    def _prefilter(title_txt: str, abstract_txt: str) -> bool:
+        if not positives:
+            return True
+        t = normalize_text(title_txt or "")
+        a = normalize_text(abstract_txt or "")
+        hay = t if title_only else (t + " " + a).strip()
+        pos = [normalize_text(x) for x in positives]
+        neg = [normalize_text(x) for x in negatives]
+        for n in neg:
+            if n and n in hay:
+                return False
+        if has_and:
+            return all(p in hay for p in pos)
+        return any(p in hay for p in pos)
     
     # Build date filter
     filters = ["type:journal-article"]
@@ -889,6 +909,7 @@ def search_crossref_clause(
         filters.append(f"until-pub-date:{year_to}")
     
     while len(out) < max_results:
+        page_count += 1
         # Calculate rows for this request
         rows = min(rows_per_page, max_results - len(out))
         
@@ -915,6 +936,7 @@ def search_crossref_clause(
             items = js.get("message", {}).get("items", [])
             if not items:
                 break
+            scanned_raw += len(items)
             
             low_relevance_count = 0
             for it in items:
@@ -927,6 +949,9 @@ def search_crossref_clause(
                 doi = it.get("DOI")
                 title = (it.get("title") or [None])[0]
                 abstract = it.get("abstract")
+                clean_abstract = re.sub(r'<[^>]+>', '', abstract) if abstract else None
+                if not _prefilter(title or "", clean_abstract or ""):
+                    continue
                 issued = it.get("issued", {}).get("date-parts", [])
                 year = issued[0][0] if issued and issued[0] else None
                 journal = (it.get("container-title") or [None])[0]
@@ -937,7 +962,7 @@ def search_crossref_clause(
                     "source":"crossref",
                     "doi":doi,
                     "display_name": title,
-                    "abstract_text": re.sub(r'<[^>]+>', '', abstract) if abstract else None,
+                    "abstract_text": clean_abstract,
                     "publication_year": year,
                     "journal": journal,
                     "authors_list": authors
@@ -951,6 +976,12 @@ def search_crossref_clause(
                 break
             # If most of this page is already low relevance, stop pagination early.
             if len(items) > 0 and low_relevance_count >= int(len(items) * 0.8):
+                break
+            # Guardrail: if scanned many raw records with very low yield, stop early.
+            if scanned_raw >= max(2000, max_results * 2) and len(out) < max(100, int(max_results * 0.05)):
+                break
+            # Guardrail: avoid deep pagination loops on extremely broad clauses.
+            if page_count >= 20:
                 break
                 
         except Exception:
