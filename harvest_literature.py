@@ -104,6 +104,18 @@ MIN_SLEEP = 1.0 / max(1, REQS_PER_SECOND)
 def rate_limit():
     time.sleep(MIN_SLEEP)
 
+# per-source runtime stats for concise debug logging
+_LAST_SOURCE_STATS: Dict[str, Dict[str, int]] = {}
+
+def set_source_stats(source: str, scanned_raw: int, returned: int) -> None:
+    _LAST_SOURCE_STATS[source] = {
+        "scanned_raw": max(0, int(scanned_raw)),
+        "returned": max(0, int(returned)),
+    }
+
+def get_source_stats(source: str) -> Dict[str, int]:
+    return _LAST_SOURCE_STATS.get(source, {})
+
 # -----------------------
 # Utilities
 # -----------------------
@@ -468,8 +480,39 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
     Returns list of works (raw dicts).
     """
     results = []
+    scanned_raw = 0
     per_page = 50
     page = 1
+
+    positives, negatives, has_and = parse_clause_units(clause)
+    clause_lc = clause.lower()
+    has_boolean_ops = bool(re.search(r"\b(and|or|not)\b", clause_lc, flags=re.I))
+    # For plain multi-word text query (e.g. "nano fluorescent probe"), require phrase/all tokens.
+    simple_space_query = (not has_boolean_ops) and (len(positives) > 1)
+    phrase_norm = normalize_text(clause.strip().strip('"'))
+
+    def _prefilter_openalex(work: Dict[str, Any]) -> bool:
+        title = work.get("display_name") or work.get("title") or ""
+        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index"))
+        hay = normalize_text(title) if title_only else normalize_text((title or "") + " " + (abstract or ""))
+
+        if simple_space_query and phrase_norm:
+            # strict phrase match first; fallback to all-token match for minor formatting variance.
+            if phrase_norm in hay:
+                return True
+            token_match = all(normalize_text(p) in hay for p in positives)
+            return token_match
+
+        norm_pos = [normalize_text(p) for p in positives]
+        norm_neg = [normalize_text(n) for n in negatives]
+        for n in norm_neg:
+            if n and n in hay:
+                return False
+        if not norm_pos:
+            return True
+        if has_and:
+            return all(p in hay for p in norm_pos)
+        return any(p in hay for p in norm_pos)
     
     params = {"per-page": per_page, "page": page, "select": ",".join([
         "id","doi","display_name","title","abstract_inverted_index","publication_year","publication_date",
@@ -497,15 +540,22 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
         works = js.get("results", [])
         if not works:
             break
+        scanned_raw += len(works)
         for w in works:
-            # minimal filtering: if title_only is requested by caller, enforce local check
+            if not _prefilter_openalex(w):
+                continue
             results.append(w)
             if len(results) >= max_results:
                 break
         page += 1
-        if page > 200:
+        # Guardrails against deep noisy pagination.
+        if page > 80:
             break
-    return results[:max_results]
+        if scanned_raw >= max(2000, max_results * 2) and len(results) < max(100, int(max_results * 0.05)):
+            break
+    final_results = results[:max_results]
+    set_source_stats("openalex", scanned_raw=scanned_raw, returned=len(final_results))
+    return final_results
 
 # -----------------------
 # WoS search (Clarivate APIs)
@@ -995,7 +1045,9 @@ def search_crossref_clause(
         except Exception:
             break
     
-    return out[:max_results]
+    final_out = out[:max_results]
+    set_source_stats("crossref", scanned_raw=scanned_raw, returned=len(final_out))
+    return final_out
 
 def crossref_find_doi_by_title(title: str, mailto: Optional[str] = None) -> Optional[str]:
     if not title:
@@ -1327,10 +1379,18 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
                             })
                 if verbose:
                     print(f"[{src}] returned {len(items)} items for clause, kept {len(filtered)} after local clause match")
+                    stats = get_source_stats(src)
+                    scanned_raw = stats.get("scanned_raw", len(items))
+                    returned_count = stats.get("returned", len(items))
+                    print(f"[{src}] dbg {scanned_raw} -> {returned_count} -> {len(filtered)}")
                 collected.extend(filtered)
             else:
                 if verbose:
                     print(f"[{src}] returned 0 items for clause")
+                    stats = get_source_stats(src)
+                    scanned_raw = stats.get("scanned_raw", 0)
+                    returned_count = stats.get("returned", 0)
+                    print(f"[{src}] dbg {scanned_raw} -> {returned_count} -> 0")
     return collected
 
 # -----------------------
