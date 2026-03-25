@@ -858,41 +858,50 @@ def search_arxiv_clause(clause: str, max_results: int = 100, title_only: bool = 
 # Crossref
 # -----------------------
 CROSSREF_API = "https://api.crossref.org/works"
-def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional[str] = None, year_from: Optional[int] = None, year_to: Optional[int] = None) -> List[dict]:
-    """Search Crossref with multi-field query for better precision.
-    
-    Uses field-specific queries (title:, abstract:) when possible to reduce noise.
-    Pagination support to fetch up to max_results items.
-    Filters by journal-article type and publication year.
+def search_crossref_clause(
+    clause: str,
+    max_results: int = 200,
+    mailto: Optional[str] = None,
+    year_from: Optional[int] = None,
+    year_to: Optional[int] = None,
+    title_only: bool = False,
+    min_score_ratio: float = 0.25,
+) -> List[dict]:
+    """Search Crossref with field-aware query strategy and pagination.
+
+    title_only=True  -> use query.title for precision.
+    title_only=False -> use query.bibliographic for broader recall.
+    Also applies type/year filters and stops early when relevance drops sharply.
     """
     if max_results <= 0:
         return []
     
     out = []
     offset = 0
-    rows_per_page = 1000  # Crossref API maximum
+    rows_per_page = 500
+    top_score: Optional[float] = None
     
     # Build date filter
     filters = ["type:journal-article"]
-    if year_from or year_to:
-        year_str = "-".join([
-            str(year_from) if year_from else "*",
-            str(year_to) if year_to else "*"
-        ])
-        filters.append(f"from-pub-date:{year_from}" if year_from else "")
-        filters.append(f"until-pub-date:{year_to}" if year_to else "")
-        filters = [f for f in filters if f]  # Remove empty strings
+    if year_from:
+        filters.append(f"from-pub-date:{year_from}")
+    if year_to:
+        filters.append(f"until-pub-date:{year_to}")
     
     while len(out) < max_results:
         # Calculate rows for this request
         rows = min(rows_per_page, max_results - len(out))
         
         params = {
-            "query": clause,  # Use 'query' instead of 'query.bibliographic' for field-aware parsing
             "rows": rows,
             "offset": offset,
-            "filter": ",".join(filters)
+            "filter": ",".join(filters),
+            "select": "DOI,title,abstract,issued,container-title,author,score",
         }
+        if title_only:
+            params["query.title"] = clause
+        else:
+            params["query.bibliographic"] = clause
         if mailto:
             params["mailto"] = mailto
         
@@ -907,7 +916,14 @@ def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional
             if not items:
                 break
             
+            low_relevance_count = 0
             for it in items:
+                score = it.get("score")
+                if isinstance(score, (int, float)):
+                    if top_score is None:
+                        top_score = float(score)
+                    elif top_score > 0 and float(score) < top_score * min_score_ratio:
+                        low_relevance_count += 1
                 doi = it.get("DOI")
                 title = (it.get("title") or [None])[0]
                 abstract = it.get("abstract")
@@ -932,6 +948,9 @@ def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional
             
             # If we got fewer items than requested, we've reached the end
             if len(items) < rows:
+                break
+            # If most of this page is already low relevance, stop pagination early.
+            if len(items) > 0 and low_relevance_count >= int(len(items) * 0.8):
                 break
                 
         except Exception:
@@ -1226,7 +1245,14 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
             if src == "arxiv":
                 return search_arxiv_clause(q, max_results=max_per_clause, title_only=title_only_flag)
             if src == "crossref":
-                return search_crossref_clause(q, max_results=max_per_clause, mailto=mailto, year_from=year_from, year_to=year_to)
+                return search_crossref_clause(
+                    q,
+                    max_results=max_per_clause,
+                    mailto=mailto,
+                    year_from=year_from,
+                    year_to=year_to,
+                    title_only=title_only_flag,
+                )
         except Exception as e:
             if verbose:
                 print(f"[{src}] exception: {e}")
