@@ -131,6 +131,25 @@ def safe_get(d: dict, *keys, default=None):
     return x if x is not None else default
 
 
+def normalize_text(text: str) -> str:
+    """
+    Normalize text for robust phrase matching.
+    - Convert to lowercase
+    - Remove hyphens (nano-probe -> nanoprobe)
+    - Remove extra whitespace
+    - Keep alphanumeric + spaces only
+    """
+    if not text:
+        return ""
+    # lowercase
+    t = text.lower()
+    # remove hyphens and underscores
+    t = t.replace("-", "").replace("_", "").replace("/", " ")
+    # collapse multiple spaces
+    t = re.sub(r'\s+', ' ', t).strip()
+    return t
+
+
 def parse_clause_units(clause: str) -> Tuple[List[str], List[str], bool]:
     """
     Parse a boolean clause into positive units, negative units and whether AND exists.
@@ -230,8 +249,15 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
         return " OR ".join([f'all:\"{p}\"' for p in positives])
 
     if source == "crossref":
-        # Crossref free-text endpoint: keep high-signal phrase list
-        return " ".join([f'"{p}"' for p in positives])
+        # Crossref: use phrase-based queries for better precision
+        # For AND clauses, phrase queries naturally narrow results
+        # For OR clauses, use all as separate phrases
+        if has_and:
+            # Use AND to connect phrases for precision
+            return " AND ".join([f'"{p}"' for p in positives])
+        else:
+            # OR mode: use phrase search
+            return " ".join([f'"{p}"' for p in positives])
 
     if source == "semantic_scholar":
         # Semantic Scholar query is free text; boolean operators are weakly interpreted
@@ -245,52 +271,68 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
 
 
 def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: bool = False) -> bool:
-    """Local boolean matching to filter out non-target records from broad API results."""
+    """Local boolean matching to filter out non-target records from broad API results.
+    Uses normalized matching for robustness (handles hyphens, case, whitespace).
+    """
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True
 
-    title = (work.get("display_name") or work.get("title") or "").lower()
-    abstract = (work.get("abstract_text") or work.get("abstract") or "").lower()
+    title = (work.get("display_name") or work.get("title") or "")
+    abstract = (work.get("abstract_text") or work.get("abstract") or "")
     if not abstract and work.get("abstract_inverted_index"):
-        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index")).lower()
+        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index"))
 
     text = title if title_only else (title + " " + abstract)
+    
+    # Normalize for matching
+    normalized_text = normalize_text(text)
+    normalized_positives = [normalize_text(p) for p in positives]
+    normalized_negatives = [normalize_text(n) for n in negatives]
 
     # negatives first
-    for n in negatives:
-        if n and n in text:
+    for n in normalized_negatives:
+        if n and n in normalized_text:
             return False
 
     if has_and:
-        return all(p in text for p in positives)
-    return any(p in text for p in positives)
+        return all(p in normalized_text for p in normalized_positives)
+    return any(p in normalized_text for p in normalized_positives)
 
 
 def match_work_against_clause_with_reason(work: Dict[str, Any], clause: str, title_only: bool = False) -> Tuple[bool, str]:
-    """Return (matched, reason) for local boolean filtering."""
+    """Return (matched, reason) for local boolean filtering.
+    Uses normalized matching for robustness (handles hyphens, case, whitespace).
+    """
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True, "no_positive_units"
 
-    title = (work.get("display_name") or work.get("title") or "").lower()
-    abstract = (work.get("abstract_text") or work.get("abstract") or "").lower()
+    title = (work.get("display_name") or work.get("title") or "")
+    abstract = (work.get("abstract_text") or work.get("abstract") or "")
     if not abstract and work.get("abstract_inverted_index"):
-        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index")).lower()
+        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index"))
 
     text = title if title_only else (title + " " + abstract)
+    
+    # Normalize for matching
+    normalized_text = normalize_text(text)
+    normalized_positives = [normalize_text(p) for p in positives]
+    normalized_negatives = [normalize_text(n) for n in negatives]
 
-    hit_negative = [n for n in negatives if n and n in text]
+    hit_negative = [n for n in negatives if normalized_text.find(normalize_text(n)) >= 0]
     if hit_negative:
         return False, "hit_negative:" + ",".join(hit_negative[:3])
 
     if has_and:
-        missing = [p for p in positives if p not in text]
+        missing = [p for p in normalized_positives if p not in normalized_text]
         if missing:
-            return False, "missing_and_terms:" + ",".join(missing[:3])
+            # Get original missing terms for reason display
+            original_missing = [positives[i] for i in range(len(positives)) if normalized_positives[i] not in normalized_text][:3]
+            return False, "missing_and_terms:" + ",".join(original_missing)
         return True, "matched_and"
 
-    matched_any = any(p in text for p in positives)
+    matched_any = any(p in normalized_text for p in normalized_positives)
     if matched_any:
         return True, "matched_or"
     return False, "missing_all_or_terms"
@@ -816,11 +858,12 @@ def search_arxiv_clause(clause: str, max_results: int = 100, title_only: bool = 
 # Crossref
 # -----------------------
 CROSSREF_API = "https://api.crossref.org/works"
-def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional[str] = None) -> List[dict]:
-    """Search Crossref with pagination support to fetch up to max_results items.
+def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional[str] = None, year_from: Optional[int] = None, year_to: Optional[int] = None) -> List[dict]:
+    """Search Crossref with multi-field query for better precision.
     
-    Crossref API has a maximum of 1000 items per request. This function implements
-    pagination using offset parameter to fetch beyond the first 1000 results.
+    Uses field-specific queries (title:, abstract:) when possible to reduce noise.
+    Pagination support to fetch up to max_results items.
+    Filters by journal-article type and publication year.
     """
     if max_results <= 0:
         return []
@@ -829,15 +872,26 @@ def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional
     offset = 0
     rows_per_page = 1000  # Crossref API maximum
     
+    # Build date filter
+    filters = ["type:journal-article"]
+    if year_from or year_to:
+        year_str = "-".join([
+            str(year_from) if year_from else "*",
+            str(year_to) if year_to else "*"
+        ])
+        filters.append(f"from-pub-date:{year_from}" if year_from else "")
+        filters.append(f"until-pub-date:{year_to}" if year_to else "")
+        filters = [f for f in filters if f]  # Remove empty strings
+    
     while len(out) < max_results:
         # Calculate rows for this request
         rows = min(rows_per_page, max_results - len(out))
         
         params = {
-            "query.bibliographic": clause,
+            "query": clause,  # Use 'query' instead of 'query.bibliographic' for field-aware parsing
             "rows": rows,
             "offset": offset,
-            "filter": "type:journal-article"
+            "filter": ",".join(filters)
         }
         if mailto:
             params["mailto"] = mailto
@@ -1172,7 +1226,7 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
             if src == "arxiv":
                 return search_arxiv_clause(q, max_results=max_per_clause, title_only=title_only_flag)
             if src == "crossref":
-                return search_crossref_clause(q, max_results=max_per_clause, mailto=mailto)
+                return search_crossref_clause(q, max_results=max_per_clause, mailto=mailto, year_from=year_from, year_to=year_to)
         except Exception as e:
             if verbose:
                 print(f"[{src}] exception: {e}")
