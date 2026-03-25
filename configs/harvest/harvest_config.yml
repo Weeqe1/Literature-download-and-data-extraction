@@ -36,7 +36,7 @@ search:
     - wos
     - semantic_scholar
     - pubmed
-    #- arxiv
+    - arxiv
     - crossref
 
   # 年份范围
@@ -50,7 +50,7 @@ search:
   max_clauses: 10
   
   # 总结果数上限
-  max_total: 10000
+  max_total: 1000000000
 
 # ==================================================
 # 输出设置
@@ -61,6 +61,12 @@ output:
   
   # Excel 输出文件名
   excel_filename: "nano_fluorescent_probes.xlsx"
+
+  # 本地匹配被过滤样本的审计文件
+  audit_rejected_filename: "filtered_out_audit.xlsx"
+
+  # 审计样本最大导出数（用于防止内存和文件过大）
+  audit_rejected_limit: 2000
   
   # PDF 下载子目录名
   pdf_subdir: "PDF"

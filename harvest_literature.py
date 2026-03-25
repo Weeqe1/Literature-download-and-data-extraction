@@ -130,6 +130,171 @@ def safe_get(d: dict, *keys, default=None):
         x = x.get(k, None) if isinstance(x, dict) else default
     return x if x is not None else default
 
+
+def parse_clause_units(clause: str) -> Tuple[List[str], List[str], bool]:
+    """
+    Parse a boolean clause into positive units, negative units and whether AND exists.
+    Units are phrases/terms used for local relevance matching.
+    """
+    if not clause:
+        return [], [], False
+
+    s = clause.strip()
+    has_and = bool(re.search(r"\bAND\b", s, flags=re.I))
+
+    # Extract NOT units first
+    neg_quoted = re.findall(r'\bNOT\s+"([^"]+)"', s, flags=re.I)
+    neg_bare = re.findall(r'\bNOT\s+([A-Za-z0-9_\-]+)', s, flags=re.I)
+    negatives = [x.strip().lower() for x in (neg_quoted + neg_bare) if x and x.strip()]
+
+    # Remove NOT fragments to avoid counting them as positives
+    s_pos = re.sub(r'\bNOT\s+"[^"]+"', ' ', s, flags=re.I)
+    s_pos = re.sub(r'\bNOT\s+[A-Za-z0-9_\-]+', ' ', s_pos, flags=re.I)
+
+    # Prefer quoted phrases as units
+    quoted = [q.strip().lower() for q in re.findall(r'"([^"]+)"', s_pos) if q and q.strip()]
+    if quoted:
+        positives = quoted
+    else:
+        # Fallback to bare tokens
+        tokens = re.split(r'\s+', re.sub(r'[()"]', ' ', s_pos))
+        positives = []
+        for t in tokens:
+            tl = t.strip().lower()
+            if not tl:
+                continue
+            if tl in ("and", "or", "not", "ts="):
+                continue
+            if len(re.sub(r'[^a-z0-9]', '', tl)) < 3:
+                continue
+            positives.append(tl)
+
+    # Deduplicate while preserving order
+    def _uniq(seq: List[str]) -> List[str]:
+        seen = set()
+        out = []
+        for it in seq:
+            if it not in seen:
+                seen.add(it)
+                out.append(it)
+        return out
+
+    return _uniq(positives), _uniq(negatives), has_and
+
+
+def openalex_abstract_to_text(inv_idx: Any) -> str:
+    """Rebuild plain abstract text from OpenAlex abstract_inverted_index."""
+    if not isinstance(inv_idx, dict):
+        return ""
+    pairs = []
+    for token, positions in inv_idx.items():
+        if not isinstance(positions, list):
+            continue
+        for p in positions:
+            try:
+                pairs.append((int(p), token))
+            except Exception:
+                continue
+    if not pairs:
+        return ""
+    pairs.sort(key=lambda x: x[0])
+    return " ".join(t for _, t in pairs)
+
+
+def build_source_query(source: str, clause: str, title_only: bool = False) -> str:
+    """
+    Build source-specific query text from one clause.
+    Keep semantics close to clause while adapting to endpoint syntax.
+    """
+    positives, negatives, has_and = parse_clause_units(clause)
+    if not positives:
+        return clause.strip()
+
+    if source == "wos":
+        body = " AND ".join([f'"{p}"' for p in positives]) if has_and else " OR ".join([f'"{p}"' for p in positives])
+        if negatives:
+            body += " NOT " + " NOT ".join([f'"{n}"' for n in negatives])
+        return body
+
+    if source == "pubmed":
+        field = "[Title]" if title_only else "[Title/Abstract]"
+        joiner = " AND " if has_and else " OR "
+        body = joiner.join([f'"{p}"{field}' for p in positives])
+        if negatives:
+            body += " NOT " + " NOT ".join([f'"{n}"{field}' for n in negatives])
+        return body
+
+    if source == "arxiv":
+        if title_only:
+            return " OR ".join([f'ti:\"{p}\"' for p in positives])
+        return " OR ".join([f'all:\"{p}\"' for p in positives])
+
+    if source == "crossref":
+        # Crossref free-text endpoint: keep high-signal phrase list
+        return " ".join([f'"{p}"' for p in positives])
+
+    if source == "semantic_scholar":
+        # Semantic Scholar query is free text; boolean operators are weakly interpreted
+        return " ".join(positives)
+
+    if source == "openalex":
+        # OpenAlex search is free text; keep concise high-signal phrase form
+        return " ".join([f'"{p}"' for p in positives])
+
+    return clause.strip()
+
+
+def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: bool = False) -> bool:
+    """Local boolean matching to filter out non-target records from broad API results."""
+    positives, negatives, has_and = parse_clause_units(clause)
+    if not positives:
+        return True
+
+    title = (work.get("display_name") or work.get("title") or "").lower()
+    abstract = (work.get("abstract_text") or work.get("abstract") or "").lower()
+    if not abstract and work.get("abstract_inverted_index"):
+        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index")).lower()
+
+    text = title if title_only else (title + " " + abstract)
+
+    # negatives first
+    for n in negatives:
+        if n and n in text:
+            return False
+
+    if has_and:
+        return all(p in text for p in positives)
+    return any(p in text for p in positives)
+
+
+def match_work_against_clause_with_reason(work: Dict[str, Any], clause: str, title_only: bool = False) -> Tuple[bool, str]:
+    """Return (matched, reason) for local boolean filtering."""
+    positives, negatives, has_and = parse_clause_units(clause)
+    if not positives:
+        return True, "no_positive_units"
+
+    title = (work.get("display_name") or work.get("title") or "").lower()
+    abstract = (work.get("abstract_text") or work.get("abstract") or "").lower()
+    if not abstract and work.get("abstract_inverted_index"):
+        abstract = openalex_abstract_to_text(work.get("abstract_inverted_index")).lower()
+
+    text = title if title_only else (title + " " + abstract)
+
+    hit_negative = [n for n in negatives if n and n in text]
+    if hit_negative:
+        return False, "hit_negative:" + ",".join(hit_negative[:3])
+
+    if has_and:
+        missing = [p for p in positives if p not in text]
+        if missing:
+            return False, "missing_and_terms:" + ",".join(missing[:3])
+        return True, "matched_and"
+
+    matched_any = any(p in text for p in positives)
+    if matched_any:
+        return True, "matched_or"
+    return False, "missing_all_or_terms"
+
 # -----------------------
 # Clause splitting (the rule you requested)
 # Top-level OR split: when keywords = '("A") OR ("B") OR ("C" AND "D")'
@@ -494,71 +659,121 @@ def search_pubmed_clause(clause: str, max_results: int = 200, title_only: bool =
     """
     Use esearch to get ids, then efetch to get summary fields via retmode=xml.
     Clause should be adapted to PubMed syntax; if clause contains quotes treat them as phrase.
+    Implements pagination to fetch beyond the 200 limit per request.
     """
     if email is None:
         email = DEFAULT_EMAIL
+    
     term = clause
-    params = {"db":"pubmed","term":term,"retmax":min(max_results,200),"retmode":"xml","email":email}
-    try:
-        rate_limit()
-        r = requests.get(PUBMED_ESEARCH, params=params, timeout=25)
-        if r.status_code != 200:
-            return []
-        # parse XML to get IDs
-        import xml.etree.ElementTree as ET
-        es = ET.fromstring(r.text)
-        ids = [idn.text for idn in es.findall(".//IdList/Id")]
-        if not ids:
-            return []
-        # efetch for summaries
-        ids_str = ",".join(ids)
-        params2 = {"db":"pubmed","id":ids_str,"retmode":"xml"}
-        rate_limit()
-        r2 = requests.get(PUBMED_EFETCH, params=params2, timeout=30)
-        if r2.status_code != 200:
-            return []
-        root = ET.fromstring(r2.text)
-        out = []
-        for article in root.findall(".//PubmedArticle"):
-            try:
-                title = article.findtext(".//ArticleTitle")
-                abstract = " ".join([t.text.strip() for t in article.findall(".//AbstractText") if t is not None and t.text])
-                journal = article.findtext(".//Journal/Title")
-                year = article.findtext(".//Journal/JournalIssue/PubDate/Year")
-                doi = None
-                for el in article.findall(".//ArticleId"):
-                    if el.get("IdType") and el.get("IdType").lower() == "doi":
-                        doi = el.text
-                authors = []
-                for a in article.findall(".//Author"):
-                    fn = a.findtext("ForeName") or ""
-                    ln = a.findtext("LastName") or ""
-                    name = (fn + " " + ln).strip()
-                    if name:
-                        authors.append(name)
-                out.append({
-                    "source":"pubmed",
-                    "doi":doi,
-                    "display_name":title,
-                    "abstract_text":abstract,
-                    "publication_year": int(year) if year and year.isdigit() else None,
-                    "journal":journal,
-                    "authors_list": authors
-                })
-            except Exception:
-                continue
-        return out
-    except Exception:
+    
+    import xml.etree.ElementTree as ET
+    
+    # Step 1: Get total count and all IDs with pagination
+    all_ids = []
+    retstart = 0
+    batch_size = 500  # PubMed allows up to 500 per request
+    
+    while len(all_ids) < max_results:
+        params = {
+            "db": "pubmed",
+            "term": term,
+            "retmax": min(batch_size, max_results - len(all_ids)),
+            "retstart": retstart,
+            "retmode": "xml",
+            "email": email
+        }
+        
+        try:
+            rate_limit()
+            r = requests.get(PUBMED_ESEARCH, params=params, timeout=25)
+            if r.status_code != 200:
+                break
+            
+            es = ET.fromstring(r.text)
+            ids = [idn.text for idn in es.findall(".//IdList/Id")]
+            if not ids:
+                break
+            
+            all_ids.extend(ids)
+            
+            # Check if we've reached the end
+            count = int(es.findtext(".//Count") or 0)
+            if len(all_ids) >= count:
+                break
+            
+            retstart += len(ids)
+            
+        except Exception as e:
+            break
+    
+    if not all_ids:
         return []
+    
+    # Step 2: Fetch details in batches
+    out = []
+    batch_size_fetch = 200  # efetch limit
+    
+    for i in range(0, len(all_ids), batch_size_fetch):
+        batch_ids = all_ids[i:i + batch_size_fetch]
+        ids_str = ",".join(batch_ids)
+        
+        params2 = {"db": "pubmed", "id": ids_str, "retmode": "xml"}
+        
+        try:
+            rate_limit()
+            r2 = requests.get(PUBMED_EFETCH, params=params2, timeout=30)
+            if r2.status_code != 200:
+                continue
+            
+            root = ET.fromstring(r2.text)
+            
+            for article in root.findall(".//PubmedArticle"):
+                try:
+                    title = article.findtext(".//ArticleTitle")
+                    abstract = " ".join([t.text.strip() for t in article.findall(".//AbstractText") if t is not None and t.text])
+                    journal = article.findtext(".//Journal/Title")
+                    year = article.findtext(".//Journal/JournalIssue/PubDate/Year")
+                    doi = None
+                    for el in article.findall(".//ArticleId"):
+                        if el.get("IdType") and el.get("IdType").lower() == "doi":
+                            doi = el.text
+                    authors = []
+                    for a in article.findall(".//Author"):
+                        fn = a.findtext("ForeName") or ""
+                        ln = a.findtext("LastName") or ""
+                        name = (fn + " " + ln).strip()
+                        if name:
+                            authors.append(name)
+                    out.append({
+                        "source": "pubmed",
+                        "doi": doi,
+                        "display_name": title,
+                        "abstract_text": abstract,
+                        "publication_year": int(year) if year and year.isdigit() else None,
+                        "journal": journal,
+                        "authors_list": authors
+                    })
+                    
+                    if len(out) >= max_results:
+                        break
+                except Exception:
+                    continue
+        except Exception:
+            continue
+        
+        if len(out) >= max_results:
+            break
+    
+    return out[:max_results]
 
 # -----------------------
 # arXiv
 # -----------------------
 ARXIV_API = "http://export.arxiv.org/api/query"
 def search_arxiv_clause(clause: str, max_results: int = 100, title_only: bool = False) -> List[dict]:
-    # Build a simple search: all fields for simplicity
+    # Clause is already source-adapted in run_clause_search.
     q = clause
-    params = {"search_query": f"all:{q}", "start":0, "max_results": min(max_results,200)}
+    params = {"search_query": q, "start":0, "max_results": min(max_results, 200)}
     try:
         rate_limit()
         r = requests.get(ARXIV_API, params=params, timeout=30)
@@ -619,9 +834,10 @@ def search_crossref_clause(clause: str, max_results: int = 200, mailto: Optional
         rows = min(rows_per_page, max_results - len(out))
         
         params = {
-            "query": clause,
+            "query.bibliographic": clause,
             "rows": rows,
-            "offset": offset
+            "offset": offset,
+            "filter": "type:journal-article"
         }
         if mailto:
             params["mailto"] = mailto
@@ -895,11 +1111,26 @@ def check_pdf_valid(path: str) -> bool:
     except Exception:
         return False
 
+
+def export_rejected_audit(audit_rows: List[Dict[str, Any]], out_path: str, verbose: bool = True) -> None:
+    """Export locally filtered-out samples to an audit excel file."""
+    if not audit_rows:
+        if verbose:
+            print("[Audit] no filtered-out samples to export")
+        return
+    try:
+        df = pd.DataFrame(audit_rows)
+        df.to_excel(out_path, index=False)
+        if verbose:
+            print(f"[Audit] exported filtered-out samples: {len(df)} -> {out_path}")
+    except Exception as e:
+        print(f"[Audit] failed to export audit file: {e}")
+
 # -----------------------
 # High-level flow: for each clause, run searches (order configurable)
 # two rounds: title-only then title+abstract; accumulate results
 # -----------------------
-def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int = 200, mailto: Optional[str] = None, verbose: bool = True, year_from: Optional[int] = None, year_to: Optional[int] = None, semantic_api_key: Optional[str] = None) -> List[dict]:
+def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int = 200, mailto: Optional[str] = None, verbose: bool = True, year_from: Optional[int] = None, year_to: Optional[int] = None, semantic_api_key: Optional[str] = None, audit_rejections: Optional[List[Dict[str, Any]]] = None, audit_limit: int = 2000) -> List[dict]:
     """
     Run the configured sources for a single clause, in two rounds (title-only then title+abstract).
     Each source function is called with a clause string adapted for that source as needed.
@@ -925,32 +1156,7 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
 
     # helper to adapt query for source
     def adapt_for(source: str, c: str, title_only_flag: bool) -> str:
-        """
-        Normalize clause for specific sources:
-          - For semantic_scholar: remove boolean operators, preserve phrase word order
-          - For pubmed: leave raw here; search_pubmed_clause will adjust when title_only_flag True
-          - For arxiv/crossref: prefer removing explicit boolean operators (use space) for more robust matching
-        """
-        if source == "semantic_scholar":
-            # remove TS= and parentheses, replace boolean operators with spaces,
-            # remove surrounding quotes but keep the phrase words together
-            s = re.sub(r'\bTS=|\(|\)', ' ', c)
-            # replace AND/OR/NOT by single space
-            s = re.sub(r'\b(AND|OR|NOT)\b', ' ', s, flags=re.I)
-            # remove double quotes but keep words
-            s = s.replace('"', ' ')
-            s = re.sub(r'\s+', ' ', s).strip()
-            return s
-        if source == "pubmed":
-            # leave raw; search_pubmed_clause will add [Title/Abstract] if needed
-            return c
-        if source in ("arxiv", "crossref"):
-            # prefer space-separated terms for these free-text endpoints
-            s = re.sub(r'\b(AND|OR|NOT)\b', ' ', c, flags=re.I).replace('"', ' ')
-            s = re.sub(r'\s+', ' ', s).strip()
-            return s
-        # default: openalex, wos accept clause as-is
-        return c
+        return build_source_query(source, c, title_only=title_only_flag)
 
     # wrappers map
     def call_source(src: str, q: str, title_only_flag: bool):
@@ -982,9 +1188,27 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
                 print(f"[{src}] querying ({which}): {q if len(q) < 200 else q[:200] + '...'}")
             items = call_source(src, q, title_only)
             if items:
+                # Uniform local boolean filtering to remove off-target results.
+                filtered = []
+                for it in items:
+                    ok, reason = match_work_against_clause_with_reason(it, clause, title_only=title_only)
+                    if ok:
+                        filtered.append(it)
+                    else:
+                        if audit_rejections is not None and len(audit_rejections) < max(0, audit_limit):
+                            audit_rejections.append({
+                                "clause": clause,
+                                "source": src,
+                                "round": which,
+                                "reason": reason,
+                                "title": it.get("display_name") or it.get("title") or "",
+                                "doi": doi_normalize(it.get("doi") or ""),
+                                "year": it.get("publication_year") or it.get("year") or None,
+                                "journal": it.get("journal") or extract_journal_from_work(it) or ""
+                            })
                 if verbose:
-                    print(f"[{src}] returned {len(items)} items for clause")
-                collected.extend(items)
+                    print(f"[{src}] returned {len(items)} items for clause, kept {len(filtered)} after local clause match")
+                collected.extend(filtered)
             else:
                 if verbose:
                     print(f"[{src}] returned 0 items for clause")
@@ -1335,6 +1559,9 @@ def main():
     out_base = get_config("output.base_dir", "outputs/literature")
     excel_filename = get_config("output.excel_filename", "nano_fluorescent_probes.xlsx")
     excel_path = os.path.join(out_base, excel_filename)
+    audit_filename = get_config("output.audit_rejected_filename", "filtered_out_audit.xlsx")
+    audit_limit = get_config("output.audit_rejected_limit", 2000)
+    audit_path = os.path.join(out_base, audit_filename)
 
     # Sources and order
     sources_order = get_config("search.sources_order", ["openalex", "wos", "semantic_scholar", "pubmed", "arxiv", "crossref"])
@@ -1371,15 +1598,30 @@ def main():
 
     # gather works
     all_works = []
+    rejected_audit = []
     for idx, clause in enumerate(clauses, start=1):
         print(f"[RunClause] ({idx}/{len(clauses)}) starting clause: {clause}")
-        works = run_clause_search(clause, sources_order=sources_order, max_per_clause=max_results_per_clause, mailto=mailto, verbose=True, year_from=year_from, year_to=year_to, semantic_api_key=SEMANTIC_SCHOLAR_API_KEY)
+        works = run_clause_search(
+            clause,
+            sources_order=sources_order,
+            max_per_clause=max_results_per_clause,
+            mailto=mailto,
+            verbose=True,
+            year_from=year_from,
+            year_to=year_to,
+            semantic_api_key=SEMANTIC_SCHOLAR_API_KEY,
+            audit_rejections=rejected_audit,
+            audit_limit=audit_limit
+        )
         print(f"[RunClause] clause {idx} returned {len(works)} raw works")
         all_works.extend(works)
         # small break if huge
         if len(all_works) >= max_total:
             print("[Main] reached max_total cap, stopping clause loop")
             break
+
+    # Export filtered-out samples for audit
+    export_rejected_audit(rejected_audit, audit_path, verbose=True)
 
     print(f"[Merge] merging and deduplicating...")
     merged = merge_and_dedupe(all_works, max_total=max_total)
