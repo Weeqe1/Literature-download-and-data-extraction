@@ -1486,7 +1486,7 @@ def download_pdfs_and_assemble(
 # -----------------------
 # PDF integrity check and update excel (delete broken pdfs and remove rows)
 # -----------------------
-def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = True, verbose: bool = True) -> Tuple[int,int]:
+def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = True, verbose: bool = True, log_each: bool = False) -> Tuple[int,int]:
     """
     Check each pdf path listed in the excel file; if pdf missing or invalid remove the row and delete file reference.
     Returns (checked_count, removed_count). Updates excel in place (back up original).
@@ -1508,7 +1508,7 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
         if not pdfp or not isinstance(pdfp, str) or not os.path.exists(pdfp):
             # remove row
             removed += 1
-            if verbose:
+            if verbose and log_each:
                 print(f"[PDF-Check] missing: {pdfp} (will remove row)")
             continue
         ok = check_pdf_valid(pdfp)
@@ -1518,7 +1518,7 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
                 os.remove(pdfp)
             except Exception:
                 pass
-            if verbose:
+            if verbose and log_each:
                 print(f"[PDF-Check] invalid/corrupt: {pdfp} (removed)")
             continue
         to_keep.append(row)
@@ -1721,7 +1721,14 @@ def main():
     # PDF check and cleanup
     print("[PDF-Check] verifying downloaded PDFs...")
 
-    checked, removed = pdf_check_and_cleanup(excel_path, os.path.join(out_base, "PDF_download"), backup=True, verbose=True)
+    pdf_check_log_each = get_config("runtime.pdf_check_log_each", False)
+    checked, removed = pdf_check_and_cleanup(
+        excel_path,
+        os.path.join(out_base, "PDF_download"),
+        backup=True,
+        verbose=verbose,
+        log_each=pdf_check_log_each
+    )
 
     # summary
     n_oa = int(final_df["is_oa"].fillna(False).sum()) if "is_oa" in final_df.columns else 0

@@ -77,6 +77,9 @@ output:
 runtime:
   # 增量模式：跳过已存在的 DOI
   incremental: true
+
+  # PDF检查是否输出每篇文献的详情日志（missing/invalid）
+  pdf_check_log_each: false
   
   # 每秒请求数（用于速率限制）
   requests_per_second: 2
