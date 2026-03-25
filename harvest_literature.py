@@ -264,8 +264,9 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
         return " ".join(positives)
 
     if source == "openalex":
-        # OpenAlex search is free text; keep concise high-signal phrase form
-        return " ".join([f'"{p}"' for p in positives])
+        # OpenAlex search is free text; avoid strict quoted-phrase query that can under-recall.
+        # Use plain token sequence to improve recall, local matcher will keep precision.
+        return " ".join(positives)
 
     return clause.strip()
 
@@ -510,11 +511,16 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
 # WoS search (Clarivate APIs)
 # -----------------------
 WOS_BASE = "https://api.clarivate.com/apis/wos-starter/v1/documents"
+_WOS_DB_CACHE: Optional[str] = None
 
 def choose_best_wos_db(verbose: bool = True) -> Optional[str]:
     """
     Try some db values to determine a db that returns search results (heuristic).
     """
+    global _WOS_DB_CACHE
+    if _WOS_DB_CACHE:
+        return _WOS_DB_CACHE
+
     api_key = WOS_API_KEY
     if not api_key:
         if verbose:
@@ -535,7 +541,8 @@ def choose_best_wos_db(verbose: bool = True) -> Optional[str]:
                     if total and int(total) > 0:
                         if verbose:
                             print(f"[WoS-Test][{db}] HTTP 200 total={total}")
-                        return db
+                        _WOS_DB_CACHE = db
+                        return _WOS_DB_CACHE
                 except Exception:
                     pass
             else:
@@ -543,7 +550,8 @@ def choose_best_wos_db(verbose: bool = True) -> Optional[str]:
                 pass
         except Exception:
             pass
-    return "WOS"  # fallback
+    _WOS_DB_CACHE = "WOS"
+    return _WOS_DB_CACHE  # fallback
 
 def search_wos_clause(clause: str, max_results: int = 200, year_from: Optional[int] = None, year_to: Optional[int] = None, verbose: bool = True) -> List[dict]:
     """
