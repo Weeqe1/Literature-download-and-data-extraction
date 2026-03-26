@@ -104,6 +104,17 @@ MIN_SLEEP = 1.0 / max(1, REQS_PER_SECOND)
 def rate_limit():
     time.sleep(MIN_SLEEP)
 
+# Semantic Scholar requirement: <= 1 request/sec (across its endpoints).
+_S2_LAST_REQUEST_TS = 0.0
+
+def rate_limit_semantic_scholar(min_interval_sec: float = 1.05) -> None:
+    global _S2_LAST_REQUEST_TS
+    now = time.time()
+    wait = (_S2_LAST_REQUEST_TS + min_interval_sec) - now
+    if wait > 0:
+        time.sleep(wait)
+    _S2_LAST_REQUEST_TS = time.time()
+
 # per-source runtime stats for concise debug logging
 _LAST_SOURCE_STATS: Dict[str, Dict[str, int]] = {}
 
@@ -708,7 +719,9 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
     backoff = 1.0
     while attempts < 5:
         try:
+            # global limiter + S2 dedicated limiter
             rate_limit()
+            rate_limit_semantic_scholar()
             r = requests.get(base, params=params, headers=headers, timeout=25)
         except Exception as e:
             attempts += 1
