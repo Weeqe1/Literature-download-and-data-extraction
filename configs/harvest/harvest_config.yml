@@ -9,7 +9,7 @@ api_keys:
   wos: "66330c65e1e2258a48717815e13522dd47aa66bf"
   
   # Semantic Scholar API Key
-  semantic_scholar: "6FApqCo4WU7rH035oNAPN3VJF8ifEGYO9cAkfrUF"
+  semantic_scholar: "lta6aC9TYm5gQZcPL2NFT8zmdidXl8ag8rqAjZ8Z"
   
   # Unpaywall 和 Crossref 的联系邮箱（用于 polite API 请求）
   contact_email: "wangqi@ahut.edu.cn"
