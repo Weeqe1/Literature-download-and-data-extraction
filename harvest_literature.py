@@ -483,6 +483,7 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
     scanned_raw = 0
     per_page = 50
     page = 1
+    error_logged = False
 
     positives, negatives, has_and = parse_clause_units(clause)
     clause_lc = clause.lower()
@@ -535,7 +536,10 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
         try:
             js = openalex_get(params)
         except Exception as e:
-            # give up gracefully
+            # expose silent failures to logs for diagnosis
+            if not error_logged:
+                print(f"[OpenAlex] request failed: {str(e)[:240]}")
+                error_logged = True
             break
         works = js.get("results", [])
         if not works:
@@ -737,6 +741,12 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
             time.sleep(backoff)
             backoff *= 2
             continue
+        elif r.status_code in (500, 502, 503, 504):
+            # transient server-side failures: retry with exponential backoff
+            attempts += 1
+            time.sleep(backoff)
+            backoff *= 2
+            continue
         else:
             # some 400 may indicate unsupported fields; try minimal fields once
             if r.status_code == 400 and attempts == 0:
@@ -924,6 +934,7 @@ def search_crossref_clause(
     year_to: Optional[int] = None,
     title_only: bool = False,
     min_score_ratio: float = 0.25,
+    max_scan_raw: int = 3000,
 ) -> List[dict]:
     """Search Crossref with field-aware query strategy and pagination.
 
@@ -1036,7 +1047,7 @@ def search_crossref_clause(
             if len(items) > 0 and low_relevance_count >= int(len(items) * 0.8):
                 break
             # Guardrail: if scanned many raw records with very low yield, stop early.
-            if scanned_raw >= max(2000, max_results * 2) and len(out) < max(100, int(max_results * 0.05)):
+            if scanned_raw >= max_scan_raw and len(out) < max(100, int(max_results * 0.05)):
                 break
             # Guardrail: avoid deep pagination loops on extremely broad clauses.
             if page_count >= 20:
