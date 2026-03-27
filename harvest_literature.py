@@ -504,6 +504,7 @@ def search_openalex_clause(clause: str, max_results: int = 2000, title_only: boo
     results = []
     scanned_raw = 0
     per_page = 50
+    min_per_page = 10
     page = 1
     error_logged = False
     consecutive_failures = 0
@@ -571,13 +572,21 @@ def search_openalex_clause(clause: str, max_results: int = 2000, title_only: boo
             if not error_logged:
                 print(f"[OpenAlex] request failed: {str(last_err)[:240]}")
                 error_logged = True
+            # On repeated failures, progressively reduce page size to ease server/network pressure.
+            per_page = max(min_per_page, int(per_page * 0.5))
+            params["per-page"] = per_page
+            time.sleep(min(6.0, 1.5 * consecutive_failures))
             # If we already have partial results, keep them and stop this clause.
             if results:
                 break
-            # For cold-start failures, allow one more page attempt cycle then stop.
-            if consecutive_failures >= 2:
+            # For cold-start failures, allow more retries with reduced page size.
+            if consecutive_failures >= 4:
                 break
             continue
+        if consecutive_failures > 0:
+            # Recover page size gradually after successful responses.
+            per_page = min(50, per_page + 10)
+            params["per-page"] = per_page
         consecutive_failures = 0
         works = js.get("results", [])
         if not works:
