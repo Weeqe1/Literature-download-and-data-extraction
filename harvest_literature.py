@@ -324,9 +324,15 @@ def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: boo
     return any(p in normalized_text for p in normalized_positives)
 
 
-def match_work_against_clause_with_reason(work: Dict[str, Any], clause: str, title_only: bool = False) -> Tuple[bool, str]:
+def match_work_against_clause_with_reason(work: Dict[str, Any], clause: str, title_only: bool = False, match_strictness: float = 1.0) -> Tuple[bool, str]:
     """Return (matched, reason) for local boolean filtering.
     Uses normalized matching for robustness (handles hyphens, case, whitespace).
+    
+    Args:
+        match_strictness (0.0-1.0): Controls term matching requirement.
+            1.0 = all terms must match (strict, default)
+            0.5 = 50% of terms must match
+            0.0 = any single term matches (lenient)
     """
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
@@ -348,18 +354,21 @@ def match_work_against_clause_with_reason(work: Dict[str, Any], clause: str, tit
     if hit_negative:
         return False, "hit_negative:" + ",".join(hit_negative[:3])
 
+    # Apply match_strictness to AND/OR matching
     if has_and:
-        missing = [p for p in normalized_positives if p not in normalized_text]
-        if missing:
-            # Get original missing terms for reason display
-            original_missing = [positives[i] for i in range(len(positives)) if normalized_positives[i] not in normalized_text][:3]
-            return False, "missing_and_terms:" + ",".join(original_missing)
-        return True, "matched_and"
-
-    matched_any = any(p in normalized_text for p in normalized_positives)
-    if matched_any:
-        return True, "matched_or"
-    return False, "missing_all_or_terms"
+        matched_positives = sum(1 for p in normalized_positives if p in normalized_text)
+        required_matches = max(1, int(len(normalized_positives) * match_strictness))
+        if matched_positives >= required_matches:
+            return True, f"matched_and_{matched_positives}/{len(normalized_positives)}"
+        else:
+            missing = [positives[i] for i in range(len(positives)) if normalized_positives[i] not in normalized_text][:3]
+            return False, f"missing_and_terms_{matched_positives}/{required_matches}:" + ",".join(missing)
+    else:
+        matched_positives = sum(1 for p in normalized_positives if p in normalized_text)
+        required_matches = max(1, int(len(normalized_positives) * match_strictness))
+        if matched_positives >= required_matches:
+            return True, f"matched_or_{matched_positives}/{len(normalized_positives)}"
+        return False, f"missing_or_terms_{matched_positives}/{required_matches}"
 
 # -----------------------
 # Clause splitting (the rule you requested)
@@ -485,7 +494,7 @@ def openalex_get(params: dict):
         raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
     return r.json()
 
-def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bool = False, year_from: Optional[int] = None, year_to: Optional[int] = None, mailto: Optional[str] = None) -> List[dict]:
+def search_openalex_clause(clause: str, max_results: int = 2000, title_only: bool = False, year_from: Optional[int] = None, year_to: Optional[int] = None, mailto: Optional[str] = None) -> List[dict]:
     """
     Search OpenAlex for a clause. If title_only True, use title.search; otherwise use default.search (title+abstract).
     Returns list of works (raw dicts).
@@ -634,7 +643,7 @@ def choose_best_wos_db(verbose: bool = True) -> Optional[str]:
     _WOS_DB_CACHE = "WOS"
     return _WOS_DB_CACHE  # fallback
 
-def search_wos_clause(clause: str, max_results: int = 200, year_from: Optional[int] = None, year_to: Optional[int] = None, verbose: bool = True) -> List[dict]:
+def search_wos_clause(clause: str, max_results: int = 100, year_from: Optional[int] = None, year_to: Optional[int] = None, verbose: bool = True) -> List[dict]:
     """
     Search WoS with a single clause. We'll wrap clause into TS=(clause) and do paging.
     Uses choose_best_wos_db to pick a db.
@@ -863,7 +872,7 @@ def search_semantic_scholar_clause(
 # -----------------------
 PUBMED_ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 PUBMED_EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-def search_pubmed_clause(clause: str, max_results: int = 200, title_only: bool = False, email: Optional[str] = None) -> List[dict]:
+def search_pubmed_clause(clause: str, max_results: int = 150, title_only: bool = False, email: Optional[str] = None) -> List[dict]:
     """
     Use esearch to get ids, then efetch to get summary fields via retmode=xml.
     Clause should be adapted to PubMed syntax; if clause contains quotes treat them as phrase.
@@ -1026,13 +1035,13 @@ def search_arxiv_clause(clause: str, max_results: int = 100, title_only: bool = 
 CROSSREF_API = "https://api.crossref.org/works"
 def search_crossref_clause(
     clause: str,
-    max_results: int = 200,
+    max_results: int = 150,
     mailto: Optional[str] = None,
     year_from: Optional[int] = None,
     year_to: Optional[int] = None,
     title_only: bool = False,
     min_score_ratio: float = 0.25,
-    max_scan_raw: int = 3000,
+    max_scan_raw: int = 1500,
 ) -> List[dict]:
     """Search Crossref with field-aware query strategy and pagination.
 
@@ -1403,7 +1412,7 @@ def export_rejected_audit(audit_rows: List[Dict[str, Any]], out_path: str, verbo
 # High-level flow: for each clause, run searches (order configurable)
 # two rounds: title-only then title+abstract; accumulate results
 # -----------------------
-def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int = 200, mailto: Optional[str] = None, verbose: bool = True, year_from: Optional[int] = None, year_to: Optional[int] = None, semantic_api_key: Optional[str] = None, audit_rejections: Optional[List[Dict[str, Any]]] = None, audit_limit: int = 2000) -> List[dict]:
+def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int = 200, mailto: Optional[str] = None, verbose: bool = True, year_from: Optional[int] = None, year_to: Optional[int] = None, semantic_api_key: Optional[str] = None, audit_rejections: Optional[List[Dict[str, Any]]] = None, audit_limit: int = 2000, match_strictness: float = 0.7) -> List[dict]:
     """
     Run the configured sources for a single clause, in two rounds (title-only then title+abstract).
     Each source function is called with a clause string adapted for that source as needed.
@@ -1478,7 +1487,7 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
                 # Uniform local boolean filtering to remove off-target results.
                 filtered = []
                 for it in items:
-                    ok, reason = match_work_against_clause_with_reason(it, clause, title_only=title_only)
+                    ok, reason = match_work_against_clause_with_reason(it, clause, title_only=title_only, match_strictness=match_strictness)
                     if ok:
                         filtered.append(it)
                     else:
