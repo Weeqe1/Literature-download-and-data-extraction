@@ -495,6 +495,7 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
     per_page = 50
     page = 1
     error_logged = False
+    consecutive_failures = 0
 
     positives, negatives, has_and = parse_clause_units(clause)
     clause_lc = clause.lower()
@@ -544,14 +545,29 @@ def search_openalex_clause(clause: str, max_results: int = 10000, title_only: bo
     # iterate pages
     while len(results) < max_results:
         params["page"] = page
-        try:
-            js = openalex_get(params)
-        except Exception as e:
-            # expose silent failures to logs for diagnosis
+        js = None
+        last_err = None
+        for _ in range(3):
+            try:
+                js = openalex_get(params)
+                break
+            except Exception as e:
+                last_err = e
+                time.sleep(1.0)
+        if js is None:
+            consecutive_failures += 1
+            # expose failures for diagnosis but avoid log flooding
             if not error_logged:
-                print(f"[OpenAlex] request failed: {str(e)[:240]}")
+                print(f"[OpenAlex] request failed: {str(last_err)[:240]}")
                 error_logged = True
-            break
+            # If we already have partial results, keep them and stop this clause.
+            if results:
+                break
+            # For cold-start failures, allow one more page attempt cycle then stop.
+            if consecutive_failures >= 2:
+                break
+            continue
+        consecutive_failures = 0
         works = js.get("results", [])
         if not works:
             break
@@ -713,10 +729,14 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
         return []
     base = "https://api.semanticscholar.org/graph/v1/paper/search"
     fields = "title,abstract,year,venue,authors,externalIds,isOpenAccess,openAccessPdf"
-    params = {"query": clause, "limit": min(max_results, 10000), "fields": fields}
+    # Keep request conservative to reduce 5xx/timeout probability.
+    params = {"query": clause, "limit": min(max_results, 100), "fields": fields}
     headers = {"x-api-key": api_key, "User-Agent": "pdf_download_harvester/1.0"}
     attempts = 0
     backoff = 1.0
+    last_status = None
+    last_body = ""
+    last_exc = None
     while attempts < 5:
         try:
             # global limiter + S2 dedicated limiter
@@ -724,10 +744,13 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
             rate_limit_semantic_scholar()
             r = requests.get(base, params=params, headers=headers, timeout=25)
         except Exception as e:
+            last_exc = e
             attempts += 1
             time.sleep(backoff)
             backoff *= 2
             continue
+        last_status = r.status_code
+        last_body = r.text[:300] if getattr(r, "text", None) else ""
         if r.status_code == 200:
             js = r.json()
             items = js.get("data") or js.get("results") or []
@@ -770,7 +793,10 @@ def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_on
                 print(f"[Semantic Scholar] HTTP {r.status_code}: {r.text[:300]}")
             return []
     if verbose:
-        print("[Semantic Scholar] persistent failures; skipping")
+        if last_exc is not None and last_status is None:
+            print(f"[Semantic Scholar] persistent failures; last exception: {str(last_exc)[:180]}")
+        else:
+            print(f"[Semantic Scholar] persistent failures; last status={last_status}, body={last_body}")
     return []
 
 # -----------------------
@@ -1689,9 +1715,18 @@ def download_pdfs_and_assemble(
 # -----------------------
 # PDF integrity check and update excel (delete broken pdfs and remove rows)
 # -----------------------
-def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = True, verbose: bool = True, log_each: bool = False) -> Tuple[int,int]:
+def pdf_check_and_cleanup(
+    excel_path: str,
+    pdf_base_dir: str,
+    backup: bool = True,
+    verbose: bool = True,
+    log_each: bool = False,
+    remove_invalid_rows: bool = False,
+) -> Tuple[int,int]:
     """
-    Check each pdf path listed in the excel file; if pdf missing or invalid remove the row and delete file reference.
+    Check each pdf path listed in the excel file.
+    - remove_invalid_rows=True: remove rows with missing/invalid PDFs.
+    - remove_invalid_rows=False: keep rows and clear invalid pdf_path.
     Returns (checked_count, removed_count). Updates excel in place (back up original).
     """
 
@@ -1709,10 +1744,14 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
         pdfp = row.get("pdf_path")
         checked += 1
         if not pdfp or not isinstance(pdfp, str) or not os.path.exists(pdfp):
-            # remove row
             removed += 1
             if verbose and log_each:
-                print(f"[PDF-Check] missing: {pdfp} (will remove row)")
+                print(f"[PDF-Check] missing: {pdfp}")
+            if remove_invalid_rows:
+                continue
+            row["pdf_path"] = None
+            row["pdf_valid"] = False
+            to_keep.append(row)
             continue
         ok = check_pdf_valid(pdfp)
         if not ok:
@@ -1722,8 +1761,14 @@ def pdf_check_and_cleanup(excel_path: str, pdf_base_dir: str, backup: bool = Tru
             except Exception:
                 pass
             if verbose and log_each:
-                print(f"[PDF-Check] invalid/corrupt: {pdfp} (removed)")
+                print(f"[PDF-Check] invalid/corrupt: {pdfp}")
+            if remove_invalid_rows:
+                continue
+            row["pdf_path"] = None
+            row["pdf_valid"] = False
+            to_keep.append(row)
             continue
+        row["pdf_valid"] = True
         to_keep.append(row)
     if backup:
         # 原始文件保持原名，检查后的文件添加_check后缀
@@ -1925,12 +1970,14 @@ def main():
     print("[PDF-Check] verifying downloaded PDFs...")
 
     pdf_check_log_each = get_config("runtime.pdf_check_log_each", False)
+    pdf_check_remove_invalid_rows = get_config("runtime.pdf_check_remove_invalid_rows", False)
     checked, removed = pdf_check_and_cleanup(
         excel_path,
         os.path.join(out_base, "PDF_download"),
         backup=True,
         verbose=verbose,
-        log_each=pdf_check_log_each
+        log_each=pdf_check_log_each,
+        remove_invalid_rows=pdf_check_remove_invalid_rows,
     )
 
     # summary

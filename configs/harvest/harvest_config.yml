@@ -80,9 +80,12 @@ runtime:
 
   # PDF检查是否输出每篇文献的详情日志（missing/invalid）
   pdf_check_log_each: false
+
+  # PDF检查是否删除无效PDF对应行（false=保留文献行，仅清空pdf_path并标记pdf_valid）
+  pdf_check_remove_invalid_rows: false
   
   # 每秒请求数（用于速率限制）
-  requests_per_second: 2
+  requests_per_second: 1
   
   # 下载超时时间（秒）
   download_timeout: 60
