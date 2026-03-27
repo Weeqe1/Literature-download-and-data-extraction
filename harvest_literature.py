@@ -485,11 +485,13 @@ def split_keywords_into_clauses(keywords: str, max_clauses: int = 200) -> List[s
 # OpenAlex search
 # -----------------------
 OPENALEX_BASE = "https://api.openalex.org/works"
+OPENALEX_TIMEOUT_SEC = int(get_config("runtime.openalex_timeout_sec", 45) or 45)
+OPENALEX_RETRY_ATTEMPTS = int(get_config("runtime.openalex_retry_attempts", 4) or 4)
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8), retry=retry_if_exception_type((requests.RequestException,)))
+@retry(stop=stop_after_attempt(max(1, OPENALEX_RETRY_ATTEMPTS)), wait=wait_exponential(min=1, max=8), retry=retry_if_exception_type((requests.RequestException,)))
 def openalex_get(params: dict):
     rate_limit()
-    r = SESSION.get(OPENALEX_BASE, params=params, timeout=30)
+    r = SESSION.get(OPENALEX_BASE, params=params, timeout=OPENALEX_TIMEOUT_SEC)
     if r.status_code != 200:
         raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
     return r.json()
@@ -1419,6 +1421,12 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
     Returns raw works list.
     """
     collected = []
+    # clamp to [0.0, 1.0] to avoid accidental invalid config values
+    try:
+        match_strictness = float(match_strictness)
+    except Exception:
+        match_strictness = 0.7
+    match_strictness = max(0.0, min(1.0, match_strictness))
 
     # clause validity check
     def is_valid_clause(c: str) -> bool:
@@ -1802,7 +1810,7 @@ def pdf_check_and_cleanup(
     Check each pdf path listed in the excel file.
     - remove_invalid_rows=True: remove rows with missing/invalid PDFs.
     - remove_invalid_rows=False: keep rows and clear invalid pdf_path.
-    Returns (checked_count, removed_count). Updates excel in place (back up original).
+    Returns (checked_count, invalid_count). Updates excel in place (back up original).
     """
 
     if not os.path.exists(excel_path):
@@ -1813,24 +1821,33 @@ def pdf_check_and_cleanup(
     if df.empty:
         return 0,0
     checked = 0
-    removed = 0
+    invalid = 0
+    dropped_rows = 0
     to_keep = []
     for idx, row in df.iterrows():
         pdfp = row.get("pdf_path")
+        if not pdfp or not isinstance(pdfp, str) or not pdfp.strip():
+            # No PDF was downloaded for this row; keep metadata and skip integrity check.
+            row["pdf_valid"] = False
+            to_keep.append(row)
+            continue
+
         checked += 1
-        if not pdfp or not isinstance(pdfp, str) or not os.path.exists(pdfp):
-            removed += 1
+        if not os.path.exists(pdfp):
+            invalid += 1
             if verbose and log_each:
                 print(f"[PDF-Check] missing: {pdfp}")
             if remove_invalid_rows:
+                dropped_rows += 1
                 continue
             row["pdf_path"] = None
             row["pdf_valid"] = False
             to_keep.append(row)
             continue
+
         ok = check_pdf_valid(pdfp)
         if not ok:
-            removed += 1
+            invalid += 1
             try:
                 os.remove(pdfp)
             except Exception:
@@ -1838,6 +1855,7 @@ def pdf_check_and_cleanup(
             if verbose and log_each:
                 print(f"[PDF-Check] invalid/corrupt: {pdfp}")
             if remove_invalid_rows:
+                dropped_rows += 1
                 continue
             row["pdf_path"] = None
             row["pdf_valid"] = False
@@ -1858,8 +1876,8 @@ def pdf_check_and_cleanup(
         new_df = pd.DataFrame(columns=df.columns)
     new_df.to_excel(checked_path, index=False)
     if verbose:
-        print(f"[PDF-Check] completed: {checked} checked, {removed} removed.")
-    return checked, removed
+        print(f"[PDF-Check] completed: checked_pdfs={checked}, invalid_pdfs={invalid}, dropped_rows={dropped_rows}.")
+    return checked, invalid
 
 # -----------------------
 # Main orchestration
@@ -1899,16 +1917,20 @@ def main():
     # Incremental mode
     incremental = get_config("runtime.incremental", True)
     verbose = get_config("runtime.verbose", True)
+    match_strictness = get_config("runtime.match_strictness", 0.7)
     
     ensure_dir(out_base)
     existing_dois = set()
     if incremental and os.path.exists(excel_path):
         try:
             df_exist = pd.read_excel(excel_path)
-            for d in df_exist.get("doi", []) or []:
+            doi_values = df_exist["doi"].tolist() if "doi" in df_exist.columns else []
+            for d in doi_values:
                 if pd.isna(d):
                     continue
-                existing_dois.add(str(d).strip())
+                ds = str(d).strip()
+                if ds:
+                    existing_dois.add(ds)
             print(f"[Incremental] Loaded {len(existing_dois)} existing DOIs from {excel_path}, will skip them.")
         except Exception as e:
             print("[Incremental] could not read existing excel:", e)
@@ -1934,7 +1956,8 @@ def main():
             year_to=year_to,
             semantic_api_key=SEMANTIC_SCHOLAR_API_KEY,
             audit_rejections=rejected_audit,
-            audit_limit=audit_limit
+            audit_limit=audit_limit,
+            match_strictness=match_strictness,
         )
         print(f"[RunClause] clause {idx} returned {len(works)} raw works")
         all_works.extend(works)

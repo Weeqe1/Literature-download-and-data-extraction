@@ -92,6 +92,16 @@ runtime:
   
   # API 请求超时时间（秒）
   api_timeout: 30
+
+  # OpenAlex 单次请求超时（秒）
+  openalex_timeout_sec: 45
+
+  # OpenAlex 请求失败后的总重试次数（含首次请求）
+  openalex_retry_attempts: 4
+
+  # 本地子句匹配严格度（0-1）
+  # 1.0=严格（几乎全匹配），0.7=推荐平衡，0.5=更宽松
+  match_strictness: 0.7
   
   # 是否显示详细输出
   verbose: true
