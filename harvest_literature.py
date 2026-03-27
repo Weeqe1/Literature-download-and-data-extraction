@@ -283,7 +283,7 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
             return " ".join([f'"{p}"' for p in positives])
 
     if source == "semantic_scholar":
-        # Semantic Scholar query is free text; boolean operators are weakly interpreted
+        # Semantic Scholar /paper/search expects plain text query (no special boolean syntax).
         return " ".join(positives)
 
     if source == "openalex":
@@ -717,87 +717,146 @@ def search_wos_clause(clause: str, max_results: int = 200, year_from: Optional[i
 # -----------------------
 # Semantic Scholar
 # -----------------------
-def search_semantic_scholar_clause(clause: str, max_results: int = 100, title_only: bool = False, api_key: Optional[str] = None, verbose: bool = True) -> List[dict]:
+def search_semantic_scholar_clause(
+    clause: str,
+    max_results: int = 100,
+    title_only: bool = False,
+    api_key: Optional[str] = None,
+    verbose: bool = True,
+    year_from: Optional[int] = None,
+    year_to: Optional[int] = None,
+) -> List[dict]:
     """
     Query Semantic Scholar Graph API. Use conservative fields to avoid HTTP 400.
     """
     if api_key is None:
         api_key = SEMANTIC_SCHOLAR_API_KEY
-    if not api_key:
-        if verbose:
-            print("[Semantic Scholar] API key not set; skipping Semantic Scholar")
-        return []
+
+    # /paper/search requires plain text and docs note hyphenated terms may fail.
+    q = (clause or "").strip()
+    q = q.replace('"', ' ')
+    q = re.sub(r'\b(AND|OR|NOT)\b', ' ', q, flags=re.I)
+    q = q.replace('-', ' ')
+    q = re.sub(r'\s+', ' ', q).strip()
+    if not q:
+        q = (clause or "").strip()
+
     base = "https://api.semanticscholar.org/graph/v1/paper/search"
     fields = "title,abstract,year,venue,authors,externalIds,isOpenAccess,openAccessPdf"
-    # Keep request conservative to reduce 5xx/timeout probability.
-    params = {"query": clause, "limit": min(max_results, 100), "fields": fields}
-    headers = {"x-api-key": api_key, "User-Agent": "pdf_download_harvester/1.0"}
-    attempts = 0
-    backoff = 1.0
+    out = []
+    scanned_raw = 0
+    offset = 0
+    # Relevance search endpoint can return at most 1000 ranked results.
+    target = max(0, min(max_results, 1000))
+    page_size = min(100, max(1, target))
+    use_key = bool(api_key)
+
     last_status = None
     last_body = ""
     last_exc = None
-    while attempts < 5:
-        try:
-            # global limiter + S2 dedicated limiter
-            rate_limit()
-            rate_limit_semantic_scholar()
-            r = requests.get(base, params=params, headers=headers, timeout=25)
-        except Exception as e:
-            last_exc = e
-            attempts += 1
-            time.sleep(backoff)
-            backoff *= 2
-            continue
-        last_status = r.status_code
-        last_body = r.text[:300] if getattr(r, "text", None) else ""
-        if r.status_code == 200:
-            js = r.json()
-            items = js.get("data") or js.get("results") or []
-            out = []
-            for it in items:
-                doi = None
-                ext = it.get("externalIds") or {}
-                if isinstance(ext, dict):
-                    doi = ext.get("DOI") or ext.get("doi")
-                out.append({
-                    "source": "semantic_scholar",
-                    "doi": doi,
-                    "display_name": it.get("title"),
-                    "abstract_text": it.get("abstract"),
-                    "publication_year": it.get("year"),
-                    "journal": it.get("venue"),
-                    "authors_list": [a.get("name") for a in it.get("authors") or []],
-                    "open_access_status": it.get("isOpenAccess"),
-                    "oa_url": safe_get(it, "openAccessPdf", "url")
-                })
-            return out
-        elif r.status_code == 429:
-            attempts += 1
-            time.sleep(backoff)
-            backoff *= 2
-            continue
-        elif r.status_code in (500, 502, 503, 504):
-            # transient server-side failures: retry with exponential backoff
-            attempts += 1
-            time.sleep(backoff)
-            backoff *= 2
-            continue
-        else:
-            # some 400 may indicate unsupported fields; try minimal fields once
-            if r.status_code == 400 and attempts == 0:
-                params["fields"] = "title,abstract,year,authors"
+
+    while len(out) < target and offset < 1000:
+        params = {
+            "query": q,
+            "offset": offset,
+            "limit": min(page_size, target - len(out)),
+            "fields": fields,
+        }
+        if year_from and year_to:
+            params["year"] = f"{year_from}-{year_to}"
+        elif year_from:
+            params["year"] = f"{year_from}-"
+        elif year_to:
+            params["year"] = f"-{year_to}"
+
+        attempts = 0
+        backoff = 1.0
+        minimal_fields_used = False
+        page_ok = False
+        while attempts < 5:
+            headers = {"User-Agent": "pdf_download_harvester/1.0"}
+            if use_key and api_key:
+                headers["x-api-key"] = api_key
+            try:
+                rate_limit()
+                rate_limit_semantic_scholar()
+                r = requests.get(base, params=params, headers=headers, timeout=25)
+            except Exception as e:
+                last_exc = e
+                attempts += 1
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+
+            last_status = r.status_code
+            last_body = r.text[:300] if getattr(r, "text", None) else ""
+
+            if r.status_code == 200:
+                js = r.json()
+                items = js.get("data") or []
+                scanned_raw += len(items)
+                if not items:
+                    page_ok = True
+                    offset = 1000
+                    break
+                for it in items:
+                    doi = None
+                    ext = it.get("externalIds") or {}
+                    if isinstance(ext, dict):
+                        doi = ext.get("DOI") or ext.get("doi")
+                    out.append({
+                        "source": "semantic_scholar",
+                        "doi": doi,
+                        "display_name": it.get("title"),
+                        "abstract_text": it.get("abstract"),
+                        "publication_year": it.get("year"),
+                        "journal": it.get("venue"),
+                        "authors_list": [a.get("name") for a in it.get("authors") or []],
+                        "open_access_status": it.get("isOpenAccess"),
+                        "oa_url": safe_get(it, "openAccessPdf", "url")
+                    })
+                    if len(out) >= target:
+                        break
+
+                next_offset = js.get("next")
+                if isinstance(next_offset, int) and next_offset > offset:
+                    offset = next_offset
+                else:
+                    offset += len(items)
+                page_ok = True
+                break
+
+            if r.status_code in (429, 500, 502, 503, 504):
+                attempts += 1
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+
+            if r.status_code == 400 and not minimal_fields_used:
+                params["fields"] = "title,year,authors,externalIds"
+                minimal_fields_used = True
                 attempts += 1
                 continue
-            if verbose:
-                print(f"[Semantic Scholar] HTTP {r.status_code}: {r.text[:300]}")
-            return []
-    if verbose:
+
+            if r.status_code in (401, 403) and use_key:
+                # Fallback to unauthenticated request once if key is rejected.
+                use_key = False
+                attempts += 1
+                continue
+
+            # Other 4xx: stop this source for current clause.
+            attempts = 999
+
+        if not page_ok:
+            break
+
+    set_source_stats("semantic_scholar", scanned_raw=scanned_raw, returned=len(out))
+    if not out and verbose:
         if last_exc is not None and last_status is None:
             print(f"[Semantic Scholar] persistent failures; last exception: {str(last_exc)[:180]}")
         else:
             print(f"[Semantic Scholar] persistent failures; last status={last_status}, body={last_body}")
-    return []
+    return out
 
 # -----------------------
 # PubMed (Entrez eutils)
@@ -1380,7 +1439,14 @@ def run_clause_search(clause: str, sources_order: List[str], max_per_clause: int
             if src == "wos":
                 return search_wos_clause(q, max_results=max_per_clause, year_from=year_from, year_to=year_to)
             if src == "semantic_scholar":
-                return search_semantic_scholar_clause(q, max_results=max_per_clause, title_only=title_only_flag, api_key=semantic_api_key)
+                return search_semantic_scholar_clause(
+                    q,
+                    max_results=max_per_clause,
+                    title_only=title_only_flag,
+                    api_key=semantic_api_key,
+                    year_from=year_from,
+                    year_to=year_to,
+                )
             if src == "pubmed":
                 return search_pubmed_clause(q, max_results=max_per_clause, title_only=title_only_flag, email=mailto)
             if src == "arxiv":
