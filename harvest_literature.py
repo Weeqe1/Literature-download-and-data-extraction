@@ -92,6 +92,7 @@ load_config()
 # Config Values (from file or defaults)
 # -------------
 WOS_API_KEY = os.environ.get("WOS_API_KEY", get_config("api_keys.wos", ""))
+OPENALEX_API_KEY = os.environ.get("OPENALEX_API_KEY", get_config("api_keys.openalex", ""))
 SEMANTIC_SCHOLAR_API_KEY = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", get_config("api_keys.semantic_scholar", ""))
 DEFAULT_EMAIL = get_config("api_keys.contact_email", "wangqi@ahut.edu.cn")
 
@@ -487,14 +488,35 @@ def split_keywords_into_clauses(keywords: str, max_clauses: int = 200) -> List[s
 OPENALEX_BASE = "https://api.openalex.org/works"
 OPENALEX_TIMEOUT_SEC = int(get_config("runtime.openalex_timeout_sec", 45) or 45)
 OPENALEX_RETRY_ATTEMPTS = int(get_config("runtime.openalex_retry_attempts", 4) or 4)
+OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED = bool(get_config("runtime.openalex_disable_on_budget_exhausted", True))
+_OPENALEX_BUDGET_EXHAUSTED = False
+_OPENALEX_BUDGET_WARNED = False
 
 @retry(stop=stop_after_attempt(max(1, OPENALEX_RETRY_ATTEMPTS)), wait=wait_exponential(min=1, max=8), retry=retry_if_exception_type((requests.RequestException,)))
 def openalex_get(params: dict):
+    global _OPENALEX_BUDGET_EXHAUSTED
+    if OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED and _OPENALEX_BUDGET_EXHAUSTED:
+        raise requests.RequestException("OpenAlex disabled for this run: budget exhausted (HTTP 429 Insufficient budget)")
+
+    def _mark_budget_exhausted_from_text(msg: str) -> None:
+        global _OPENALEX_BUDGET_EXHAUSTED
+        if not OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED:
+            return
+        low = (msg or "").lower()
+        if "openalex http 429" in low and "insufficient budget" in low:
+            _OPENALEX_BUDGET_EXHAUSTED = True
+
+    req_params = dict(params or {})
+    if OPENALEX_API_KEY and "api_key" not in req_params:
+        req_params["api_key"] = OPENALEX_API_KEY
+
     rate_limit()
     try:
-        r = SESSION.get(OPENALEX_BASE, params=params, timeout=OPENALEX_TIMEOUT_SEC)
+        r = SESSION.get(OPENALEX_BASE, params=req_params, timeout=OPENALEX_TIMEOUT_SEC)
         if r.status_code != 200:
-            raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
+            msg = f"OpenAlex HTTP {r.status_code}: {r.text[:300]}"
+            _mark_budget_exhausted_from_text(msg)
+            raise requests.RequestException(msg)
         return r.json()
     except requests.RequestException as sess_err:
         # Fallback channel: bypass pooled session and issue a direct request.
@@ -502,12 +524,14 @@ def openalex_get(params: dict):
         try:
             r2 = requests.get(
                 OPENALEX_BASE,
-                params=params,
+                params=req_params,
                 timeout=OPENALEX_TIMEOUT_SEC,
                 headers={"User-Agent": SESSION.headers.get("User-Agent", "harvest_literature/1.0")},
             )
             if r2.status_code != 200:
-                raise requests.RequestException(f"OpenAlex HTTP {r2.status_code}: {r2.text[:300]}")
+                msg2 = f"OpenAlex HTTP {r2.status_code}: {r2.text[:300]}"
+                _mark_budget_exhausted_from_text(msg2)
+                raise requests.RequestException(msg2)
             return r2.json()
         except requests.RequestException as direct_err:
             raise requests.RequestException(
@@ -520,6 +544,15 @@ def search_openalex_clause(clause: str, max_results: int = 2000, title_only: boo
     Search OpenAlex for a clause. If title_only True, use title.search; otherwise use default.search (title+abstract).
     Returns list of works (raw dicts).
     """
+    global _OPENALEX_BUDGET_WARNED
+
+    if OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED and _OPENALEX_BUDGET_EXHAUSTED:
+        if not _OPENALEX_BUDGET_WARNED:
+            print("[OpenAlex] skipped: budget exhausted (HTTP 429 Insufficient budget). Will retry next run.")
+            _OPENALEX_BUDGET_WARNED = True
+        set_source_stats("openalex", scanned_raw=0, returned=0)
+        return []
+
     results = []
     scanned_raw = 0
     per_page = 50

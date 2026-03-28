@@ -5,6 +5,9 @@
 # API Keys - 各数据源的 API 密钥
 # ==================================================
 api_keys:
+  # OpenAlex API Key
+  openalex: "Ql0gtMYS3me7ATjFqjE4VZ"
+
   # Web of Science API Key
   wos: "66330c65e1e2258a48717815e13522dd47aa66bf"
   
@@ -98,6 +101,9 @@ runtime:
 
   # OpenAlex 请求失败后的总重试次数（含首次请求）
   openalex_retry_attempts: 4
+
+  # OpenAlex 遇到 429 Insufficient budget 后，是否在本次运行内自动停用（避免重复失败）
+  openalex_disable_on_budget_exhausted: true
 
   # 本地子句匹配严格度（0-1）
   # 1.0=严格（几乎全匹配），0.7=推荐平衡，0.5=更宽松
