@@ -29,7 +29,7 @@ from urllib.parse import quote_plus
 import pandas as pd
 from tqdm import tqdm
 from dateutil import parser as dtparser
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import RetryError, retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # optional: PyPDF2 for PDF validation
 try:
@@ -491,10 +491,29 @@ OPENALEX_RETRY_ATTEMPTS = int(get_config("runtime.openalex_retry_attempts", 4) o
 @retry(stop=stop_after_attempt(max(1, OPENALEX_RETRY_ATTEMPTS)), wait=wait_exponential(min=1, max=8), retry=retry_if_exception_type((requests.RequestException,)))
 def openalex_get(params: dict):
     rate_limit()
-    r = SESSION.get(OPENALEX_BASE, params=params, timeout=OPENALEX_TIMEOUT_SEC)
-    if r.status_code != 200:
-        raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
-    return r.json()
+    try:
+        r = SESSION.get(OPENALEX_BASE, params=params, timeout=OPENALEX_TIMEOUT_SEC)
+        if r.status_code != 200:
+            raise requests.RequestException(f"OpenAlex HTTP {r.status_code}: {r.text[:300]}")
+        return r.json()
+    except requests.RequestException as sess_err:
+        # Fallback channel: bypass pooled session and issue a direct request.
+        rate_limit()
+        try:
+            r2 = requests.get(
+                OPENALEX_BASE,
+                params=params,
+                timeout=OPENALEX_TIMEOUT_SEC,
+                headers={"User-Agent": SESSION.headers.get("User-Agent", "harvest_literature/1.0")},
+            )
+            if r2.status_code != 200:
+                raise requests.RequestException(f"OpenAlex HTTP {r2.status_code}: {r2.text[:300]}")
+            return r2.json()
+        except requests.RequestException as direct_err:
+            raise requests.RequestException(
+                f"OpenAlex session+direct failed | session={type(sess_err).__name__}: {str(sess_err)[:160]} | "
+                f"direct={type(direct_err).__name__}: {str(direct_err)[:160]}"
+            )
 
 def search_openalex_clause(clause: str, max_results: int = 2000, title_only: bool = False, year_from: Optional[int] = None, year_to: Optional[int] = None, mailto: Optional[str] = None) -> List[dict]:
     """
@@ -538,6 +557,17 @@ def search_openalex_clause(clause: str, max_results: int = 2000, title_only: boo
         if has_and:
             return all(p in hay for p in norm_pos)
         return any(p in hay for p in norm_pos)
+
+    def _fmt_openalex_error(err: Exception) -> str:
+        base = err
+        if isinstance(err, RetryError):
+            try:
+                inner = err.last_attempt.exception()
+                if inner is not None:
+                    base = inner
+            except Exception:
+                pass
+        return f"{type(base).__name__}: {str(base)[:240]}"
     
     params = {"per-page": per_page, "page": page, "select": ",".join([
         "id","doi","display_name","title","abstract_inverted_index","publication_year","publication_date",
@@ -570,7 +600,7 @@ def search_openalex_clause(clause: str, max_results: int = 2000, title_only: boo
             consecutive_failures += 1
             # expose failures for diagnosis but avoid log flooding
             if not error_logged:
-                print(f"[OpenAlex] request failed: {str(last_err)[:240]}")
+                print(f"[OpenAlex] request failed: {_fmt_openalex_error(last_err) if last_err else 'unknown'}")
                 error_logged = True
             # On repeated failures, progressively reduce page size to ease server/network pressure.
             per_page = max(min_per_page, int(per_page * 0.5))
