@@ -67,7 +67,12 @@ class LLMClient:
             raise RuntimeError("openai package not installed. Please `pip install openai>=1.25`.")
         try:
             from openai import OpenAI
-            self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+            # MiMo uses 'api-key' header instead of 'Authorization: Bearer'
+            if base_url and "xiaomimomo.com" in base_url:
+                self.client = OpenAI(api_key=self.api_key, base_url=self.base_url, 
+                                     default_headers={"api-key": self.api_key})
+            else:
+                self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
         # 探测支持模式
