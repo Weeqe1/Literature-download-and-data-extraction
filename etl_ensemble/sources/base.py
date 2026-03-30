@@ -446,9 +446,19 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
         return body
 
     if source == "arxiv":
-        if title_only:
-            return " OR ".join([f'ti:"{p}"' for p in positives])
-        return " OR ".join([f'all:"{p}"' for p in positives])
+        # arXiv API does not support quoted phrases with ti:/all: prefix.
+        # Split each phrase into words and use AND between them.
+        def _arxiv_field_query(phrase: str, prefix: str) -> str:
+            words = phrase.strip().split()
+            if len(words) == 1:
+                return f'{prefix}:"{words[0]}"'
+            return " AND ".join([f'{prefix}:"{w}"' for w in words])
+
+        prefix = "ti" if title_only else "all"
+        parts = [_arxiv_field_query(p, prefix) for p in positives]
+        if has_and:
+            return " AND ".join(parts)
+        return " OR ".join(parts)
 
     if source == "crossref":
         if has_and:

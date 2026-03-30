@@ -74,6 +74,9 @@ def configure(
 def openalex_get(params: dict) -> dict:
     """Make a request to the OpenAlex API with retry and fallback.
 
+    When the polite pool (API key) budget is exhausted (HTTP 429), automatically
+    falls back to the public pool (no API key) which has no daily budget limit.
+
     Args:
         params: Query parameters.
 
@@ -83,23 +86,23 @@ def openalex_get(params: dict) -> dict:
     Raises:
         requests.RequestException: On persistent failure.
     """
-    global _OPENALEX_BUDGET_EXHAUSTED
-
-    if OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED and _OPENALEX_BUDGET_EXHAUSTED:
-        raise requests.RequestException(
-            "OpenAlex disabled for this run: budget exhausted (HTTP 429 Insufficient budget)"
-        )
+    global _OPENALEX_BUDGET_EXHAUSTED, _OPENALEX_BUDGET_WARNED
 
     def _mark_budget_exhausted_from_text(msg: str) -> None:
         global _OPENALEX_BUDGET_EXHAUSTED
-        if not OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED:
-            return
         low = (msg or "").lower()
-        if "openalex http 429" in low and "insufficient budget" in low:
+        if "insufficient budget" in low or ("429" in msg and "budget" in low):
             _OPENALEX_BUDGET_EXHAUSTED = True
 
     req_params = dict(params or {})
-    if OPENALEX_API_KEY and "api_key" not in req_params:
+
+    # If polite pool budget exhausted, remove API key to fall back to public pool
+    if _OPENALEX_BUDGET_EXHAUSTED:
+        req_params.pop("api_key", None)
+        if not _OPENALEX_BUDGET_WARNED:
+            logger.info("[OpenAlex] Budget exhausted, falling back to public pool (10 req/s limit)")
+            _OPENALEX_BUDGET_WARNED = True
+    elif OPENALEX_API_KEY and "api_key" not in req_params:
         req_params["api_key"] = OPENALEX_API_KEY
 
     sess = SESSION or requests.Session()
@@ -107,17 +110,27 @@ def openalex_get(params: dict) -> dict:
     rate_limit()
     try:
         r = sess.get(OPENALEX_BASE, params=req_params, timeout=OPENALEX_TIMEOUT_SEC)
+        if r.status_code == 429 and "insufficient budget" in r.text.lower():
+            # Polite pool budget exhausted → retry without API key
+            _mark_budget_exhausted_from_text(f"OpenAlex HTTP 429: {r.text[:300]}")
+            req_params.pop("api_key", None)
+            rate_limit()
+            r = sess.get(OPENALEX_BASE, params=req_params, timeout=OPENALEX_TIMEOUT_SEC)
         if r.status_code != 200:
             msg = f"OpenAlex HTTP {r.status_code}: {r.text[:300]}"
             _mark_budget_exhausted_from_text(msg)
             raise requests.RequestException(msg)
         return r.json()
     except requests.RequestException as sess_err:
+        if "budget" in str(sess_err).lower():
+            raise
         rate_limit()
         try:
+            public_params = dict(params or {})
+            public_params.pop("api_key", None)
             r2 = requests.get(
                 OPENALEX_BASE,
-                params=req_params,
+                params=public_params,
                 timeout=OPENALEX_TIMEOUT_SEC,
                 headers={"User-Agent": sess.headers.get("User-Agent", "harvest_literature/1.0")},
             )
@@ -156,12 +169,8 @@ def search_openalex_clause(
     """
     global _OPENALEX_BUDGET_WARNED
 
-    if OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED and _OPENALEX_BUDGET_EXHAUSTED:
-        if not _OPENALEX_BUDGET_WARNED:
-            logger.info("[OpenAlex] skipped: budget exhausted (HTTP 429). Will retry next run.")
-            _OPENALEX_BUDGET_WARNED = True
-        set_source_stats("openalex", scanned_raw=0, returned=0)
-        return []
+    # Budget exhaustion is now handled by openalex_get with automatic fallback to public pool
+    # No need to skip - just let it run with reduced rate
 
     results: List[dict] = []
     scanned_raw = 0

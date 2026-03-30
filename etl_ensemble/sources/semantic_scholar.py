@@ -66,7 +66,7 @@ def search_semantic_scholar_clause(
     out: List[dict] = []
     scanned_raw = 0
     offset = 0
-    target = max(0, min(max_results, 1000))
+    target = max(0, max_results)
     page_size = min(100, max(1, target))
     use_key = bool(api_key)
 
@@ -74,7 +74,7 @@ def search_semantic_scholar_clause(
     last_body = ""
     last_exc = None
 
-    while len(out) < target and offset < 1000:
+    while len(out) < target and offset < 10000:
         params = {
             "query": q,
             "offset": offset,
@@ -117,7 +117,7 @@ def search_semantic_scholar_clause(
                 scanned_raw += len(items)
                 if not items:
                     page_ok = True
-                    offset = 1000
+                    offset = 10000
                     break
                 for it in items:
                     doi = None
