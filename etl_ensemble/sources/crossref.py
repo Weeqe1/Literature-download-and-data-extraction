@@ -8,7 +8,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-from .base import rate_limit, parse_clause_units, normalize_text, set_source_stats, doi_normalize
+from .base import rate_limit_source, parse_clause_units, normalize_text, set_source_stats, doi_normalize
 
 # ---------------------------------------------------------------------------
 # Optional fuzzy matching
@@ -101,7 +101,7 @@ def search_crossref_clause(
             params["mailto"] = mailto
 
         try:
-            rate_limit()
+            rate_limit_source('crossref')
             r = requests.get(CROSSREF_API, params=params, timeout=30)
             if r.status_code != 200:
                 break
@@ -174,7 +174,7 @@ def crossref_find_doi_by_title(title: str, mailto: Optional[str] = None) -> Opti
     if mailto:
         params["mailto"] = mailto
     try:
-        rate_limit()
+        rate_limit_source('crossref')
         r = requests.get(CROSSREF_API, params=params, timeout=25)
         if r.status_code != 200:
             return None
@@ -213,7 +213,7 @@ def get_unpaywall_pdf_by_doi(doi: str, email: str) -> Tuple[Optional[str], bool]
     url = f"{UNPAYWALL_API}{requests.utils.quote(doi, safe='')}"
     params = {"email": email}
     try:
-        rate_limit()
+        rate_limit_source('crossref')
         r = requests.get(url, params=params, timeout=20)
         if r.status_code != 200:
             return None, False

@@ -87,8 +87,9 @@ runtime:
   # PDF检查是否删除无效PDF对应行（false=保留文献行，仅清空pdf_path并标记pdf_valid）
   pdf_check_remove_invalid_rows: false
   
-  # 每秒请求数（用于速率限制）
-  requests_per_second: 1
+  # 每秒请求数（用于速率限制，建议 0.3~1.0，太高会被封IP）
+  # 0.3 = 每3秒1个请求，对各API友好
+  requests_per_second: 0.3
   
   # 下载超时时间（秒）
   download_timeout: 60

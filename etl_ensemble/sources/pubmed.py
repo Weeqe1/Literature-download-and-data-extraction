@@ -8,7 +8,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-from .base import rate_limit
+from .base import rate_limit_source
 
 # ---------------------------------------------------------------------------
 # Config
@@ -68,7 +68,7 @@ def search_pubmed_clause(
             "email": email,
         }
         try:
-            rate_limit()
+            rate_limit_source('pubmed')
             r = requests.get(PUBMED_ESEARCH, params=params, timeout=25)
             if r.status_code != 200:
                 break
@@ -97,7 +97,7 @@ def search_pubmed_clause(
         params2 = {"db": "pubmed", "id": ids_str, "retmode": "xml"}
 
         try:
-            rate_limit()
+            rate_limit_source('pubmed')
             r2 = requests.get(PUBMED_EFETCH, params=params2, timeout=30)
             if r2.status_code != 200:
                 continue

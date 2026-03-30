@@ -13,10 +13,25 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Rate limiting
+# Rate limiting - per-source throttling to avoid IP bans
 # ---------------------------------------------------------------------------
-_REQS_PER_SECOND: float = 4.0
-_MIN_SLEEP: float = 1.0 / max(1.0, _REQS_PER_SECOND)
+_REQS_PER_SECOND: float = 0.3
+_MIN_SLEEP: float = 1.0 / max(0.1, _REQS_PER_SECOND)
+
+# Per-source minimum interval (seconds) between consecutive requests
+# These are conservative values to be polite to free APIs
+_SOURCE_INTERVALS: Dict[str, float] = {
+    "openalex": 2.0,
+    "wos": 2.0,
+    "semantic_scholar": 3.0,
+    "pubmed": 1.0,
+    "arxiv": 5.0,        # arXiv is very strict about rate limits
+    "crossref": 2.0,
+}
+_SOURCE_LAST_TS: Dict[str, float] = {}
+
+# Per-source 429 cooldown tracking
+_SOURCE_COOLDOWN_UNTIL: Dict[str, float] = {}
 
 
 def configure_rate_limit(reqs_per_second: float) -> None:
@@ -35,22 +50,44 @@ def rate_limit() -> None:
     time.sleep(_MIN_SLEEP)
 
 
-# Semantic Scholar-specific rate limater (<=1 req/s)
-_S2_LAST_REQUEST_TS: float = 0.0
-
-
-def rate_limit_semantic_scholar(min_interval_sec: float = 1.05) -> None:
-    """Enforce minimum interval between Semantic Scholar requests.
+def rate_limit_source(source: str, min_interval: Optional[float] = None) -> None:
+    """Enforce per-source rate limit with 429 cooldown check.
 
     Args:
-        min_interval_sec: Minimum seconds between requests (default 1.05).
+        source: Source name (openalex, wos, semantic_scholar, etc.).
+        min_interval: Override interval in seconds. If None, uses default for source.
     """
-    global _S2_LAST_REQUEST_TS
-    now = time.time()
-    wait = (_S2_LAST_REQUEST_TS + min_interval_sec) - now
-    if wait > 0:
+    # Check if source is in cooldown (from a previous 429)
+    cooldown_until = _SOURCE_COOLDOWN_UNTIL.get(source, 0.0)
+    now = time.monotonic()
+    if now < cooldown_until:
+        wait = cooldown_until - now
+        logger.info("[%s] in cooldown, waiting %.1fs", source, wait)
         time.sleep(wait)
-    _S2_LAST_REQUEST_TS = time.time()
+
+    interval = min_interval or _SOURCE_INTERVALS.get(source, 2.0)
+    last_ts = _SOURCE_LAST_TS.get(source, 0.0)
+    elapsed = now - last_ts
+    if elapsed < interval:
+        time.sleep(interval - elapsed)
+    _SOURCE_LAST_TS[source] = time.monotonic()
+
+
+def set_source_cooldown(source: str, cooldown_sec: float = 60.0) -> None:
+    """Put a source into cooldown after receiving HTTP 429.
+
+    Args:
+        source: Source name.
+        cooldown_sec: How long to wait before retrying (default 60s).
+    """
+    _SOURCE_COOLDOWN_UNTIL[source] = time.monotonic() + cooldown_sec
+    logger.warning("[%s] entering cooldown for %.0fs due to rate limiting", source, cooldown_sec)
+
+
+# Legacy alias for Semantic Scholar
+def rate_limit_semantic_scholar(min_interval_sec: float = 3.0) -> None:
+    """Enforce minimum interval between Semantic Scholar requests."""
+    rate_limit_source("semantic_scholar", min_interval_sec)
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +238,8 @@ def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: boo
     Returns:
         True if the work matches the clause.
     """
+    from .openalex import openalex_abstract_to_text  # lazy to avoid circular
+
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True
@@ -242,6 +281,8 @@ def match_work_against_clause_with_reason(
     Returns:
         Tuple of (matched: bool, reason: str).
     """
+    from .openalex import openalex_abstract_to_text
+
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True, "no_positive_units"

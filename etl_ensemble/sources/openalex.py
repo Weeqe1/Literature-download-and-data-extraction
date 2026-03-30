@@ -107,14 +107,14 @@ def openalex_get(params: dict) -> dict:
 
     sess = SESSION or requests.Session()
 
-    rate_limit()
+    rate_limit_source('openalex')
     try:
         r = sess.get(OPENALEX_BASE, params=req_params, timeout=OPENALEX_TIMEOUT_SEC)
         if r.status_code == 429 and "insufficient budget" in r.text.lower():
             # Polite pool budget exhausted → retry without API key
             _mark_budget_exhausted_from_text(f"OpenAlex HTTP 429: {r.text[:300]}")
             req_params.pop("api_key", None)
-            rate_limit()
+            rate_limit_source('openalex')
             r = sess.get(OPENALEX_BASE, params=req_params, timeout=OPENALEX_TIMEOUT_SEC)
         if r.status_code != 200:
             msg = f"OpenAlex HTTP {r.status_code}: {r.text[:300]}"
@@ -124,7 +124,7 @@ def openalex_get(params: dict) -> dict:
     except requests.RequestException as sess_err:
         if "budget" in str(sess_err).lower():
             raise
-        rate_limit()
+        rate_limit_source('openalex')
         try:
             public_params = dict(params or {})
             public_params.pop("api_key", None)

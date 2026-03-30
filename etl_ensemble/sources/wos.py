@@ -8,7 +8,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-from .base import rate_limit
+from .base import rate_limit_source
 
 # ---------------------------------------------------------------------------
 # Config
@@ -52,7 +52,7 @@ def choose_best_wos_db(verbose: bool = True) -> Optional[str]:
     for db in candidates:
         params = {"q": test_q, "db": db, "limit": 1, "page": 1}
         try:
-            rate_limit()
+            rate_limit_source('wos')
             r = requests.get(WOS_BASE, headers=headers, params=params, timeout=20)
             if r.status_code == 200:
                 try:
@@ -119,7 +119,7 @@ def search_wos_clause(
     while len(results) < max_results:
         params = {"q": q_body, "db": db, "limit": page_size, "page": page}
         try:
-            rate_limit()
+            rate_limit_source('wos')
             r = requests.get(WOS_BASE, headers=headers, params=params, timeout=30)
             if r.status_code != 200:
                 if verbose:

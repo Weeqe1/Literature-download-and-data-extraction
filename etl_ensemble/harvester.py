@@ -29,7 +29,8 @@ from .sources.base import (
     set_source_stats,
     get_source_stats,
     configure_rate_limit,
-    rate_limit,
+    rate_limit_source,
+    set_source_cooldown,
 )
 from .sources import openalex, wos, semantic_scholar, pubmed as pubmed_mod, arxiv as arxiv_mod, crossref
 from .downloader import download_pdfs_and_assemble, ensure_dir
@@ -167,7 +168,12 @@ class LiteratureHarvester:
             if src == "crossref":
                 return crossref.search_crossref_clause(q, max_results=max_per_clause, mailto=mailto, year_from=year_from, year_to=year_to, title_only=title_only_flag)
         except Exception as e:
-            logger.warning("[%s] exception: %s", src, e)
+            err_msg = str(e).lower()
+            if "429" in err_msg or "rate" in err_msg or "too many" in err_msg or "budget" in err_msg:
+                logger.warning("[%s] rate limited, entering 60s cooldown: %s", src, str(e)[:100])
+                set_source_cooldown(src, 60.0)
+            else:
+                logger.warning("[%s] exception: %s", src, e)
         return []
 
     # ---- run_clause_search ----
