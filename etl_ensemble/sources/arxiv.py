@@ -1,6 +1,11 @@
-"""arXiv API search module."""
+"""arXiv API search module.
 
-from typing import List
+Note: arXiv API enforces strict rate limits (~1 request per 3 seconds).
+HTTP 429 responses are handled with exponential backoff.
+"""
+
+import time
+from typing import List, Optional
 
 import requests
 from dateutil import parser as dtparser
@@ -8,12 +13,55 @@ from dateutil import parser as dtparser
 import logging
 logger = logging.getLogger(__name__)
 
-from .base import rate_limit
-
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-ARXIV_API = "http://export.arxiv.org/api/query"
+ARXIV_API = "https://export.arxiv.org/api/query"
+_ARXIV_LAST_TS: float = 0.0
+_ARXIV_MIN_INTERVAL: float = 3.0  # arXiv recommends 3s between requests
+
+
+def _arxiv_rate_limit() -> None:
+    """arXiv-specific rate limiter: enforce >= 3s between requests."""
+    global _ARXIV_LAST_TS
+    elapsed = time.monotonic() - _ARXIV_LAST_TS
+    if elapsed < _ARXIV_MIN_INTERVAL:
+        time.sleep(_ARXIV_MIN_INTERVAL - elapsed)
+    _ARXIV_LAST_TS = time.monotonic()
+
+
+def _arxiv_get(params: dict, timeout: int = 120, max_retries: int = 3) -> Optional[requests.Response]:
+    """Make an arXiv API request with 429 retry and backoff.
+
+    Args:
+        params: Query parameters.
+        timeout: Request timeout in seconds.
+        max_retries: Number of retry attempts on 429.
+
+    Returns:
+        Response object or None on failure.
+    """
+    for attempt in range(1, max_retries + 1):
+        _arxiv_rate_limit()
+        try:
+            r = requests.get(ARXIV_API, params=params, timeout=timeout)
+            if r.status_code == 200:
+                return r
+            if r.status_code == 429:
+                wait = 5 * attempt  # 5s, 10s, 15s
+                logger.warning("[arXiv] HTTP 429 (rate limited), waiting %ds (attempt %d/%d)", wait, attempt, max_retries)
+                time.sleep(wait)
+                continue
+            logger.warning("[arXiv] HTTP %d (attempt %d/%d)", r.status_code, attempt, max_retries)
+            return None
+        except requests.exceptions.Timeout:
+            logger.warning("[arXiv] timeout (attempt %d/%d)", attempt, max_retries)
+            if attempt < max_retries:
+                time.sleep(5)
+        except Exception as e:
+            logger.warning("[arXiv] request error: %s", e)
+            return None
+    return None
 
 
 def search_arxiv_clause(
@@ -32,19 +80,29 @@ def search_arxiv_clause(
         List of work dicts.
     """
     q = clause
-    params = {"search_query": q, "start": 0, "max_results": min(max_results, 200)}
-    try:
-        rate_limit()
-        r = requests.get(ARXIV_API, params=params, timeout=30)
-        if r.status_code != 200:
-            return []
+    page_size = min(max_results, 200)
+    out: List[dict] = []
+
+    start = 0
+    while start < max_results:
+        this_batch = min(page_size, max_results - start)
+        params = {"search_query": q, "start": start, "max_results": this_batch}
+
+        r = _arxiv_get(params)
+        if r is None:
+            break
 
         import xml.etree.ElementTree as ET
-        root = ET.fromstring(r.text)
+        try:
+            root = ET.fromstring(r.text)
+        except ET.ParseError:
+            break
+
         ns = {"atom": "http://www.w3.org/2005/Atom"}
         entries = root.findall("atom:entry", ns)
+        if not entries:
+            break
 
-        out: List[dict] = []
         for e in entries:
             title = e.findtext("atom:title", default="", namespaces=ns)
             summary = e.findtext("atom:summary", default="", namespaces=ns)
@@ -67,6 +125,9 @@ def search_arxiv_clause(
                     for a in e.findall("atom:author", ns)
                 ],
             })
-        return out
-    except Exception:
-        return []
+
+        start += len(entries)
+        if len(entries) < this_batch:
+            break
+
+    return out
