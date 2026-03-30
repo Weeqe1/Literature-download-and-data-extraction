@@ -9,7 +9,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-from .base import rate_limit, rate_limit_semantic_scholar, safe_get, set_source_stats
+from .base import rate_limit_source, rate_limit_semantic_scholar, safe_get, set_source_stats
 
 # ---------------------------------------------------------------------------
 # Config
@@ -98,7 +98,7 @@ def search_semantic_scholar_clause(
             if use_key and api_key:
                 headers["x-api-key"] = api_key
             try:
-                rate_limit()
+                rate_limit_source('semantic_scholar')
                 rate_limit_semantic_scholar()
                 r = requests.get(base, params=params, headers=headers, timeout=25)
             except Exception as e:

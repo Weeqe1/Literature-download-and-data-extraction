@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .base import (
-    rate_limit,
+    rate_limit_source,
     parse_clause_units,
     normalize_text,
     set_source_stats,

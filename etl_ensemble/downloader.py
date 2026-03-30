@@ -14,7 +14,7 @@ from tqdm import tqdm
 import logging
 logger = logging.getLogger(__name__)
 
-from .sources.base import sanitize_filename, doi_normalize, rate_limit
+from .sources.base import sanitize_filename, doi_normalize, rate_limit_source
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -93,7 +93,7 @@ def download_file(
 
     for attempt in range(1, max_retries + 1):
         try:
-            rate_limit()
+            rate_limit_source('crossref')
             with requests.get(url, stream=True, timeout=timeout) as r:
                 if r.status_code == 404 or r.status_code == 403:
                     if verbose:
