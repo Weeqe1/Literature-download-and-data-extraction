@@ -201,8 +201,6 @@ def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: boo
     Returns:
         True if the work matches the clause.
     """
-    from .openalex import openalex_abstract_to_text  # lazy to avoid circular
-
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True
@@ -244,8 +242,6 @@ def match_work_against_clause_with_reason(
     Returns:
         Tuple of (matched: bool, reason: str).
     """
-    from .openalex import openalex_abstract_to_text
-
     positives, negatives, has_and = parse_clause_units(clause)
     if not positives:
         return True, "no_positive_units"
@@ -386,6 +382,35 @@ def split_keywords_into_clauses(keywords: str, max_clauses: int = 200) -> List[s
         seen.add(key)
         cleaned.append(p2)
     return cleaned[:max_clauses]
+
+
+# ---------------------------------------------------------------------------
+# OpenAlex abstract reconstruction (moved here to avoid circular imports)
+# ---------------------------------------------------------------------------
+def openalex_abstract_to_text(inv_idx: Any) -> str:
+    """Rebuild plain abstract text from OpenAlex abstract_inverted_index.
+
+    Args:
+        inv_idx: Inverted index dict mapping tokens to position lists.
+
+    Returns:
+        Reconstructed abstract text.
+    """
+    if not isinstance(inv_idx, dict):
+        return ""
+    pairs = []
+    for token, positions in inv_idx.items():
+        if not isinstance(positions, list):
+            continue
+        for p in positions:
+            try:
+                pairs.append((int(p), token))
+            except Exception:
+                continue
+    if not pairs:
+        return ""
+    pairs.sort(key=lambda x: x[0])
+    return " ".join(t for _, t in pairs)
 
 
 # ---------------------------------------------------------------------------

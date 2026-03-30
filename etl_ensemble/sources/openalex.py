@@ -20,6 +20,7 @@ from .base import (
     parse_clause_units,
     normalize_text,
     set_source_stats,
+    openalex_abstract_to_text,
 )
 
 # ---------------------------------------------------------------------------
@@ -63,32 +64,6 @@ def configure(
     OPENALEX_DISABLE_ON_BUDGET_EXHAUSTED = disable_on_budget_exhausted
     if session is not None:
         SESSION = session
-
-
-def openalex_abstract_to_text(inv_idx: Any) -> str:
-    """Rebuild plain abstract text from OpenAlex abstract_inverted_index.
-
-    Args:
-        inv_idx: Inverted index dict mapping tokens to position lists.
-
-    Returns:
-        Reconstructed abstract text.
-    """
-    if not isinstance(inv_idx, dict):
-        return ""
-    pairs = []
-    for token, positions in inv_idx.items():
-        if not isinstance(positions, list):
-            continue
-        for p in positions:
-            try:
-                pairs.append((int(p), token))
-            except Exception:
-                continue
-    if not pairs:
-        return ""
-    pairs.sort(key=lambda x: x[0])
-    return " ".join(t for _, t in pairs)
 
 
 @retry(

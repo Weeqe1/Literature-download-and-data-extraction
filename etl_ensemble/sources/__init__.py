@@ -9,4 +9,5 @@ from .base import (
     match_work_against_clause_with_reason,
     split_keywords_into_clauses,
     rate_limit,
+    openalex_abstract_to_text,
 )
