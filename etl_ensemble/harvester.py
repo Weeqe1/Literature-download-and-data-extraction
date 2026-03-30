@@ -5,6 +5,7 @@ that reads config, splits keywords into clauses, searches all sources,
 merges results, fills missing DOIs, and kicks off downloading.
 """
 
+import gc
 import os
 import re
 from typing import List, Dict, Any, Optional, Tuple
@@ -378,18 +379,39 @@ class LiteratureHarvester:
             )
             logger.info("[RunClause] clause %d returned %d raw works", idx, len(works))
             all_works.extend(works)
+            gc.collect()
             if len(all_works) >= max_total:
                 logger.info("[Main] reached max_total cap, stopping clause loop")
                 break
 
         export_rejected_audit(rejected_audit, audit_path, verbose=True)
+        del rejected_audit
+        gc.collect()
 
         logger.info("[Merge] merging and deduplicating...")
         merged = self.merge_and_dedupe(all_works, max_total=max_total)
+        del all_works
+        gc.collect()
         logger.info("[Merge] merged total: %d (capped to %d)", len(merged), max_total)
 
-        logger.info("[Fill] filling missing DOIs via Crossref title lookup...")
-        merged = self.fill_missing_dois(merged, verbose=True)
+        # Limit Crossref DOI fill to avoid excessive API calls + memory
+        doi_fill_limit = self.get_config("runtime.doi_fill_limit", 500)
+        missing_count = sum(1 for r in merged if not r.get("doi"))
+        if missing_count > doi_fill_limit:
+            logger.info("[Fill] limiting DOI fill to %d of %d missing items", doi_fill_limit, missing_count)
+            to_fill = [r for r in merged if not r.get("doi")][:doi_fill_limit]
+            for r in to_fill:
+                title = r.get("display_name") or r.get("title") or ""
+                if not title:
+                    continue
+                found = crossref.crossref_find_doi_by_title(title, mailto=self._email)
+                if found:
+                    r["doi"] = found
+            logger.info("[Fill] DOI fill complete (limited to %d)", doi_fill_limit)
+        else:
+            logger.info("[Fill] filling missing DOIs via Crossref title lookup...")
+            merged = self.fill_missing_dois(merged, verbose=True)
+        gc.collect()
 
         # Quality control
         logger.info("[Quality] validating and cleaning metadata...")
