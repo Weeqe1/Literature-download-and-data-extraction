@@ -9,6 +9,7 @@ import os
 import sys
 import argparse
 import json
+import logging
 import yaml
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -20,6 +21,8 @@ if sys.stdout.encoding != 'utf-8':
 
 from etl_ensemble.pdf_parser import parse_pdf, truncate_text, extract_images_from_pdf
 from etl_ensemble.llm_multi_client import MultiModelClient
+
+logger = logging.getLogger(__name__)
 
 
 # 定义提取阶段（Stage 2 为多模态图片分析）
@@ -94,10 +97,10 @@ def load_config(cfg_path: str) -> Dict[str, Any]:
         with open(cfg_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f) or {}
     except yaml.YAMLError as e:
-        print(f"[Error] Invalid YAML in {cfg_path}: {e}")
+        logger.error("Invalid YAML in %s: %s", cfg_path, e)
         return {}
     except IOError as e:
-        print(f"[Error] Cannot read {cfg_path}: {e}")
+        logger.error("Cannot read %s: %s", cfg_path, e)
         return {}
 
 
@@ -197,22 +200,18 @@ def run_single_stage(
     except RuntimeError:
         raise
     except ValueError as e:
-        if verbose:
-            print(f"      Stage {stage_name} value error: {e}")
+        logger.warning("Stage %s value error: %s", stage_name, e)
         raise
     except KeyError as e:
-        if verbose:
-            print(f"      Stage {stage_name} missing key: {e}")
+        logger.warning("Stage %s missing key: %s", stage_name, e)
         raise
     except Exception as e:
         error_str = str(e).lower()
         # Detect if error is related to image/multimodal not supported
         if images and any(kw in error_str for kw in ['image', 'multimodal', 'vision', 'unsupported', 'content_type']):
-            if verbose:
-                print(f"      ⚠️ Stage {stage_name} failed: Model may not support image input.")
-                print(f"         Consider using a multimodal model (GPT-4o, GPT-4V, Gemini 1.5 Pro) for Stage 2.")
-        elif verbose:
-            print(f"      Stage {stage_name} failed: {e}")
+            logger.warning("Stage %s failed: Model may not support image input. Consider using a multimodal model (GPT-4o, GPT-4V, Gemini 1.5 Pro) for Stage 2.", stage_name)
+        else:
+            logger.error("Stage %s failed: %s", stage_name, e)
         raise
 
 
@@ -272,13 +271,13 @@ def run_staged_extraction(
         schema = load_schema_from_yaml(schema_path)
         schema_fields = get_schema_field_names(schema)
         if verbose:
-            print(f"        Loaded {len(schema_fields)} fields from schema.yml")
+            logger.info("Loaded %d fields from schema.yml", len(schema_fields))
     except (FileNotFoundError, yaml.YAMLError) as e:
         return {"status": "error", "message": f"Schema load error: {e}"}
     
     # Step 1: Parse PDF
     if verbose:
-        print(f"  [1/4] Parsing PDF...")
+        logger.info("[1/4] Parsing PDF...")
     
     pdf_data = parse_pdf(pdf_path)
     if "error" in pdf_data:
@@ -289,16 +288,16 @@ def run_staged_extraction(
         return {"status": "error", "message": "No text extracted from PDF"}
     
     if verbose:
-        print(f"        Extracted {len(pdf_text)} chars from {pdf_data['metadata'].get('page_count', 0)} pages")
+        logger.info("Extracted %d chars from %d pages", len(pdf_text), pdf_data['metadata'].get('page_count', 0))
     
     # Step 1b: Extract images for multimodal stages
     pdf_images = []
     if any(stage["id"] in stages_to_run for stage in STAGES if stage.get("multimodal")):
         if verbose:
-            print(f"  [1b/4] Extracting images for multimodal analysis...")
+            logger.info("[1b/4] Extracting images for multimodal analysis...")
         pdf_images = extract_images_from_pdf(pdf_path, max_images=8)
         if verbose:
-            print(f"        Found {len(pdf_images)} images")
+            logger.info("Found %d images", len(pdf_images))
     
     # Step 2: Get enabled models
     enabled_models = [m for m in cfg.get('models', []) if m.get('enabled', True)]
@@ -309,7 +308,7 @@ def run_staged_extraction(
     mmc = MultiModelClient(cfg)
     
     if verbose:
-        print(f"  [2/4] Running staged extraction with {len(model_ids)} model(s): {', '.join(model_ids)}")
+        logger.info("[2/4] Running staged extraction with %d model(s): %s", len(model_ids), ', '.join(model_ids))
     
     # Step 3: Run each stage with ALL models and collect samples
     stages_to_process = stages_to_run or [1]
@@ -325,14 +324,14 @@ def run_staged_extraction(
         
         current_stage_num += 1
         if verbose:
-            print(f"        Stage {current_stage_num}/{total_stages}: {stage['desc']}...")
+            logger.info("Stage %d/%d: %s", current_stage_num, total_stages, stage['desc'])
         
         stage_prompt = load_stage_prompt(stages_dir, stage["file"])
         stage_images = pdf_images if stage.get("multimodal") else None
         
         # Collect results from ALL models concurrently for this stage
         if verbose:
-            print(f"          -> Concurrently calling {len(model_ids)} models...")
+            logger.info("Concurrently calling %d models...", len(model_ids))
             
         model_results_raw = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(model_ids), 10)) as executor:
@@ -347,10 +346,10 @@ def run_staged_extraction(
                     if result:
                         model_results_raw.append({"model_id": m_id, "result": result})
                         if verbose:
-                            print(f"          -> {m_id} completed successfully")
+                            logger.info("%s completed successfully", m_id)
                 except Exception as e:
                     if verbose:
-                        print(f"          -> {m_id} failed: {e}")
+                        logger.warning("%s failed: %s", m_id, e)
         
         # Sort model_results by original priority (model_ids order)
         model_results = sorted(model_results_raw, key=lambda x: model_ids.index(x["model_id"]))
@@ -362,7 +361,7 @@ def run_staged_extraction(
                 paper_metadata = model_results[0]["result"]
                 stage_results[stage["name"]] = {"models_used": [r["model_id"] for r in model_results]}
                 if verbose:
-                    print(f"          -> Metadata from {model_results[0]['model_id']}")
+                    logger.info("Metadata from %s", model_results[0]['model_id'])
             else:
                 # Stages 2-7: merge samples from all models
                 merged_stage_samples = []
@@ -381,11 +380,11 @@ def run_staged_extraction(
                     "total_samples": len(merged_stage_samples)
                 }
                 if verbose:
-                    print(f"          -> {len(merged_stage_samples)} sample(s) from {len(model_results)} model(s)")
+                    logger.info("%d sample(s) from %d model(s)", len(merged_stage_samples), len(model_results))
     
     # Step 4: Merge samples by sample_id
     if verbose:
-        print(f"  [3/4] Merging samples by sample_id (priority-based)...")
+        logger.info("[3/4] Merging samples by sample_id (priority-based)...")
     
     merged_samples = merge_samples_by_id(all_stage_samples, model_ids)
     
@@ -400,7 +399,7 @@ def run_staged_extraction(
         filled_samples.append(filled_sample)
     
     if verbose:
-        print(f"  [4/4] Saving results...")
+        logger.info("[4/4] Saving results...")
     
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -429,7 +428,7 @@ def run_staged_extraction(
         json.dump(output, f, ensure_ascii=False, indent=2)
     
     if verbose:
-        print(f"        Saved to {fn} ({len(merged_samples)} samples, {total_fields} fields)")
+        logger.info("Saved to %s (%d samples, %d fields)", fn, len(merged_samples), total_fields)
     
     return {
         'status': 'ok',
@@ -456,31 +455,31 @@ def main():
     stages_to_run = [int(s.strip()) for s in args.stages.split(',')]
     
     # Load config
-    print("Loading configurations...")
+    logger.info("Loading configurations...")
     cfg = load_config(args.cfg)
     
     # Find PDFs
     pdf_dir = Path(args.pdf_dir)
     if not pdf_dir.exists():
-        print(f"Error: PDF directory not found: {pdf_dir}")
+        logger.error("PDF directory not found: %s", pdf_dir)
         return
     
     pdfs = list(pdf_dir.glob('*.pdf'))
     if args.limit > 0:
         pdfs = pdfs[:args.limit]
     
-    print(f"Found {len(pdfs)} PDF files in {pdf_dir}")
-    print(f"Running stages: {stages_to_run}")
+    logger.info("Found %d PDF files in %s", len(pdfs), pdf_dir)
+    logger.info("Running stages: %s", stages_to_run)
     
     if not pdfs:
-        print("No PDF files to process.")
+        logger.info("No PDF files to process.")
         return
     
     # Process each PDF
     results_summary = {'ok': 0, 'error': 0, 'total_fields': 0}
     
     for i, pdf_path in enumerate(pdfs, 1):
-        print(f"\n[{i}/{len(pdfs)}] Processing: {pdf_path.name}")
+        logger.info("[%d/%d] Processing: %s", i, len(pdfs), pdf_path.name)
         try:
             result = run_staged_extraction(
                 str(pdf_path), cfg, args.stages_dir, args.out_dir, args.schema,
@@ -489,32 +488,28 @@ def main():
             status = result.get('status', 'error')
             results_summary[status] = results_summary.get(status, 0) + 1
             results_summary['total_fields'] += result.get('total_fields', 0)
-            print(f"  Result: {status}")
+            logger.info("Result: %s", status)
         except FileNotFoundError as e:
-            print(f"  Error: File not found - {e}")
+            logger.error("File not found: %s", e)
             results_summary['error'] += 1
         except yaml.YAMLError as e:
-            print(f"  Error: Invalid YAML config - {e}")
+            logger.error("Invalid YAML config: %s", e)
             results_summary['error'] += 1
         except ValueError as e:
-            print(f"  Error: Invalid value - {e}")
+            logger.error("Invalid value: %s", e)
             results_summary['error'] += 1
         except Exception as e:
-            print(f"  Error: {e}")
+            logger.error("Error: %s", e)
             results_summary['error'] += 1
     
     # Summary
-    print("\n" + "="*50)
-    print("Processing Complete!")
-    print(f"  OK:           {results_summary['ok']}")
-    print(f"  Errors:       {results_summary['error']}")
-    print(f"  Total fields: {results_summary['total_fields']}")
-    print("="*50)
+    logger.info("Processing Complete! OK: %d, Errors: %d, Total fields: %d",
+                results_summary['ok'], results_summary['error'], results_summary['total_fields'])
     out_csv = os.path.join(os.path.dirname(args.out_dir) if args.out_dir.endswith('extraction') else args.out_dir, 'nfp_ml_ready_dataset.csv')
     try:
         build_clean_dataset.build_dataset(args.out_dir, out_csv)
     except Exception as e:
-        print('Failed to build dataset:', e)
+        logger.error("Failed to build dataset: %s", e)
 
 
 if __name__ == '__main__':

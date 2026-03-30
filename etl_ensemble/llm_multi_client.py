@@ -3,7 +3,11 @@
 This implementation supports OpenAI, Gemini, DeepSeek, and Grok models through configurable backends.
 """
 import os, json
+import logging
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
 try:
     from .llm_openai_client import LLMClient
 except Exception:
@@ -75,7 +79,7 @@ class MultiModelClient:
             else:
                 resp = client.structured(prompt, schema=schema, images=images)
         except Exception as e:
-            print(f"Model {model_id} failed, trying fallback... ({e})")
+            logger.error("Model %s failed, trying fallback... (%s)", model_id, e)
             # Cascade Routing for LLMs
             try:
                 fallback_client = self._get_client_for('openai', model_name='gpt-4o-mini', api_key_env='OPENAI_API_KEY')

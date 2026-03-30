@@ -1,11 +1,20 @@
-
 # etl_ensemble/llm_openai_client.py
-import os, json
+"""OpenAI LLM client with lazy config loading.
+
+Configuration is loaded on first use rather than at module import time,
+avoiding side effects when the module is imported but not used.
+"""
+
+import os
+import json
+import logging
 import diskcache
-cache = diskcache.Cache(".api_cache") # API Caching
 from typing import Any, Dict, List, Optional
 
-# --- 自动加载 configs/extraction/llm_backends.yml 中的 OpenAI 配置 ---
+logger = logging.getLogger(__name__)
+
+cache = diskcache.Cache(".api_cache")
+
 try:
     import yaml
 except Exception:
@@ -13,8 +22,16 @@ except Exception:
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "configs", "extraction", "llm_backends.yml")
 
+
 def _load_openai_config_from_backends():
-    """从 llm_backends.yml 中提取 OpenAI 配置"""
+    """Load OpenAI config from llm_backends.yml.
+
+    Returns:
+        Tuple of (api_key, model_name).
+
+    Raises:
+        RuntimeError: If config cannot be loaded.
+    """
     if yaml is None:
         raise RuntimeError("PyYAML not installed. Please `pip install pyyaml`.")
     if not os.path.exists(CONFIG_PATH):
@@ -23,7 +40,6 @@ def _load_openai_config_from_backends():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             cfg = yaml.safe_load(f)
         models = cfg.get("models", [])
-        # 查找 OpenAI 配置
         for m in models:
             if m.get("provider") == "openai":
                 api_key = m.get("api_key_env", "")
@@ -33,12 +49,6 @@ def _load_openai_config_from_backends():
     except Exception as e:
         raise RuntimeError(f"Failed to read llm_backends.yml: {e}")
 
-# 加载配置
-_api_key, _model_name = _load_openai_config_from_backends()
-if _api_key:
-    os.environ["OPENAI_API_KEY"] = _api_key
-if _model_name:
-    os.environ["OPENAI_MODEL"] = _model_name
 
 def _safe_import(name: str):
     try:
@@ -46,58 +56,84 @@ def _safe_import(name: str):
     except Exception:
         return None
 
+
 openai_pkg = _safe_import("openai")
 
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL")
-DEFAULT_KEY = os.getenv("OPENAI_API_KEY")
-if not DEFAULT_KEY or not DEFAULT_MODEL:
-    raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please configure OpenAI in configs/extraction/llm_backends.yml.")
+
+def load_config():
+    """Explicitly load and return OpenAI config from backends file.
+
+    Returns:
+        Tuple of (api_key, model_name).
+    """
+    api_key, model_name = _load_openai_config_from_backends()
+    if api_key:
+        os.environ.setdefault("OPENAI_API_KEY", api_key)
+    if model_name:
+        os.environ.setdefault("OPENAI_MODEL", model_name)
+    logger.info("Loaded OpenAI config: model=%s", model_name)
+    return api_key, model_name
+
 
 class LLMClient:
+    """OpenAI-compatible LLM client with lazy config loading.
+
+    If api_key/model are not provided at construction time, they are
+    loaded from the llm_backends.yml configuration file on first use.
     """
-    强制要求可用的大模型：
-    - 若 OpenAI SDK 不可用、密钥/模型缺失或网络异常，均抛出 RuntimeError 阻止流水线继续。
-    - 优先尝试 Responses API 的结构化输出；若 SDK 不支持，再使用 Chat Completions 的 JSON 模式；两者若失败即报错。
-    """
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, base_url: Optional[str] = None):
-        self.api_key = api_key or DEFAULT_KEY
-        self.model = model or DEFAULT_MODEL
+
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None,
+                 base_url: Optional[str] = None):
+        # Lazy load config if not provided
+        if not api_key or not model:
+            try:
+                loaded_key, loaded_model = _load_openai_config_from_backends()
+                api_key = api_key or loaded_key
+                model = model or loaded_model
+            except Exception as e:
+                logger.warning("Could not load OpenAI config from backends: %s", e)
+
+        self.api_key = api_key
+        self.model = model
         self.base_url = base_url
+
         if not openai_pkg:
             raise RuntimeError("openai package not installed. Please `pip install openai>=1.25`.")
+        if not self.api_key or not self.model:
+            raise RuntimeError("OPENAI_API_KEY or OPENAI_MODEL is missing. Please configure OpenAI in configs/extraction/llm_backends.yml.")
+
         try:
             from openai import OpenAI
             # MiMo uses 'api-key' header instead of 'Authorization: Bearer'
             if base_url and "xiaomimomo.com" in base_url:
-                self.client = OpenAI(api_key=self.api_key, base_url=self.base_url, 
+                self.client = OpenAI(api_key=self.api_key, base_url=self.base_url,
                                      default_headers={"api-key": self.api_key})
             else:
                 self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         except Exception as e:
             raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
-        # 探测支持模式
+        # Detect supported mode
         self.support_responses = hasattr(self.client, "responses") and hasattr(self.client.responses, "create")
 
     def _responses_structured(self, prompt: str, schema: Dict[str, Any], images: Optional[List[str]]) -> Dict[str, Any]:
         input_items = [{"role": "user", "content": prompt}]
         if images:
             for url in images:
-                input_items.append({"role": "user", "content": [{"type":"input_image","image_url": url}]})
+                input_items.append({"role": "user", "content": [{"type": "input_image", "image_url": url}]})
         try:
             resp = self.client.responses.create(
                 model=self.model,
                 input=input_items,
                 response_format={
                     "type": "json_schema",
-                    "json_schema": {"name": "nfp_schema", "schema": schema or {"type":"object"}, "strict": True}
+                    "json_schema": {"name": "nfp_schema", "schema": schema or {"type": "object"}, "strict": True}
                 }
             )
         except TypeError as e:
-            # SDK 不支持 response_format
             raise e
         except Exception as e:
             raise RuntimeError(f"Responses API request failed: {e}")
-        # 解析文本
+        # Parse text
         txt = getattr(resp, "output_text", None)
         if not txt:
             try:
@@ -129,7 +165,7 @@ class LLMClient:
             resp = chat_client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": sys_msg + "\nSchema:\n" + json.dumps(schema or {"type":"object"})},
+                    {"role": "system", "content": sys_msg + "\nSchema:\n" + json.dumps(schema or {"type": "object"})},
                     {"role": "user", "content": user_content}
                 ],
                 response_format={"type": "json_object"}
@@ -144,7 +180,5 @@ class LLMClient:
             try:
                 return self._responses_structured(prompt, schema, images)
             except TypeError:
-                # 回退到 Chat JSON 模式
                 return self._chat_json_mode(prompt, schema, images)
-        # 无 Responses，直接用 Chat JSON
         return self._chat_json_mode(prompt, schema, images)

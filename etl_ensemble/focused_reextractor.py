@@ -3,6 +3,9 @@
 """
 from typing import List, Dict, Any
 import textwrap, json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def build_focus_prompt(original_prompt: str, disagreement_fields: Dict[str,Any], snippets: Dict[str,str]=None):
     # Create a concise prompt asking the model to re-extract only the disputed fields

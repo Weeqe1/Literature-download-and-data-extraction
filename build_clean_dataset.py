@@ -3,9 +3,12 @@ import sys
 import json
 import glob
 import re
+import logging
 from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def flatten_dict(d: Dict[str, Any], parent_key: str = "") -> Dict[str, Any]:
@@ -109,11 +112,11 @@ def clean_numeric_field(value: Any) -> Optional[float]:
 
 def build_dataset(json_dir: str = 'outputs/extraction', out_path: str = 'outputs/nfp_ml_ready_dataset.csv'):
     """Build ML-ready dataset from extracted JSON files with enhanced data cleaning."""
-    print(f"\n[Post-Processing] Building ML-ready dataset from {json_dir}...")
+    logger.info("Building ML-ready dataset from %s...", json_dir)
     json_files = glob.glob(os.path.join(json_dir, "*.json"))
     
     if not json_files:
-        print("No JSON files found.")
+        logger.warning("No JSON files found.")
         return
     
     rows = []
@@ -162,12 +165,12 @@ def build_dataset(json_dir: str = 'outputs/extraction', out_path: str = 'outputs
                 flat['_source_file'] = os.path.basename(jf)
                 rows.append(flat)
         except json.JSONDecodeError as e:
-            print(f"Error parsing {jf}: {e}")
+            logger.error("Error parsing %s: %s", jf, e)
         except IOError as e:
-            print(f"Error reading {jf}: {e}")
+            logger.error("Error reading %s: %s", jf, e)
             
     if not rows:
-        print("No data to process.")
+        logger.warning("No data to process.")
         return
         
     df = pd.DataFrame(rows)
@@ -194,7 +197,7 @@ def build_dataset(json_dir: str = 'outputs/extraction', out_path: str = 'outputs
     for m in filter_cols:
         df = df[df[m].notna() & (df[m].astype(str).str.strip() != "")]
         
-    print(f"  Filtering: Removed {before_count - len(df)} records missing mandatory fields.")
+    logger.info("Filtering: Removed %d records missing mandatory fields.", before_count - len(df))
     
     # Clean remaining columns
     for col in df.columns:
@@ -207,14 +210,14 @@ def build_dataset(json_dir: str = 'outputs/extraction', out_path: str = 'outputs
     try:
         os.makedirs(os.path.dirname(out_path) or '.', exist_ok=True)
     except OSError as e:
-        print(f"Error creating output directory: {e}")
+        logger.error("Error creating output directory: %s", e)
         return
     
     try:
         df.to_csv(out_path, index=False, encoding='utf-8-sig')
-        print(f"  Success: Saved ML-ready dataset with {len(df)} records to {out_path}")
+        logger.info("Saved ML-ready dataset with %d records to %s", len(df), out_path)
     except IOError as e:
-        print(f"Error saving dataset: {e}")
+        logger.error("Error saving dataset: %s", e)
 
 
 if __name__ == '__main__':
