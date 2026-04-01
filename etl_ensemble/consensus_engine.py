@@ -19,6 +19,39 @@ SOURCE_WEIGHTS: Dict[str, float] = {
     "crossref": 0.75,        # Crossref - good for DOI but varies in quality
 }
 
+# Model-specific weights for LLM extraction quality
+# Higher = more trusted for data extraction
+MODEL_WEIGHTS: Dict[str, float] = {
+    "openai_chatgpt": 0.95,    # GPT-4 series - strong at structured extraction
+    "google_gemini": 0.90,     # Gemini - good comprehension
+    "deepseek": 0.85,          # DeepSeek - solid performance
+    "grok": 0.80,              # Grok - newer, less validated
+}
+
+# Combined lookup: try model weights first, then source weights
+def get_model_or_source_weight(model_id: str) -> float:
+    """Get reliability weight for a model ID.
+    
+    Checks MODEL_WEIGHTS first (exact match), then SOURCE_WEIGHTS (substring),
+    then returns default 0.5.
+    
+    Args:
+        model_id: Model identifier (e.g., 'openai_chatgpt', 'google_gemini').
+        
+    Returns:
+        Weight between 0.0 and 1.0.
+    """
+    # Direct model match
+    if model_id in MODEL_WEIGHTS:
+        return MODEL_WEIGHTS[model_id]
+    
+    # Substring source match (legacy behavior)
+    for src, weight in SOURCE_WEIGHTS.items():
+        if src in model_id.lower():
+            return weight
+    
+    return 0.5
+
 # Field-specific tolerance configuration
 # Fields not listed here use default tolerances
 FIELD_TOLERANCE_CONFIG: Dict[str, Dict[str, float]] = {
@@ -85,13 +118,11 @@ def numeric_close(a: Any, b: Any, rel_tol: float = 0.01, abs_tol: float = 1.0) -
 
 def get_source_weight(model_id: str) -> float:
     """Get reliability weight for a source/model ID (0.0-1.0).
+    
+    Uses get_model_or_source_weight for proper model lookup.
     Defaults to 0.5 if source not recognized.
     """
-    # Extract source name from model_id (e.g., "gpt4-wos" -> "wos")
-    for src, weight in SOURCE_WEIGHTS.items():
-        if src in model_id.lower():
-            return weight
-    return 0.5
+    return get_model_or_source_weight(model_id)
 
 
 def compare_field_values(

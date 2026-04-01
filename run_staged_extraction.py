@@ -113,6 +113,75 @@ def load_stage_prompt(stages_dir: str, stage_file: str) -> str:
         return f.read()
 
 
+def extract_numeric_hints(text: str) -> str:
+    """Extract numeric value hints from PDF text to help LLM locate data.
+    
+    Args:
+        text: Full PDF text.
+        
+    Returns:
+        String with hints or empty string.
+    """
+    import re
+    hints = []
+    
+    # emission patterns
+    em_patterns = [
+        r'(?:emission|Em|lambda_em|PL peak|photoluminescence peak).*?(\d{3})\s*nm',
+        r'(\d{3})\s*nm.*?(?:emission|fluorescence|PL)',
+    ]
+    for p in em_patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            val = int(m.group(1))
+            if 300 <= val <= 900:
+                hints.append(f'Emission wavelength: ~{val} nm')
+                break
+    
+    # excitation patterns
+    ex_patterns = [
+        r'(?:excitation|Ex|lambda_ex|absorbance peak).*?(\d{3})\s*nm',
+        r'(\d{3})\s*nm.*?(?:excitation|absorption)',
+    ]
+    for p in ex_patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            val = int(m.group(1))
+            if 200 <= val <= 700:
+                hints.append(f'Excitation wavelength: ~{val} nm')
+                break
+    
+    # size patterns
+    size_patterns = [
+        r'(?:diameter|size|particle size).*?(\d+\.?\d*)\s*nm',
+        r'(\d+\.?\d*)\s*nm.*?(?:diameter|particles)',
+    ]
+    for p in size_patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            val = float(m.group(1))
+            if 1 <= val <= 500:
+                hints.append(f'Particle size: ~{val} nm')
+                break
+    
+    # quantum yield
+    qy_patterns = [
+        r'(?:QY|quantum yield|phi).*?(\d+\.?\d*)\s*%',
+        r'(\d+\.?\d*)\s*%.*?(?:QY|quantum yield)',
+    ]
+    for p in qy_patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            val = float(m.group(1))
+            if 0 < val <= 100:
+                hints.append(f'Quantum yield: ~{val}%')
+                break
+    
+    if hints:
+        return '\n## NUMERIC HINTS (extracted from text)\n' + '\n'.join(hints)
+    return ''
+
+
 def build_stage_prompt(
     stage_prompt: str,
     pdf_text: str,
@@ -146,8 +215,12 @@ Your JSON output should contain these fields (use null for missing numeric value
 {', '.join(schema_fields)}
 """
     
+    # Add numeric hints to help model locate values
+    numeric_hints = extract_numeric_hints(pdf_text)
+    
     return f"""{stage_prompt}
 {schema_hint}
+{numeric_hints}
 ---
 
 ## Paper Content
@@ -505,6 +578,47 @@ def main():
     # Summary
     logger.info("Processing Complete! OK: %d, Errors: %d, Total fields: %d",
                 results_summary['ok'], results_summary['error'], results_summary['total_fields'])
+
+    # Generate model accuracy report
+    logger.info("[Accuracy] Generating model accuracy report...")
+    try:
+        from etl_ensemble.model_accuracy import generate_extraction_report
+        schema = load_schema_from_yaml(args.schema)
+        schema_fields = get_schema_field_names(schema)
+
+        accuracy_report_path = os.path.join(
+            os.path.dirname(args.out_dir) if args.out_dir.endswith('extraction') else args.out_dir,
+            'model_accuracy_report.json'
+        )
+        report = generate_extraction_report(
+            args.out_dir,
+            schema_fields,
+            accuracy_report_path,
+            ground_truth_path=None  # Can be set if ground truth is available
+        )
+        summary = report.get('summary', {})
+        logger.info("[Accuracy] Report saved to %s", accuracy_report_path)
+
+        # Log key metrics
+        overall_cov = summary.get('overall_coverage', {})
+        if overall_cov:
+            logger.info("[Accuracy] Average field coverage: %.1f%%", overall_cov.get('average_pct', 0))
+            best = overall_cov.get('best_fields', [])
+            if best:
+                logger.info("[Accuracy] Best field: %s (%.1f%%)", best[0].get('field'), best[0].get('coverage'))
+            worst = overall_cov.get('worst_fields', [])
+            if worst:
+                logger.info("[Accuracy] Worst field: %s (%.1f%%)", worst[0].get('field'), worst[0].get('coverage'))
+
+        model_ranking = summary.get('model_ranking_by_coverage', [])
+        if model_ranking:
+            logger.info("[Accuracy] Model ranking by coverage:")
+            for entry in model_ranking:
+                logger.info("  %s: %.1f%%", entry['model'], entry['avg_coverage_pct'])
+
+    except Exception as e:
+        logger.error("[Accuracy] Failed to generate accuracy report: %s", e)
+
     out_csv = os.path.join(os.path.dirname(args.out_dir) if args.out_dir.endswith('extraction') else args.out_dir, 'nfp_ml_ready_dataset.csv')
     try:
         build_clean_dataset.build_dataset(args.out_dir, out_csv)

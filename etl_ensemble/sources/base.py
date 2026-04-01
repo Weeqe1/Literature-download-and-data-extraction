@@ -508,10 +508,20 @@ def build_source_query(source: str, clause: str, title_only: bool = False) -> st
             return " ".join([f'"{p}"' for p in positives])
 
     if source == "semantic_scholar":
+        # Semantic Scholar supports basic boolean operators
+        if has_and:
+            # For AND queries, quote multi-word phrases
+            quoted = [f'"{p}"' if ' ' in p else p for p in positives]
+            return " AND ".join(quoted)
         return " ".join(positives)
 
     if source == "openalex":
-        return " ".join(positives)
+        # OpenAlex uses natural language search by default
+        # For AND semantics, we need to ensure all terms appear
+        if has_and:
+            quoted = [f'"{p}"' if ' ' in p else p for p in positives]
+            return " ".join(quoted)  # OpenAlex search does full-text, local filter handles AND
+        return " OR ".join([f'"{p}"' if ' ' in p else p for p in positives])
 
     return clause.strip()
 
