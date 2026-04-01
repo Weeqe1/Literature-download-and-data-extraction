@@ -40,7 +40,7 @@ def search_semantic_scholar_clause(
 
     Args:
         clause: Search query string.
-        max_results: Maximum results (capped at 1000).
+        max_results: Maximum results (capped at 200).
         title_only: Unused (Semantic Scholar does not support title-only search).
         api_key: Override API key.
         verbose: Log warnings on failure.
@@ -66,7 +66,8 @@ def search_semantic_scholar_clause(
     out: List[dict] = []
     scanned_raw = 0
     offset = 0
-    target = max(0, max_results)
+    # Cap at 200 to avoid fetching 1000s of irrelevant results
+    target = min(max(0, max_results), 200)
     page_size = min(100, max(1, target))
     use_key = bool(api_key)
 

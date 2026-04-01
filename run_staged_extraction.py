@@ -21,6 +21,7 @@ if sys.stdout.encoding != 'utf-8':
 
 from etl_ensemble.pdf_parser import parse_pdf, truncate_text, extract_images_from_pdf
 from etl_ensemble.llm_multi_client import MultiModelClient
+import build_clean_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -627,4 +628,9 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)]
+    )
     main()

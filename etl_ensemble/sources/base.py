@@ -27,6 +27,7 @@ _SOURCE_INTERVALS: Dict[str, float] = {
     "pubmed": 1.0,
     "arxiv": 5.0,        # arXiv is very strict about rate limits
     "crossref": 2.0,
+    "download": 0.5,      # PDF download requests (light throttle)
 }
 _SOURCE_LAST_TS: Dict[str, float] = {}
 
@@ -230,6 +231,9 @@ def parse_clause_units(clause: str) -> Tuple[List[str], List[str], bool]:
 def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: bool = False) -> bool:
     """Local boolean matching to filter out non-target records from broad API results.
 
+    For AND queries with multi-word phrases, expands into individual word matching
+    to handle cases where API returns results matching all words but not exact phrase.
+
     Args:
         work: Work dict with title/abstract fields.
         clause: Boolean clause to match against.
@@ -251,7 +255,6 @@ def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: boo
 
     text = title if title_only else (title + " " + abstract)
     normalized_text = normalize_text(text)
-    normalized_positives = [normalize_text(p) for p in positives]
     normalized_negatives = [normalize_text(n) for n in negatives]
 
     # negatives first
@@ -260,8 +263,13 @@ def match_work_against_clause(work: Dict[str, Any], clause: str, title_only: boo
             return False
 
     if has_and:
-        return all(p in normalized_text for p in normalized_positives)
-    return any(p in normalized_text for p in normalized_positives)
+        # Expand multi-word phrases into individual words
+        all_words: List[str] = []
+        for p in positives:
+            words = [w for w in normalize_text(p).split() if len(w) >= 2]
+            all_words.extend(words)
+        return all(w in normalized_text for w in set(all_words))
+    return any(normalize_text(p) in normalized_text for p in positives)
 
 
 def match_work_against_clause_with_reason(
@@ -271,6 +279,10 @@ def match_work_against_clause_with_reason(
     match_strictness: float = 1.0,
 ) -> Tuple[bool, str]:
     """Return (matched, reason) for local boolean filtering.
+
+    For AND queries with multi-word phrases, splits into individual words
+    so that "upconversion nanoparticle fluorescent probe" matches a title
+    containing all four words anywhere (not requiring exact phrase).
 
     Args:
         work: Work dict.
@@ -294,27 +306,60 @@ def match_work_against_clause_with_reason(
 
     text = title if title_only else (title + " " + abstract)
     normalized_text = normalize_text(text)
-    normalized_positives = [normalize_text(p) for p in positives]
     normalized_negatives = [normalize_text(n) for n in negatives]
 
-    hit_negative = [n for n in negatives if normalize_text(n) in normalized_text]
+    # negatives first
+    hit_negative = [n for n in normalized_negatives if n and n in normalized_text]
     if hit_negative:
         return False, "hit_negative:" + ",".join(hit_negative[:3])
 
+    # For AND queries: expand multi-word phrases into individual words for matching
+    # This fixes cases where API returns results matching all words, but local
+    # exact-phrase check fails (e.g., "upconversion nanoparticle fluorescent probe")
     if has_and:
-        matched_positives = sum(1 for p in normalized_positives if p in normalized_text)
-        required_matches = max(1, int(len(normalized_positives) * match_strictness))
-        if matched_positives >= required_matches:
-            return True, f"matched_and_{matched_positives}/{len(normalized_positives)}"
+        all_words: List[str] = []
+        for p in positives:
+            words = [w for w in normalize_text(p).split() if len(w) >= 2]
+            all_words.extend(words)
+        # Deduplicate
+        seen = set()
+        unique_words = []
+        for w in all_words:
+            if w not in seen:
+                seen.add(w)
+                unique_words.append(w)
+        matched = sum(1 for w in unique_words if w in normalized_text)
+        required = max(1, int(len(unique_words) * match_strictness))
+        if matched >= required:
+            return True, f"matched_and_{matched}/{len(unique_words)}"
         else:
-            missing = [positives[i] for i in range(len(positives)) if normalized_positives[i] not in normalized_text][:3]
-            return False, f"missing_and_terms_{matched_positives}/{required_matches}:" + ",".join(missing)
+            missing = [w for w in unique_words if w not in normalized_text][:3]
+            return False, f"missing_and_words_{matched}/{required}:" + ",".join(missing)
     else:
-        matched_positives = sum(1 for p in normalized_positives if p in normalized_text)
-        required_matches = max(1, int(len(normalized_positives) * match_strictness))
-        if matched_positives >= required_matches:
-            return True, f"matched_or_{matched_positives}/{len(normalized_positives)}"
-        return False, f"missing_or_terms_{matched_positives}/{required_matches}"
+        # OR query: match individual words from each phrase
+        all_words: List[str] = []
+        for p in positives:
+            words = [w for w in normalize_text(p).split() if len(w) >= 2]
+            all_words.extend(words)
+        seen = set()
+        unique_words = []
+        for w in all_words:
+            if w not in seen:
+                seen.add(w)
+                unique_words.append(w)
+        matched = sum(1 for w in unique_words if w in normalized_text)
+        # For OR, at least one phrase's words should match
+        # Check if any single phrase has all its words matched
+        phrase_matched = 0
+        for p in positives:
+            p_words = [w for w in normalize_text(p).split() if len(w) >= 2]
+            if p_words and all(w in normalized_text for w in p_words):
+                phrase_matched += 1
+        if phrase_matched >= max(1, int(len(positives) * match_strictness)):
+            return True, f"matched_or_phrases_{phrase_matched}/{len(positives)}"
+        if matched >= max(1, int(len(unique_words) * match_strictness)):
+            return True, f"matched_or_words_{matched}/{len(unique_words)}"
+        return False, f"missing_or_{phrase_matched}/{len(positives)}_phrases"
 
 
 # ---------------------------------------------------------------------------

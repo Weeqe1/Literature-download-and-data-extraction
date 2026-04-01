@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 ARXIV_API = "https://export.arxiv.org/api/query"
 _ARXIV_LAST_TS: float = 0.0
-_ARXIV_MIN_INTERVAL: float = 3.0  # arXiv recommends 3s between requests
+_ARXIV_MIN_INTERVAL: float = 5.0  # Increased from 3s to be conservative
 
 
 def _arxiv_rate_limit() -> None:
@@ -48,7 +48,7 @@ def _arxiv_get(params: dict, timeout: int = 120, max_retries: int = 3) -> Option
             if r.status_code == 200:
                 return r
             if r.status_code == 429:
-                wait = 5 * attempt  # 5s, 10s, 15s
+                wait = 10 * (2 ** (attempt - 1))  # 10s, 20s, 40s exponential backoff
                 logger.warning("[arXiv] HTTP 429 (rate limited), waiting %ds (attempt %d/%d)", wait, attempt, max_retries)
                 time.sleep(wait)
                 continue

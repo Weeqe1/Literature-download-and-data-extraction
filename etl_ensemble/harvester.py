@@ -386,6 +386,10 @@ class LiteratureHarvester:
             logger.info("[RunClause] clause %d returned %d raw works", idx, len(works))
             all_works.extend(works)
             gc.collect()
+            # Inter-clause cooldown to avoid burst rate limiting (esp. arXiv)
+            if idx < len(clauses):
+                import time as _time
+                _time.sleep(5)
             if len(all_works) >= max_total:
                 logger.info("[Main] reached max_total cap, stopping clause loop")
                 break
@@ -401,7 +405,7 @@ class LiteratureHarvester:
         logger.info("[Merge] merged total: %d (capped to %d)", len(merged), max_total)
 
         # Limit Crossref DOI fill to avoid excessive API calls + memory
-        doi_fill_limit = self.get_config("runtime.doi_fill_limit", 500)
+        doi_fill_limit = self.get_config("runtime.doi_fill_limit", 2000)
         missing_count = sum(1 for r in merged if not r.get("doi"))
         if missing_count > doi_fill_limit:
             logger.info("[Fill] limiting DOI fill to %d of %d missing items", doi_fill_limit, missing_count)
@@ -487,8 +491,11 @@ class LiteratureHarvester:
         logger.info("[PDF-Check] verifying downloaded PDFs...")
         pdf_check_log_each = self.get_config("runtime.pdf_check_log_each", False)
         pdf_check_remove_invalid_rows = self.get_config("runtime.pdf_check_remove_invalid_rows", False)
+        pdf_dir_for_check = os.path.join(out_base, "PDF")
+        if not os.path.isdir(pdf_dir_for_check):
+            pdf_dir_for_check = os.path.join(out_base, "PDF_download")
         checked, removed = pdf_check_and_cleanup(
-            excel_path, os.path.join(out_base, "PDF_download"),
+            excel_path, pdf_dir_for_check,
             backup=True, verbose=verbose,
             log_each=pdf_check_log_each,
             remove_invalid_rows=pdf_check_remove_invalid_rows,

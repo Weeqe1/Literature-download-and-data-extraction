@@ -26,10 +26,10 @@ DEFAULT_EMAIL = "wangqi@ahut.edu.cn"
 # Download failure reasons for diagnostics
 FAIL_REASONS = {
     "no_url": "No downloadable PDF URL found (not OA or Unpaywall miss)",
-    "http_403": "HTTP 403 Forbidden (access denied)",
+    "http_403": "HTTP 403 Forbidden (access denied after retries)",
     "http_404": "HTTP 404 Not Found",
     "http_other": "HTTP error (non-200 status)",
-    "too_small": "Downloaded file too small (<100 bytes, likely HTML error page)",
+    "too_small": "Downloaded file too small or not a valid PDF (<100 bytes or HTML error page)",
     "timeout": "Request timeout",
     "connection_error": "Connection error",
     "request_error": "Other request error",
@@ -106,17 +106,33 @@ def download_file(
 
     ensure_dir(os.path.dirname(out_path))
 
+    # Publisher-friendly headers to reduce 403 errors
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/pdf,*/*",
+    }
+    # Add Referer based on domain if possible
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        headers["Referer"] = f"{parsed.scheme}://{parsed.netloc}/"
+    except Exception:
+        pass
+
     for attempt in range(1, max_retries + 1):
         try:
-            rate_limit_source('crossref')
-            with requests.get(url, stream=True, timeout=timeout) as r:
+            rate_limit_source('download')
+            with requests.get(url, stream=True, timeout=timeout, headers=headers, allow_redirects=True) as r:
                 if r.status_code == 404:
                     if verbose:
                         logger.debug("  [Download] HTTP 404 for %s", url[:80])
                     return False, "http_404"
                 if r.status_code == 403:
                     if verbose:
-                        logger.debug("  [Download] HTTP 403 for %s", url[:80])
+                        logger.debug("  [Download] HTTP 403 for %s (attempt %d/%d)", url[:80], attempt, max_retries)
+                    if attempt < max_retries:
+                        time.sleep(3 * attempt)
+                        continue
                     return False, "http_403"
                 if r.status_code != 200:
                     if verbose:
@@ -131,14 +147,31 @@ def download_file(
                         if chunk:
                             fh.write(chunk)
 
-                if os.path.getsize(out_path) < 100:
+                # Check if we got an HTML error page instead of PDF
+                file_size = os.path.getsize(out_path)
+                if file_size < 100:
                     if verbose:
-                        logger.debug("  [Download] File too small (%d bytes), discarding", os.path.getsize(out_path))
+                        logger.debug("  [Download] File too small (%d bytes), discarding", file_size)
                     _cleanup_partial_file(out_path)
                     if attempt < max_retries:
                         time.sleep(2 ** attempt)
                         continue
                     return False, "too_small"
+
+                # Check if response is actually a PDF (not an HTML redirect page)
+                try:
+                    with open(out_path, "rb") as fh:
+                        header_bytes = fh.read(8)
+                        if not header_bytes.startswith(b"%PDF"):
+                            if verbose:
+                                logger.debug("  [Download] Response is not a PDF (got HTML?), discarding")
+                            _cleanup_partial_file(out_path)
+                            if attempt < max_retries:
+                                time.sleep(2 ** attempt)
+                                continue
+                            return False, "too_small"
+                except Exception:
+                    pass
 
                 return True, "ok"
 
@@ -238,9 +271,10 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
     """Try to find a downloadable PDF URL for a work.
 
     Resolution order:
-    1. Existing pdf_url from row
-    2. Unpaywall API lookup
+    1. Existing pdf_url from row (includes OpenAlex OA URL)
+    2. Unpaywall API lookup (with full OA location scan)
     3. PMC fallback (DOI -> PMCID -> PDF)
+    4. DOI.org redirect as last resort
 
     Args:
         row: Work row dict.
@@ -252,15 +286,15 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
     """
     from .sources.crossref import get_unpaywall_pdf_by_doi
 
-    # 1. Check existing URL
+    # 1. Check existing URL (from source: OpenAlex oa_url, Semantic Scholar openAccessPdf, etc.)
     pdf_url = row.get("pdf_url")
-    if pdf_url:
+    if pdf_url and pdf_url.startswith("http"):
         return pdf_url, True, "direct"
 
     # 2. Try Unpaywall
     if doi:
         pdf_url, is_oa = get_unpaywall_pdf_by_doi(doi, email)
-        if pdf_url:
+        if pdf_url and pdf_url.startswith("http"):
             return pdf_url, is_oa, "unpaywall"
 
     # 3. PMC fallback
@@ -270,6 +304,22 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
             pdf_url = _get_pmc_pdf_url(pmcid)
             if pdf_url:
                 return pdf_url, True, "pmc"
+
+    # 4. Try doi.org redirect as last resort for OA articles
+    if doi:
+        doi_url = f"https://doi.org/{doi}"
+        try:
+            from .sources.base import rate_limit_source
+            rate_limit_source('download')
+            r = requests.head(doi_url, timeout=10, allow_redirects=True,
+                              headers={"User-Agent": "Mozilla/5.0"})
+            if r.status_code == 200 and r.url and r.url != doi_url:
+                # Some publishers serve PDF directly from the DOI redirect
+                final_url = r.url
+                if '/pdf' in final_url.lower() or final_url.endswith('.pdf'):
+                    return final_url, True, "doi_redirect"
+        except Exception:
+            pass
 
     return None, False, "none"
 

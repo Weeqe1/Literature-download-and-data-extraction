@@ -201,6 +201,8 @@ def crossref_find_doi_by_title(title: str, mailto: Optional[str] = None) -> Opti
 def get_unpaywall_pdf_by_doi(doi: str, email: str) -> Tuple[Optional[str], bool]:
     """Look up open-access PDF URL via Unpaywall.
 
+    Tries best_oa_location first, then falls back to all oa_locations.
+
     Args:
         doi: DOI string.
         email: Contact email for polite pool.
@@ -218,9 +220,20 @@ def get_unpaywall_pdf_by_doi(doi: str, email: str) -> Tuple[Optional[str], bool]
         if r.status_code != 200:
             return None, False
         js = r.json()
+
+        # 1. Try best_oa_location first
         best = js.get("best_oa_location") or {}
         pdf = best.get("url_for_pdf") or best.get("url")
         is_oa = js.get("is_oa")
-        return pdf, is_oa
+        if pdf:
+            return pdf, bool(is_oa)
+
+        # 2. Fall back to all oa_locations
+        for loc in js.get("oa_locations") or []:
+            pdf = loc.get("url_for_pdf") or loc.get("url")
+            if pdf:
+                return pdf, bool(is_oa)
+
+        return None, bool(is_oa)
     except Exception:
         return None, False
