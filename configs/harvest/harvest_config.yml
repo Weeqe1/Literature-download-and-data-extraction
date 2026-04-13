@@ -47,13 +47,13 @@ search:
   year_to: 2028
 
   # 每个子句每个数据源的最大结果数
-  max_results_per_clause: 1200
+  max_results_per_clause: 2000
   
   # 最大子句数（从关键词拆分）
   max_clauses: 10
   
   # 总结果数上限
-  max_total: 1000000000
+  max_total: 1000000
 
 # ==================================================
 # 输出设置
@@ -62,7 +62,7 @@ output:
   # 输出基础目录
   base_dir: "outputs/literature"
   
-  # CSV 输出文件名
+  # Excel 输出文件名
   excel_filename: "nano_fluorescent_probes.csv"
 
   # 本地匹配被过滤样本的审计文件
