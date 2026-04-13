@@ -1,0 +1,921 @@
+================================================================================
+高级PDF分析器（无外部依赖）
+================================================================================
+找到 606 个PDF文件
+
+[1] 2000__Ultrahigh-resolution multicolor colocalization of single fluorescent probes.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[2] 2002__In vitro fertilisation in Hevea brasiliensis_ a preliminary investigation..pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[3] 2002__La gastropexie _en boucle de ceinture_ chez le chien.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[4] 2004__Polyaromatic Luminescent Nanocrystals for Chemical and Biological Sensors.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[5] 2005_crossref_Preparation, characterization and application of f_10.1007_s10895-005-2823-9.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 149592 字符
+  核心关键词: quantum dot, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 320, 'size_nm': 320.0, 'quantum_yield_percent': 8.9}
+
+[6] 2006_arXiv_On-command enhancement of single molecule fluorescence using a gold nanoparticle as an optical nano-antenna.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  文本长度: 197410 字符
+  核心关键词: 
+
+[7] 2006_Chemistry and Biology_Quantum dot-mediated detection of gamma-aminobutyric acid binding sites on the surface of living pollen protoplasts in tobacco..pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[8] 2006__Size Series of Small Indium Arsenide−Zinc Selenide Core−Shell Nanocrystals and Their Application to In Vivo Imaging.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[9] 2007__Conjugated Polymer Dots for Multiphoton Fluorescence Imaging.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[10] 2007__Immunofluorescence detection with quantum dot bioconjugates for hepatoma in vivo.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+  文本长度: 0 字符
+
+[15] 2008_Biosensors & bioelectronics_Quantum dots encapsulated with amphiphilic alginate as bioprobe for fast screening anti-dengue virus agents.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1051552 字符
+  核心关键词: luminescence
+  提取的数值: {'emission_wavelength_nm': 4050, 'size_nm': 0.0, 'quantum_yield_percent': 9.0}
+
+[16] 2008__A nano- and micro- integrated protein chip based on quantum dot probes and a microfluidic network.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 282301 字符
+  核心关键词: quantum dot, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 320, 'excitation_wavelength_nm': 320, 'size_nm': 320.0, 'quantum_yield_percent': 99.9, 'limit_of_detection': '500 nm'}
+
+[24] 2009__A FLUORESCENCE QUENCHING METHOD FOR DETERMINATION OF COPPER IONS WITH CDTE QUANTUM DOTS.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 361351 字符
+  核心关键词: quantum dot, fluorescence, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 60, 'excitation_wavelength_nm': 50, 'size_nm': 60.0, 'quantum_yield_percent': 95.0}
+
+[28] 2009__One-pot synthesis of highly luminescent CdTe quantum dots by microwave irradiation reduction and their Hg2+-sensitive properties.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 329530 字符
+  核心关键词: quantum dot, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 640, 'excitation_wavelength_nm': 400, 'size_nm': 640.0, 'quantum_yield_percent': 60.0}
+
+[29] 2009__Proton-resistant quantum dots_ Stability in gastrointestinal fluids and implications for oral delivery of nanoparticle agents.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 677189 字符
+  核心关键词: quantum dot, polymeric nanoparticle, luminescence
+  提取的数值: {'emission_wavelength_nm': 5, 'excitation_wavelength_nm': 20, 'size_nm': 0.5, 'quantum_yield_percent': 100.0}
+
+[33] 2010_arXiv_Energy transfer from an individual quantum dot to a carbon nanotube.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 4302821 字符
+  核心关键词: 
+  提取的数值: {'emission_wavelength_nm': 100, 'size_nm': 100.0, 'quantum_yield_percent': 4.0}
+
+[34] 2010_crossref_A Sandwiched Biological Fluorescent Probe for the_10.1007_s10895-010-0702-5.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 248827 字符
+  核心关键词: fluorescent probe, fluorescence
+  提取的数值: {'size_nm': 387.5, 'quantum_yield_percent': 0.0}
+
+[35] 2010_crossref_Thiol-stabilized luminescent CdTe quantum dot as b_10.1007_s00216-009-3433-1.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 408541 字符
+  核心关键词: quantum dot, fluorescence, luminescent
+  提取的数值: {'size_nm': 0.5, 'quantum_yield_percent': 29.0}
+
+[36] 2010_Journal of the American Chemical Society_Quantum dot FRET-based probes in thin films grown in microfluidic channels..pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 602990 字符
+  核心关键词: quantum dot, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 445, 'excitation_wavelength_nm': 445, 'size_nm': 445.0, 'quantum_yield_percent': 11.0}
+
+[44] 2010__Tracking the Small with the Smallest – Using Nanotechnology in Tracking Zooplankton.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 536054 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 200539, 'excitation_wavelength_nm': 465, 'size_nm': 200539.0, 'quantum_yield_percent': 45.0}
+
+[45] 2011_arXiv_Probing Plasmons in Graphene by Resonance Energy Transfer.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 430415 字符
+  核心关键词: fluorescence
+  提取的数值: {'quantum_yield_percent': 8.0}
+
+[46] 2011_arXiv_Quantum yield optimized fluorophores for site-specific labeling and super-resolution imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 78972 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'excitation_wavelength_nm': 50, 'size_nm': 40.0}
+
+[48] 2011_unpaywall_A Conjugated Aptamer-Gold Nanoparticle Fluorescent_10.3390_s111110490.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 571058 字符
+  核心关键词: fluorescence
+  提取的数值: {'quantum_yield_percent': 1.0, 'limit_of_detection': '92 nM'}
+
+[50/606] 分析进度...
+
+[52] 2011__Superparamagnetic Nanosystems Based on Iron Oxide Nanoparticles for Biomedical Imaging.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1728142 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 8.0}
+
+[56] 2012_arXiv_Three-dimensional imaging of single nanotube molecule endocytosis on plasmonic substrates.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1028708 字符
+  核心关键词: fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 15, 'excitation_wavelength_nm': 658, 'size_nm': 100.0, 'limit_of_detection': '479 PM'}
+
+[58] 2012_unpaywall_Fluorescent Nanoprobes Dedicated to in Vivo Imagin_10.3390_molecules17055564.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 943393 字符
+  核心关键词: fluorescent nanoprobe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'size_nm': 300.0, 'quantum_yield_percent': 2.0}
+
+[59] 2012_unpaywall_Near-Infrared Fluorescent Nanoprobes for in Vivo O_10.3390_nano2020092.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1144315 字符
+  核心关键词: fluorescent probe, fluorescent nanoprobe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'excitation_wavelength_nm': 460500, 'size_nm': 220.0, 'quantum_yield_percent': 30.0}
+
+[63] 2012__II-VI Quantum Dots as Fluorescent Probes for Studying Trypanosomatides.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1011845 字符
+  核心关键词: quantum dot
+  提取的数值: {'quantum_yield_percent': 16.0}
+
+[65] 2012__In Vivo Cancer Targeting and Imaging-Guided Surgery with Near Infrared-Emitting Quantum Dot Bioconjugates.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 94.7/100
+  文本长度: 659991 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 3.0}
+
+[68] 2012__Quantum Dots-Based Biological Fluorescent Probes for In Vitro and In Vivo Imaging.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 694102 字符
+  核心关键词: fluorescent probe, quantum dot
+  提取的数值: {'quantum_yield_percent': 7.0}
+
+[70] 2012__Ultrasensitive Detection of Glyphosate Using CdTe Quantum Dots in Sol-Gel-Derived Silica Spheres Coated with Calix[6]arene as Fluorescent Probes.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 283531 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 0, 'limit_of_detection': '5 nm'}
+
+[74] 2013_arXiv_Nanointerferometric Amplitude and Phase Reconstruction of Tightly Focused Vector Beams.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1026636 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 0.0}
+
+[76] 2013_crossref_Nanoprobes for super-resolution fluorescence imagi_10.1007_s11426-013-5014-6.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 531661 字符
+  核心关键词: quantum dot, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 62, 'excitation_wavelength_nm': 4, 'size_nm': 62.0, 'quantum_yield_percent': 8.0}
+
+[78] 2013_Scientific Reports_Carbon Nanoparticle-based Fluorescent Bioimaging Probes.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2468038 字符
+  核心关键词: fluorescent probe, fluorescent nanoprobe, quantum dot, fluorescent sensor, fluorescence
+  提取的数值: {'emission_wavelength_nm': 515, 'excitation_wavelength_nm': 440, 'size_nm': 515.0, 'quantum_yield_percent': 1.0}
+
+[79] 2013_Theranostics_Cardioprotective C-kit+ Bone Marrow Cells Attenuate Apoptosis after Acute Myocardial Infarction in Mice - In-vivo Assessment with Fluorescence Molecular Imaging.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1417507 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 6.0}
+
+[80] 2013__Efficient Photoluminescence of Mn2+-Doped ZnS Quantum Dots Excited by Two-Photon Absorption in Near-Infrared Window II.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 826067 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 8.0}
+
+[81] 2013__Graphitic carbon quantum dots as a fluorescent sensing platform for highly efficient detection of Fe3+ ions.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 367110 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescent sensor, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 900, 'excitation_wavelength_nm': 340, 'size_nm': 445.0, 'quantum_yield_percent': 6.0}
+
+[83] 2013__Photostable fluorescent organic dots with aggregation-induced emission (AIE dots) for noninvasive long-term cell tracing.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1922767 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore, luminescent
+  提取的数值: {'emission_wavelength_nm': 652, 'excitation_wavelength_nm': 485, 'size_nm': 2.0, 'quantum_yield_percent': 0.59}
+
+[84] 2013__Quantum dot imaging platform for single-cell molecular profiling.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2137575 字符
+  核心关键词: quantum dot, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 14, 'size_nm': 900.0, 'quantum_yield_percent': 7.0, 'limit_of_detection': '3 pm'}
+
+[86] 2013__Quantum Dots For Diagnosis Of Cancers.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 99.4/100
+  文本长度: 899059 字符
+  核心关键词: quantum dot
+  提取的数值: {'quantum_yield_percent': 3.0}
+
+[88] 2013__Theranostic quantum dots for crossing blood–brain barrier in vitro and providing therapy of HIV-associated encephalopathy.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 823013 字符
+  核心关键词: quantum dot
+  提取的数值: {'emission_wavelength_nm': 1800, 'quantum_yield_percent': 5.0}
+
+[91] 2014_arXiv_Dynamics of a mesoscopic nuclear spin ensemble interacting with an optically driven electron spin.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1299380 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'quantum_yield_percent': 9.0}
+
+[92] 2014_arXiv_Frequency stabilization of the zero-phonon line of a quantum dot via phonon-assisted active feedback.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1246809 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 71.0}
+
+[96] 2014_crossref_Bilayered near-infrared fluorescent nanoparticles_10.1007_s11051-014-2784-5.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2364245 字符
+  核心关键词: fluorescence
+  提取的数值: {'emission_wavelength_nm': 225, 'excitation_wavelength_nm': 750, 'size_nm': 225.0, 'quantum_yield_percent': 3.0}
+
+[97] 2014_crossref_Graphitic carbon nitride nanosheet-based multicolo_10.1007_s00604-014-1412-5.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 762066 字符
+  核心关键词: fluorescence
+  提取的数值: {'size_nm': 0.0, 'quantum_yield_percent': 6.0}
+
+[98] 2014_crossref_Study of Polycation-Capped Mn_ZnSe Quantum Dots as_10.1007_s10895-014-1350-y.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 7520573 字符
+  核心关键词: quantum dot
+  提取的数值: {'emission_wavelength_nm': 5, 'size_nm': 0.0, 'quantum_yield_percent': 12.0}
+
+[99] 2014_RSC Adv._Nitrogen-doped graphene quantum dots-based fluorescent probe for the sensitive turn-on detection of glutathione and its cellular imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 302662 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 350, 'excitation_wavelength_nm': 350, 'size_nm': 350.0, 'quantum_yield_percent': 10.0}
+
+[100/606] 分析进度...
+
+[100] 2014_Scientific Reports_A Molecular Fluorescent Probe for Targeted Visualization of Temperature at the Endoplasmic Reticulum.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 984416 字符
+  核心关键词: fluorescent probe, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 690, 'excitation_wavelength_nm': 300, 'size_nm': 300.0, 'quantum_yield_percent': 10.0}
+
+[101] 2014_SCIENTIFIC REPORTS_Development and use of a quantum dot probe to track multiple yeast strains in mixed culture.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 711199 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 631, 'size_nm': 5.5}
+
+[102] 2014__A simple one-pot synthesis of highly fluorescent nitrogen-doped graphene quantum dots for the detection of Cr(vi) in aqueous media.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1097573 字符
+  核心关键词: quantum dot, fluorescence, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 3, 'excitation_wavelength_nm': 365, 'size_nm': 0.3, 'quantum_yield_percent': 18.6}
+
+[104] 2014__Development and use of a quantum dot probe to track multiple yeast strains in mixed culture.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 711199 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 631, 'size_nm': 5.5}
+
+[106] 2014__Nano-scale measurement of biomolecules by optical microscopy and semiconductor nanoparticles.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 945162 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 2, 'excitation_wavelength_nm': 9, 'size_nm': 365.0, 'quantum_yield_percent': 9.0, 'limit_of_detection': '40 nm'}
+
+[110] 2015_ACS Applied Materials and Interfaces_Facile Construction of Near Infrared Fluorescence Nanoprobe with Amphiphilic Protein-Polymer Bioconjugate for Targeted Cell Imaging..pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 3331740 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, fluorophore, luminescent
+  提取的数值: {'emission_wavelength_nm': 490, 'excitation_wavelength_nm': 470, 'size_nm': 490.0, 'quantum_yield_percent': 95.0}
+
+[112] 2015_arxiv_doi_Spaser as Novel Versatile Biomedical Tool_10.48550_arxiv.1501.00342.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2398230 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 8.0}
+
+[113] 2015_arXiv_Nanodiamond Landmarks for Subcellular Multimodal Optical and Electron Imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 971051 字符
+  核心关键词: quantum dot, fluorescence, fluorophore, luminescent
+  提取的数值: {'emission_wavelength_nm': 910, 'excitation_wavelength_nm': 910, 'size_nm': 910.0, 'quantum_yield_percent': 0.0}
+
+[118] 2015__Application of functional quantum dot nanoparticles as fluorescence probes in cell labeling and tumor diagnostic imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1278431 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 680, 'excitation_wavelength_nm': 488, 'size_nm': 525.0, 'quantum_yield_percent': 533.0, 'limit_of_detection': '525 nm'}
+
+[119] 2015__Brightness-equalized quantum dots.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1110637 字符
+  核心关键词: quantum dot, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 400, 'excitation_wavelength_nm': 400, 'size_nm': 400.0, 'quantum_yield_percent': 0.0, 'limit_of_detection': '3 pm'}
+
+[126] 2015__Quantum dots_ bright and versatile in vitro and in vivo fluorescence imaging biosensors.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 5038645 字符
+  核心关键词: quantum dot, fluorescent imaging, fluorescence, fluorophore, luminescent
+  提取的数值: {'emission_wavelength_nm': 90, 'excitation_wavelength_nm': 90, 'size_nm': 50.0, 'quantum_yield_percent': 8.0, 'limit_of_detection': '0.8 pM'}
+
+[127] 2015__STED nanoscopy with fluorescent quantum dots.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1387761 字符
+  核心关键词: quantum dot, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 775, 'excitation_wavelength_nm': 775, 'size_nm': 700.0, 'quantum_yield_percent': 0.0, 'limit_of_detection': '3 pm'}
+
+[130] 2016_Advanced Healthcare Materials_A Highly Photostable Hyperbranched Polyglycerol‐Based NIR Fluorescence Nanoplatform for Mitochondria‐Specific Cell Imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2391921 字符
+  核心关键词: fluorescence
+  提取的数值: {'size_nm': 65.0, 'quantum_yield_percent': 1.0}
+
+[131] 2016_ANALYST_A fluorescent nanoprobe for single bacte.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1953859 字符
+  核心关键词: luminescence
+  提取的数值: {'emission_wavelength_nm': 368, 'size_nm': 300.0, 'quantum_yield_percent': 5.0}
+
+[133] 2016_arXiv_Optically Detected Ferromagnetic Resonance in Metallic Ferromagnets via Nitrogen Vacancy Centers in Diamond.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2716654 字符
+  核心关键词: fluorescence
+  提取的数值: {'excitation_wavelength_nm': 302, 'size_nm': 20.0, 'quantum_yield_percent': 7.0}
+
+[136] 2016_SCIENTIFIC REPORTS_Intraoperative Identification of Liver C.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 4138564 字符
+  核心关键词: fluorescent probe, fluorescence
+  提取的数值: {'size_nm': 150.0, 'quantum_yield_percent': 0.0}
+
+[138] 2016_semantic_scholar_Enhancement and Inhibition of Spontaneous Photon E_10.1103_physrevapplied.6.064016.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 641979 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 250, 'excitation_wavelength_nm': 170, 'size_nm': 300.0, 'quantum_yield_percent': 20.0}
+
+[140] 2016_Small_Fluorescent Polymer Nanoparticles Based on Dyes_ Seeking Brighter Tools for Bioimaging..pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 3453757 字符
+  核心关键词: fluorescent probe, quantum dot, polymeric nanoparticle, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 20, 'size_nm': 20.0, 'quantum_yield_percent': 10.0}
+
+[144] 2016__Highly selective fluorescent chemosensor for detection of Fe3+ based on Fe3O4@ZnO.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 869171 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 4.0}
+
+[145] 2016__Hydrogen peroxide sensing based on carbon quantum dots.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 526917 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'excitation_wavelength_nm': 365, 'size_nm': 5.0, 'quantum_yield_percent': 0.0}
+
+[149] 2017_Applied Water Science_Monitoring of ppm level humic acid in su.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 631951 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 0, 'size_nm': 50250.0, 'quantum_yield_percent': 4.0}
+
+[150/606] 分析进度...
+
+[151] 2017_Beilstein Journal of Nanotechnology_Bright fluorescent silica-nanoparticle probes for high-resolution STED and confocal microscopy.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1902580 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescent imaging, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 0, 'excitation_wavelength_nm': 0, 'size_nm': 0.0, 'quantum_yield_percent': 5.0}
+
+[152] 2017_Cell Death and Disease_Upconversion nanoparticle-mediated photodynamic therapy induces autophagy and cholesterol efflux of macrophage-derived foam cells via ROS generation.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2149056 字符
+  核心关键词: upconversion nanoparticle, fluorescence
+  提取的数值: {'quantum_yield_percent': 77.0}
+
+[153] 2017_Chemical Science_Supramolecular assembly affording a rati.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 305847 字符
+  核心关键词: fluorescent nanoprobe
+  提取的数值: {'emission_wavelength_nm': 90, 'excitation_wavelength_nm': 90, 'size_nm': 90.0, 'quantum_yield_percent': 8.0, 'limit_of_detection': '90 nm'}
+
+[154] 2017_JOURNAL OF NANOBIOTECHNOLOGY_Highly sensitive and accurate detection of C-reactive protein by CdSe_ZnS quantum dot-based fluorescence-linked immunosorbent assay.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2092934 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescent, luminescence
+  提取的数值: {'quantum_yield_percent': 0.0, 'limit_of_detection': '50 ng/mL'}
+
+[157] 2017_RSC ADVANCES_Colloidal quantum dot chains_ self-assembly mechanism and ratiometric fluorescent sensing.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 556932 字符
+  核心关键词: quantum dot, luminescence
+  提取的数值: {'emission_wavelength_nm': 365, 'excitation_wavelength_nm': 350, 'size_nm': 365.0, 'quantum_yield_percent': 98.0, 'limit_of_detection': '365 nm'}
+
+[158] 2017_RSC Advances_Green preparation of nitrogen doped carbon quantum dot films as fluorescent probes.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 607747 字符
+  核心关键词: fluorescent probe, quantum dot, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 469, 'excitation_wavelength_nm': 350, 'size_nm': 350.0, 'quantum_yield_percent': 53.3}
+
+[159] 2017_Scientific Reports_A novel fluorescent probe-based flow cyt.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 3760483 字符
+  核心关键词: fluorescent probe
+  提取的数值: {'size_nm': 500.0, 'quantum_yield_percent': 6.0}
+
+[160] 2017_SCIENTIFIC REPORTS_Fatty Acid Uptake in T Cell Subsets Using a Quantum Dot Fatty Acid Conjugate.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2141644 字符
+  核心关键词: quantum dot
+  提取的数值: {'size_nm': 10.0, 'quantum_yield_percent': 68.0}
+
+[161] 2017_Scientific Reports_Nanodiamonds as multi-purpose labels for microscopy.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1926410 字符
+  核心关键词: 
+  提取的数值: {'size_nm': 70.0, 'quantum_yield_percent': 4.0}
+
+[162] 2017_semantic_scholar_Interaction of amino acid-functionalized silver na_10.1016_j.colsurfb.2017.04.044.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 703693 字符
+  核心关键词: fluorescence
+  提取的数值: {'quantum_yield_percent': 7.0}
+
+[163] 2017_semantic_scholar_Nanoprobe Synthesized by Magnetotactic Bacteria, D_10.1021_acsami.7b09720.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1923153 字符
+  核心关键词: fluorescent probe, fluorescence
+  提取的数值: {'quantum_yield_percent': 6.0}
+
+[164] 2017__A highly zinc-selective ratiometric fluorescent probe based on AIE luminogen functionalized coordination polymer nanoparticles.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 336778 字符
+  核心关键词: fluorescent probe, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 405, 'excitation_wavelength_nm': 365, 'size_nm': 405.0, 'quantum_yield_percent': 14.27}
+
+[165] 2017__A turn-on fluorescent probe for Cd2+ det.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 679622 字符
+  核心关键词: fluorescent probe, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 100, 'excitation_wavelength_nm': 342, 'size_nm': 342.0, 'quantum_yield_percent': 83.0, 'limit_of_detection': '400 nm'}
+
+[166] 2017__Aconitic acid derived carbon dots as rec.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 313262 字符
+  核心关键词: fluorescent nanoprobe, fluorescence
+  提取的数值: {'emission_wavelength_nm': 450, 'excitation_wavelength_nm': 0, 'size_nm': 632.8, 'quantum_yield_percent': 45.1}
+
+[170] 2017__Fluorinated molecular beacons as functional DNA nanomolecules for cellular imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 191306 字符
+  核心关键词: fluorescence
+  提取的数值: {'emission_wavelength_nm': 520, 'excitation_wavelength_nm': 488, 'size_nm': 200.0, 'quantum_yield_percent': 3.0}
+
+[172] 2017__Nano-Assembly Small Molecule Probe - New Horizon for Molecular Imaging.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 843822 字符
+  核心关键词: 
+  提取的数值: {'size_nm': 40.0, 'quantum_yield_percent': 3.0, 'limit_of_detection': '3 nm'}
+
+[173] 2017__Novel imprinted polyethyleneimine nano-f.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 660886 字符
+  核心关键词: fluorescent probe, fluorescence
+  提取的数值: {'emission_wavelength_nm': 10, 'excitation_wavelength_nm': 10, 'size_nm': 190.0, 'quantum_yield_percent': 95.0}
+
+[174] 2017__scent probe for Cd 2 + detection in aque.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 679720 字符
+  核心关键词: fluorescent probe, luminescent, luminescence
+  提取的数值: {'emission_wavelength_nm': 100, 'excitation_wavelength_nm': 342, 'size_nm': 342.0, 'quantum_yield_percent': 83.0, 'limit_of_detection': '400 nm'}
+
+[175] 2017__Stochastic Simulation of Dopamine Neuromodulation for Implementation of Fluorescent Neurochemical Probes in the Striatal Extracellular Space.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1644131 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 3.0}
+
+[179] 2018_ACS sensors_A Fluorescent Carbon Nanotube Sensor Detects the Metastatic Prostate Cancer Biomarker uPA..pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2071617 字符
+  核心关键词: fluorescence
+  提取的数值: {'quantum_yield_percent': 0.0}
+
+[181] 2018_Advanced Functional Materials_Off_On Fluorescent Nanoparticles for Tunable High‐Temperature Threshold Sensing.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 708901 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 2.0}
+
+[183] 2018_Analytica Chimica Acta_Cancer biomarker determination by resona.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1739693 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 4.0, 'limit_of_detection': '200 nM'}
+
+[184] 2018_Analytica Chimica Acta_Hairpin-structured probe conjugated nano.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 98.9/100
+  文本长度: 890460 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 0.0}
+
+[186] 2018_arXiv_Thermodynamic State of the Interface during Acoustic Cavitation in Lipid Suspensions.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2744040 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 15.0}
+
+[189] 2018_Journal of Nanobiotechnology_Facile assembly of upconversion nanoparticle-based micelles for active targeted dual-mode imaging in pancreatic cancer.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1422480 字符
+  核心关键词: upconversion nanoparticle, luminescence
+  提取的数值: {'emission_wavelength_nm': 4, 'quantum_yield_percent': 1.0}
+
+[190] 2018_Journal of Nanobiotechnology_pH-responsive theranostic nanocomposites as synergistically enhancing positive and negative magnetic resonance imaging contrast agents.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1454258 字符
+  核心关键词: luminescence
+  提取的数值: {'quantum_yield_percent': 37.0}
+
+[191] 2018_Journal of the American Chemical Society_DNA-Functionalized Dye-Loaded Polymeric Nanoparticles_ Ultrabright FRET Platform for Amplified Detection of Nucleic Acids..pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1097017 字符
+  核心关键词: polymeric nanoparticle
+  提取的数值: {'quantum_yield_percent': 777.0}
+
+[192] 2018_Nanoscale Advances_Fluorescent microsphere probe for rapid .pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 292210 字符
+  核心关键词: fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 522, 'size_nm': 200.0, 'quantum_yield_percent': 1.0}
+
+[194] 2018_Nature Communications_Microsphere-based interferometric optical probe.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1568915 字符
+  核心关键词: quantum dot, fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 10, 'excitation_wavelength_nm': 0, 'size_nm': 10.0, 'quantum_yield_percent': 3.5}
+
+[196] 2018_NPG Asia Materials_Photochromic fluorophores at the molecular and nanoparticle levels_ fundamentals and applications of diarylethenes.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 5445859 字符
+  核心关键词: quantum dot, fluorescence, fluorophore, luminescent
+  提取的数值: {'emission_wavelength_nm': 980, 'excitation_wavelength_nm': 488, 'size_nm': 488.0, 'quantum_yield_percent': 100.0}
+
+[197] 2018_RSC Advances_A double fluorescent nanoprobe based on .pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 456706 字符
+  核心关键词: fluorescent nanoprobe, quantum dot, fluorescent detection, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 360, 'excitation_wavelength_nm': 360, 'size_nm': 4.14, 'quantum_yield_percent': 54.6, 'limit_of_detection': '340 nm'}
+
+[198] 2018_RSC Advances_Enhanced upconversion fluorescent probe of single NaYF4_Yb3+_Er3+_Zn2+ nanoparticles for copper ion detection.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 544658 字符
+  核心关键词: fluorescent probe, upconversion nanoparticle, luminescence
+  提取的数值: {'emission_wavelength_nm': 980, 'excitation_wavelength_nm': 468, 'size_nm': 980.0, 'quantum_yield_percent': 6.0}
+
+[199] 2018_RSC ADVANCES_Novel oligopeptide nanoprobe for targeted cancer cell imaging.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 282179 字符
+  核心关键词: quantum dot, upconversion nanoparticle, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 405, 'excitation_wavelength_nm': 405, 'size_nm': 405.0, 'quantum_yield_percent': 1.0}
+
+[200/606] 分析进度...
+
+[200] 2018_Scientific Reports_Assembly of Plasmonic and Magnetic Nanoparticles with Fluorescent Silica Shell Layer for Tri-functional SERS-Magnetic-Fluorescence Probes and Its Bioapplications.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 4715208 字符
+  核心关键词: fluorescence
+  提取的数值: {'size_nm': 20.0, 'quantum_yield_percent': 7.0}
+
+[202] 2018__A sensitive fluorescent sensor for the detection of trace water in organic solvents based on carbon quantum dots with yellow fluorescence.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 340511 字符
+  核心关键词: quantum dot, fluorescent sensor, fluorescence, luminescence
+  提取的数值: {'emission_wavelength_nm': 440, 'excitation_wavelength_nm': 1, 'size_nm': 0.21, 'quantum_yield_percent': 92.6, 'limit_of_detection': '440 nm'}
+
+[206] 2018__Electrostatic-assemblies of single-walled carbon nanotubes and sequence-tunable peptoid polymers detect a lectin protein and its target sugars.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 958196 字符
+  核心关键词: fluorescence
+  提取的数值: {'quantum_yield_percent': 9.0}
+
+[208] 2018__Folic acid-modified diatrizoic acid-link.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1841575 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 7.0}
+
+[210] 2018__Image-guided surgery using near-infrared Turn-ON fluorescent nanoprobes for precise detection of tumor margins.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 2212480 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 8.0}
+
+[214] 2018__Molecular design of near-infrared fluorescent Pdots for tumor targeting_ aggregation-induced emissionversusanti-aggregation-caused quenching.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 3315008 字符
+  核心关键词: fluorescent probe, quantum dot, polymeric nanoparticle
+  提取的数值: {'emission_wavelength_nm': 660, 'excitation_wavelength_nm': 700, 'size_nm': 400.0, 'quantum_yield_percent': 51.0}
+
+[221] 2018__Single- and two-photon imaging of human micrometastases and disseminated tumour cells with conjugates of nanobodies and quantum dots.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 5375319 字符
+  核心关键词: quantum dot
+  提取的数值: {'size_nm': 8.0, 'quantum_yield_percent': 6.0}
+
+[222] 2018__The use of S2O82− and H2O2 as novel specific masking agents for highly selective “turn-on” fluorescent switching recognition of CN− and I− based on Hg2+–graphene quantum dots.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1684889 字符
+  核心关键词: quantum dot, luminescence
+  提取的数值: {'emission_wavelength_nm': 370, 'excitation_wavelength_nm': 370, 'size_nm': 370.0, 'quantum_yield_percent': 2.0, 'limit_of_detection': '10 nm'}
+
+[223] 2018__User-friendly point-of-care detection of influenza A (H1N1) virus using light guide in three-dimensional photonic crystal.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 694063 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 673, 'size_nm': 673.0, 'quantum_yield_percent': 18.0, 'limit_of_detection': '300 nm'}
+
+[225] 2019_Analytical Chemistry_Simple Self-Referenced Luminescent pH Sensors Based on Upconversion Nanocrystals and pH-Sensitive Fluorescent BODIPY Dyes..pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 27680358 字符
+  核心关键词: quantum dot, upconversion nanoparticle, polymeric nanoparticle, fluorescence, fluorophore
+  提取的数值: {'emission_wavelength_nm': 980, 'excitation_wavelength_nm': 980, 'size_nm': 980.0, 'quantum_yield_percent': 20.0}
+
+[226] 2019_Analytical Chemistry_Single Chain Cationic Polymer Dot as a F.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2241231 字符
+  核心关键词: fluorescent probe, fluorescence, luminescent
+  提取的数值: {'excitation_wavelength_nm': 488, 'size_nm': 3.6, 'quantum_yield_percent': 66.0}
+
+[228] 2019_arXiv_All semiconductor enhanced high-harmonic generation from a single nano-structure.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1621109 字符
+  核心关键词: 
+  提取的数值: {'emission_wavelength_nm': 800, 'size_nm': 385.0, 'quantum_yield_percent': 3.0, 'limit_of_detection': '800 nm'}
+
+[229] 2019_arXiv_Optical control of an individual Cr spin in a semiconductor quantum dot.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1275500 字符
+  核心关键词: quantum dot
+  提取的数值: {'quantum_yield_percent': 5.0}
+
+[230] 2019_arXiv_Principles and Techniques of the Quantum Diamond Microscope.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 3931773 字符
+  核心关键词: fluorescence
+  提取的数值: {'emission_wavelength_nm': 36, 'excitation_wavelength_nm': 532, 'size_nm': 532.0, 'quantum_yield_percent': 4.0}
+
+[231] 2019_arXiv_Radiative Auger Process in the Single-Photon Limit.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1009735 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 26.0}
+
+[232] 2019_Chemical Science_Tumor-acidity activated surface charge c.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2162897 字符
+  核心关键词: fluorescent nanoprobe, fluorescence
+  提取的数值: {'emission_wavelength_nm': 560, 'size_nm': 350.0, 'quantum_yield_percent': 7.0}
+
+[233] 2019_crossref_A fluorometric method for mercury(II) detection ba_10.1007_s00604-019-3872-0.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2884229 字符
+  核心关键词: fluorescent nanoprobe, quantum dot, fluorescence
+  提取的数值: {'excitation_wavelength_nm': 0, 'quantum_yield_percent': 4.0}
+
+[234] 2019_crossref_A ratiometric fluorescent nanoprobe consisting of_10.1007_s00604-019-3749-2.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1071877 字符
+  核心关键词: fluorescent probe, fluorescent nanoprobe, fluorescence
+  提取的数值: {'emission_wavelength_nm': 95, 'size_nm': 440.0, 'quantum_yield_percent': 2.0, 'limit_of_detection': '1 nM'}
+
+[235] 2019_crossref_A “turn off-on” fluorescent nanoprobe consisting o_10.1007_s00604-019-3918-3.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1373542 字符
+  核心关键词: fluorescence, luminescent
+  提取的数值: {'emission_wavelength_nm': 656, 'quantum_yield_percent': 8.0}
+
+[236] 2019_crossref_Bacteria-targeting BSA-stabilized SiC nanoparticle_10.1007_s00604-019-3890-y.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2571610 字符
+  核心关键词: fluorescence
+  提取的数值: {'emission_wavelength_nm': 10, 'excitation_wavelength_nm': 20, 'size_nm': 350.0, 'quantum_yield_percent': 6.0, 'limit_of_detection': '0 nm'}
+
+[237] 2019_crossref_Fluorometric determination of sulfadiazine by usin_10.1007_s00604-019-3721-1.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 1003112 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 592, 'size_nm': 592.0, 'quantum_yield_percent': 4.0}
+
+[238] 2019_crossref_Two-photon excited fluorescent silica nanoparticle_10.1007_s00604-019-3926-3.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 3066380 字符
+  核心关键词: fluorescent nanoprobe
+  提取的数值: {'size_nm': 2.2, 'quantum_yield_percent': 4.0}
+
+[239] 2019_eFood_Synthesis of CdTe Quantum Dots‐based Imp.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1229977 字符
+  核心关键词: quantum dot
+  提取的数值: {'size_nm': 48.0, 'quantum_yield_percent': 8.0}
+
+[241] 2019_JOURNAL OF MATERIALS SCIENCE-MATERIALS IN ELECTRONICS_Preparation, characterization and cell c.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2283790 字符
+  核心关键词: fluorescent nanoprobe, quantum dot, luminescent
+  提取的数值: {'emission_wavelength_nm': 529, 'size_nm': 400650.0, 'quantum_yield_percent': 2.0, 'limit_of_detection': '1 pm'}
+
+[242] 2019_Journal of Materials Science_ Materials in Electronics_Preparation, c.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2283790 字符
+  核心关键词: fluorescent nanoprobe, quantum dot, luminescent
+  提取的数值: {'emission_wavelength_nm': 529, 'size_nm': 400650.0, 'quantum_yield_percent': 2.0, 'limit_of_detection': '1 pm'}
+
+[245] 2019_Nanoscale_Gold nanorods functionalized by a glutat.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 2098724 字符
+  核心关键词: 
+  提取的数值: {'emission_wavelength_nm': 900, 'size_nm': 900.0, 'quantum_yield_percent': 2.0}
+
+[246] 2019_Nanotechnology Reviews_Investigation of rare earth upconversion fluorescent nanoparticles in biomedical field.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 14527657 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 30, 'size_nm': 166.0, 'quantum_yield_percent': 0.0}
+
+[247] 2019_Nanotheranostics_Tumor-Activatable Clinical Nanoprobe for Cancer Imaging.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1843527 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 79.0}
+
+[248] 2019_Prayogik rasayan_Critical vesicular concentration of masl.pdf
+  评级: B- - 良好偏下：缺少1个必需字段，但其他信息较完整
+  分数: 100.0/100
+  文本长度: 1914292 字符
+  核心关键词: 
+  提取的数值: {'quantum_yield_percent': 3.0}
+
+[249] 2019_RSC ADVANCES_An enzyme-free FRET nanoprobe for ultras.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 177872 字符
+  核心关键词: fluorescent probe, fluorescence
+  提取的数值: {'emission_wavelength_nm': 520, 'size_nm': 13.0, 'quantum_yield_percent': 9.0, 'limit_of_detection': '13 nm'}
+
+[250/606] 分析进度...
+
+[250] 2019_RSC ADVANCES_Highly fluorescent carbon dots as an efficient nanoprobe for detection of clomifene citrate.pdf
+  评级: A - 优秀：包含所有必需字段，信息完整
+  分数: 100.0/100
+  文本长度: 357951 字符
+  核心关键词: quantum dot, fluorescence
+  提取的数值: {'emission_wavelength_nm': 320, 'excitation_wavelength_nm': 320, 'size_nm': 320.0, 'quantum_yield_percent': 98.0}

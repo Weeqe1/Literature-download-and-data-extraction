@@ -1,0 +1,121 @@
+================================================================================
+PDF质量分析工具（最终版）
+================================================================================
+找到 606 个PDF文件
+
+检查文件类型...
+有效PDF文件: 420
+无效文件: 186
+
+无效文件类型统计:
+  HTML文档（下载失败）: 166
+  JavaScript文件（下载失败）: 13
+  文本文件（下载失败）: 4
+  未知格式: /home/weeqe/wsl/data-download_extraction/outputs/l: 3
+
+开始分析 420 个有效PDF文件...
+
+[1] 2005_crossref_Preparation, characterization and application of f_10.1007_s10895-005-2823-9.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[2] 2006_arXiv_On-command enhancement of single molecule fluorescence using a gold nanoparticle as an optical nano-antenna.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[3] 2008_Biosensors & bioelectronics_Quantum dots encapsulated with amphiphilic alginate as bioprobe for fast screening anti-dengue virus agents.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[4] 2008__A nano- and micro- integrated protein chip based on quantum dot probes and a microfluidic network.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[5] 2009_arXiv_Continuous-wave versus time-resolved measurements of Purcell-factors for quantum dots in semiconductor microcavities.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[6] 2009_arXiv_Electrostatic co-assembly of magnetic nanoparticles and fluorescent nanospheres_ a versatile approach toward bimodal nanorods.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[7] 2009_arXiv_Monitoring Ion Channel Function In Real Time Through Quantum Decoherence.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[8] 2009__A FLUORESCENCE QUENCHING METHOD FOR DETERMINATION OF COPPER IONS WITH CDTE QUANTUM DOTS.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[9] 2009__One-pot synthesis of highly luminescent CdTe quantum dots by microwave irradiation reduction and their Hg2+-sensitive properties.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[10] 2009__Proton-resistant quantum dots_ Stability in gastrointestinal fluids and implications for oral delivery of nanoparticle agents.pdf
+  评级: NO_TEXT - PDF没有可提取的文本内容
+  分数: 0.0/100
+
+[50/420] 分析进度...
+
+[100/420] 分析进度...
+
+[150/420] 分析进度...
+
+[200/420] 分析进度...
+
+[250/420] 分析进度...
+
+[300/420] 分析进度...
+
+[350/420] 分析进度...
+
+[400/420] 分析进度...
+
+详细分析结果已保存到: /home/weeqe/WSL/DATA-Download_Extraction/outputs/analysis/pdf_quality_analysis.json
+CSV报告已保存到: /home/weeqe/WSL/DATA-Download_Extraction/outputs/analysis/pdf_quality_report.csv
+
+================================================================================
+分析统计摘要
+================================================================================
+
+有效PDF文件数: 420
+
+评级分布:
+  NO_TEXT: 420 个 (100.0%)
+
+NFP相关文件数: 0
+有效PDF文件数: 0
+
+平均质量分数: 0.0/100
+
+字段可用性统计:
+  核心材料: 0/420 (0.0%)
+  发射波长: 0/420 (0.0%)
+  目标分析物: 0/420 (0.0%)
+  壳层/掺杂剂: 0/420 (0.0%)
+  表面配体: 0/420 (0.0%)
+  尺寸: 0/420 (0.0%)
+  激发波长: 0/420 (0.0%)
+  量子产率: 0/420 (0.0%)
+  检测限: 0/420 (0.0%)
+  测试介质: 0/420 (0.0%)
+  响应类型: 0/420 (0.0%)
+  线性范围: 0/420 (0.0%)
+
+================================================================================
+推荐用于数据提取的文件 (评级A和B)
+================================================================================
+
+没有评级为A或B的文件
+
+================================================================================
+不合格文件 (评级F)
+================================================================================
+
+没有不合格的文件
+
+无效文件报告已保存到: /home/weeqe/WSL/DATA-Download_Extraction/outputs/analysis/invalid_files_report.csv
+
+================================================================================
+分析完成！
+================================================================================

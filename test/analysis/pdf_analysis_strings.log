@@ -1,0 +1,1223 @@
+================================================================================
+PDF质量分析工具（使用strings命令）
+================================================================================
+找到 606 个PDF文件
+
+[1] 2000__Ultrahigh-resolution multicolor colocalization of single fluorescent probes.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[2] 2002__In vitro fertilisation in Hevea brasiliensis_ a preliminary investigation..pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[3] 2002__La gastropexie _en boucle de ceinture_ chez le chien.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[4] 2004__Polyaromatic Luminescent Nanocrystals for Chemical and Biological Sensors.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[5] 2005_crossref_Preparation, characterization and application of f_10.1007_s10895-005-2823-9.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[6] 2006_arXiv_On-command enhancement of single molecule fluorescence using a gold nanoparticle as an optical nano-antenna.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[7] 2006_Chemistry and Biology_Quantum dot-mediated detection of gamma-aminobutyric acid binding sites on the surface of living pollen protoplasts in tobacco..pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[8] 2006__Size Series of Small Indium Arsenide−Zinc Selenide Core−Shell Nanocrystals and Their Application to In Vivo Imaging.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[9] 2007__Conjugated Polymer Dots for Multiphoton Fluorescence Imaging.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[10] 2007__Immunofluorescence detection with quantum dot bioconjugates for hepatoma in vivo.pdf
+  评级: INVALID - 不是有效的PDF文件
+  分数: 0.0/100
+
+[16] 2008__A nano- and micro- integrated protein chip based on quantum dot probes and a microfluidic network.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[19] 2009_arXiv_Continuous-wave versus time-resolved measurements of Purcell-factors for quantum dots in semiconductor microcavities.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[20] 2009_arXiv_Electrostatic co-assembly of magnetic nanoparticles and fluorescent nanospheres_ a versatile approach toward bimodal nanorods.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[21] 2009_arXiv_Monitoring Ion Channel Function In Real Time Through Quantum Decoherence.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[24] 2009__A FLUORESCENCE QUENCHING METHOD FOR DETERMINATION OF COPPER IONS WITH CDTE QUANTUM DOTS.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[28] 2009__One-pot synthesis of highly luminescent CdTe quantum dots by microwave irradiation reduction and their Hg2+-sensitive properties.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[29] 2009__Proton-resistant quantum dots_ Stability in gastrointestinal fluids and implications for oral delivery of nanoparticle agents.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[33] 2010_arXiv_Energy transfer from an individual quantum dot to a carbon nanotube.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[34] 2010_crossref_A Sandwiched Biological Fluorescent Probe for the_10.1007_s10895-010-0702-5.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[35] 2010_crossref_Thiol-stabilized luminescent CdTe quantum dot as b_10.1007_s00216-009-3433-1.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[36] 2010_Journal of the American Chemical Society_Quantum dot FRET-based probes in thin films grown in microfluidic channels..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[40] 2010__Expression of Caveolin-1 in tongue squamous cell carcinoma by quantum dots.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[43] 2010__Stimuli responsive polymer_quantum dot hybrid platforms modified at the nanoscale.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[44] 2010__Tracking the Small with the Smallest – Using Nanotechnology in Tracking Zooplankton.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[45] 2011_arXiv_Probing Plasmons in Graphene by Resonance Energy Transfer.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 61.0/100
+  核心关键词: fluorescence...
+
+[46] 2011_arXiv_Quantum yield optimized fluorophores for site-specific labeling and super-resolution imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[47] 2011_arXiv_Scanning emitter lifetime imaging microscopy for spontaneous emission control.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[50/606] 分析进度...
+
+[52] 2011__Superparamagnetic Nanosystems Based on Iron Oxide Nanoparticles for Biomedical Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[55] 2011__[Application of quantum dots fluorescent probes in tissue of human tongue squamous cell carcinoma]..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 54.0/100
+  核心关键词: ...
+
+[57] 2012_ONCOLOGY LETTERS_In vitro gastric cancer cell imaging using near-infrared quantum dot-conjugated CC49.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.4/100
+  核心关键词: ...
+
+[59] 2012_unpaywall_Near-Infrared Fluorescent Nanoprobes for in Vivo O_10.3390_nano2020092.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 77.0/100
+  核心关键词: fluorescent probe, fluorescent nanoprobe, fluorescence...
+
+[63] 2012__II-VI Quantum Dots as Fluorescent Probes for Studying Trypanosomatides.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[64] 2012__In vitro gastric cancer cell imaging using near-infrared quantum dot-conjugated CC49.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.4/100
+  核心关键词: ...
+
+[65] 2012__In Vivo Cancer Targeting and Imaging-Guided Surgery with Near Infrared-Emitting Quantum Dot Bioconjugates.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[68] 2012__Quantum Dots-Based Biological Fluorescent Probes for In Vitro and In Vivo Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[71] 2013_arXiv_All-optical sensing of a single-molecule electron spin.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[72] 2013_arXiv_Charge noise and spin noise in a semiconductor quantum device.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[73] 2013_arXiv_Lead Nanopowder as Advanced Semi-Conductor, An Insight.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[74] 2013_arXiv_Nanointerferometric Amplitude and Phase Reconstruction of Tightly Focused Vector Beams.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[76] 2013_crossref_Nanoprobes for super-resolution fluorescence imagi_10.1007_s11426-013-5014-6.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[79] 2013_Theranostics_Cardioprotective C-kit+ Bone Marrow Cells Attenuate Apoptosis after Acute Myocardial Infarction in Mice - In-vivo Assessment with Fluorescence Molecular Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[80] 2013__Efficient Photoluminescence of Mn2+-Doped ZnS Quantum Dots Excited by Two-Photon Absorption in Near-Infrared Window II.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[81] 2013__Graphitic carbon quantum dots as a fluorescent sensing platform for highly efficient detection of Fe3+ ions.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[83] 2013__Photostable fluorescent organic dots with aggregation-induced emission (AIE dots) for noninvasive long-term cell tracing.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.4/100
+  核心关键词: fluorescence...
+
+[86] 2013__Quantum Dots For Diagnosis Of Cancers.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 65.0/100
+  核心关键词: quantum dot...
+
+[92] 2014_arXiv_Frequency stabilization of the zero-phonon line of a quantum dot via phonon-assisted active feedback.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[97] 2014_crossref_Graphitic carbon nitride nanosheet-based multicolo_10.1007_s00604-014-1412-5.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[98] 2014_crossref_Study of Polycation-Capped Mn_ZnSe Quantum Dots as_10.1007_s10895-014-1350-y.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[100/606] 分析进度...
+
+[110] 2015_ACS Applied Materials and Interfaces_Facile Construction of Near Infrared Fluorescence Nanoprobe with Amphiphilic Protein-Polymer Bioconjugate for Targeted Cell Imaging..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[111] 2015_arXiv_Bright-field Nanoscopy_ Visualizing Nano-structures with Localized Optical Contrast Using a Conventional Microscope.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.2/100
+  核心关键词: ...
+
+[113] 2015_arXiv_Nanodiamond Landmarks for Subcellular Multimodal Optical and Electron Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.4/100
+  核心关键词: fluorescence...
+
+[114] 2015_arXiv_Non-linear two-photon resonance fluorescence on a single artificial atom.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[122] 2015__Fluorescence probe for the convenient and sensitive detection of ascorbic acid.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[126] 2015__Quantum dots_ bright and versatile in vitro and in vivo fluorescence imaging biosensors.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 78.2/100
+  核心关键词: quantum dot, fluorescence...
+
+[129] 2016_2ND ANNUAL INTERNATIONAL CONFERENCE ON ENERGY, ENVIRONMENTAL & SUSTAINABLE ECOSYSTEM DEVELOPMENT (EESED 2016)_Carbon dot as fluorescent probe for detection of chromium(VI).pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[130] 2016_Advanced Healthcare Materials_A Highly Photostable Hyperbranched Polyglycerol‐Based NIR Fluorescence Nanoplatform for Mitochondria‐Specific Cell Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescence...
+
+[134] 2016_arXiv_Temperature Dependent Heterogeneous Rotational Correlation in Lipids.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[137] 2016_Scientific Reports_Three-Dimensional Super-Resolution Morph.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[138] 2016_semantic_scholar_Enhancement and Inhibition of Spontaneous Photon E_10.1103_physrevapplied.6.064016.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 68.7/100
+  核心关键词: ...
+
+[139] 2016_semantic_scholar_Surface Plasmon Enhanced Emission Rate in Silicon_10.5047_gseku.e.2015.004.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[145] 2016__Hydrogen peroxide sensing based on carbon quantum dots.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[147] 2016__Retraction Note to_ CdS_ZnS core-shell quantum dots capped with mercaptoacetic acid as fluorescent probes for Hg(II) ions.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.4/100
+  核心关键词: ...
+
+[148] 2017_ANALYTICAL SCIENCES_Development and Applications of Quantum Dot-based Molecularly Imprinted Polymer Composites for Optosensing of Carbofuran in Water.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[149] 2017_Applied Water Science_Monitoring of ppm level humic acid in su.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 76.4/100
+  核心关键词: fluorescent probe, fluorescence...
+
+[150/606] 分析进度...
+
+[161] 2017_Scientific Reports_Nanodiamonds as multi-purpose labels for microscopy.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[162] 2017_semantic_scholar_Interaction of amino acid-functionalized silver na_10.1016_j.colsurfb.2017.04.044.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[163] 2017_semantic_scholar_Nanoprobe Synthesized by Magnetotactic Bacteria, D_10.1021_acsami.7b09720.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[167] 2017__CdTe Quantum Dots and Their Bioconjugate with Human Serum Albumin for Fluorescence Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[170] 2017__Fluorinated molecular beacons as functional DNA nanomolecules for cellular imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[172] 2017__Nano-Assembly Small Molecule Probe - New Horizon for Molecular Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.7/100
+  核心关键词: ...
+
+[173] 2017__Novel imprinted polyethyleneimine nano-f.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent probe...
+
+[175] 2017__Stochastic Simulation of Dopamine Neuromodulation for Implementation of Fluorescent Neurochemical Probes in the Striatal Extracellular Space.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[176] 2017__Utilizing Biotinylated Proteins Expressed in Yeast to Visualize DNA–Protein Interactions at the Single-Molecule Level.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 70.0/100
+  核心关键词: quantum dot, fluorescence...
+
+[179] 2018_ACS sensors_A Fluorescent Carbon Nanotube Sensor Detects the Metastatic Prostate Cancer Biomarker uPA..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 67.0/100
+  核心关键词: fluorescence...
+
+[181] 2018_Advanced Functional Materials_Off_On Fluorescent Nanoparticles for Tunable High‐Temperature Threshold Sensing.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[183] 2018_Analytica Chimica Acta_Cancer biomarker determination by resona.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[184] 2018_Analytica Chimica Acta_Hairpin-structured probe conjugated nano.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[186] 2018_arXiv_Thermodynamic State of the Interface during Acoustic Cavitation in Lipid Suspensions.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[187] 2018_arXiv_Unimolecular FRET Sensors_ Simple Linker Designs and Properties.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[188] 2018_Experimental and Therapeutic Medicine_Quantum dot‑based fluorescent probes for targeted imaging of the EJ human bladder urothelial cancer cell line.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[190] 2018_Journal of Nanobiotechnology_pH-responsive theranostic nanocomposites as synergistically enhancing positive and negative magnetic resonance imaging contrast agents.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[191] 2018_Journal of the American Chemical Society_DNA-Functionalized Dye-Loaded Polymeric Nanoparticles_ Ultrabright FRET Platform for Amplified Detection of Nucleic Acids..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[194] 2018_Nature Communications_Microsphere-based interferometric optical probe.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 70.9/100
+  核心关键词: ...
+
+[200/606] 分析进度...
+
+[208] 2018__Folic acid-modified diatrizoic acid-link.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[209] 2018__Highly sensitive fluorescent probe for Cr3+ detection using carbon quantum dots.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[210] 2018__Image-guided surgery using near-infrared Turn-ON fluorescent nanoprobes for precise detection of tumor margins.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[225] 2019_Analytical Chemistry_Simple Self-Referenced Luminescent pH Sensors Based on Upconversion Nanocrystals and pH-Sensitive Fluorescent BODIPY Dyes..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 70.9/100
+  核心关键词: ...
+
+[226] 2019_Analytical Chemistry_Single Chain Cationic Polymer Dot as a F.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 75.7/100
+  核心关键词: fluorescent probe...
+
+[227] 2019_ANALYTICAL SCIENCES_A Novel Gold Nanoprobe for a Simple Elec.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[228] 2019_arXiv_All semiconductor enhanced high-harmonic generation from a single nano-structure.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[230] 2019_arXiv_Principles and Techniques of the Quantum Diamond Microscope.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[235] 2019_crossref_A “turn off-on” fluorescent nanoprobe consisting o_10.1007_s00604-019-3918-3.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 81.7/100
+  核心关键词: fluorescent nanoprobe, quantum dot, fluorescence...
+
+[239] 2019_eFood_Synthesis of CdTe Quantum Dots‐based Imp.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[240] 2019_Journal of materials chemistry. B_Detecting lysozyme unfolding via the fluorescence of lysozyme encapsulated gold nanoclusters..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[245] 2019_Nanoscale_Gold nanorods functionalized by a glutat.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 74.2/100
+  核心关键词: fluorescent probe, fluorescence...
+
+[247] 2019_Nanotheranostics_Tumor-Activatable Clinical Nanoprobe for Cancer Imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[248] 2019_Prayogik rasayan_Critical vesicular concentration of masl.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.2/100
+  核心关键词: ...
+
+[250/606] 分析进度...
+
+[253] 2019_SCIENCE CHINA-MATERIALS_Altering sub-cellular location for bioim.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.2/100
+  核心关键词: fluorescent nanoprobe...
+
+[255] 2019_semantic_scholar_An ultrasensitive and selective fluorescent nanose_10.1039_c9an02231g.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[256] 2019_unpaywall_Tailor-made switchable solvatochromic probes for l_10.1002_anie.201907690.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[258] 2019__Analytical methods for determination of glutathione and glutathione disulfide in pharmaceuticals and biological fluids.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[265] 2019__HIGH-SENSITIVITY AND SELECTIVITY DETECTION OF PERMANGANATE IONS BASED ON PIG LIVER-BASED CARBON QUANTUM DOTS.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[266] 2019__Nanocomposite-Based Graphene for Nanosensor Applications.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[267] 2019__One-step Synthesis of Specific pH-responsive Carbon Quantum Dots and Their Luminescence Mechanism.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[269] 2019__Quantum dot cellular uptake and toxicity in the developing brain_ implications for use as imaging probes.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 71.2/100
+  核心关键词: quantum dot...
+
+[270] 2019__The preparation and recent research progress of LDHs-based film fluorescent nanosensors.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[271] 2020_arXiv_A new method for measurement and quantification of tracer diffusion in nanoconfined liquids.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[272] 2020_arXiv_Bridging Pico-to-Nanonewtons with a Ratiometric Force Probe for Monitoring Nanoscale Polymer Physics Before Damage.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 70.9/100
+  核心关键词: ...
+
+[273] 2020_arXiv_Fluorescent nanoparticles for sensing.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[275] 2020_crossref_3-Aminobenzeneboronic Acid Functionalized MoS2 Qua_10.2116_analsci.20p011.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[276] 2020_crossref_Fluorometric determination of acetamiprid using mo_10.1007_s00604-020-4204-0.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[277] 2020_crossref_Sensitively detecting mTBI biomarker S100B by usin_10.1007_s00216-020-02613-9.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[280] 2020_Materials Chemistry Frontiers_Engineering of a zero cross-talk fluores.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.7/100
+  核心关键词: ...
+
+[283] 2020_REVIEWS IN ANALYTICAL CHEMISTRY_Biological nanoscale fluorescent probes_.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[288] 2020_RSC Advances_PDMPO_ a specific silicon or silica, pH sensitive fluorescent probe_.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 67.2/100
+  核心关键词: fluorescent probe...
+
+[290] 2020_RSC ADVANCES_Spiropyran-modified upconversion nanocom.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent sensor...
+
+[291] 2020_RSC ADVANCES_Spiropyran-modified upconversion nanocomposite as a fluorescent sensor for diagnosis of histidinemia.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent sensor...
+
+[293] 2020_semantic_scholar_Confinement of Dyes inside Boron Nitride Nanotubes_10.1002_adma.202001429.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 67.0/100
+  核心关键词: fluorescence...
+
+[294] 2020_semantic_scholar_NIR Fluorescent Nanoprobes and Techniques for Brai_10.1007_978-3-030-32036-2_13.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.4/100
+  核心关键词: ...
+
+[299] 2020__Cellular Lensing and Near Infrared Fluorescent Nanosensor Arrays to Enable Chemical Efflux Cytometry.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[300/606] 分析进度...
+
+[300] 2020__Evaluation of Biological Toxicity of CdTe Quantum Dots in Trypanosoma cruzi.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[302] 2020__Fluorescent Nanosensors Reveal Dynamic pH Gradients During Biofilm Formation.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent nanosensor...
+
+[305] 2020__In vivo imaging of acetylcholine release in the peripheral nervous system with a fluorescent nanosensor v1.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 63.0/100
+  核心关键词: fluorescent nanosensor...
+
+[307] 2020__Near-infrared polyfluorene encapsulated in poly(ε-caprolactone) nanoparticles with remarkable large Stokes shift.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[310] 2020__Remote near infrared identification of pathogens with multiplexed nanosensors.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 70.7/100
+  核心关键词: ...
+
+[311] 2020__Shortwave-infrared (SWIR) fluorescence molecular imaging using indocyanine green–antibody conjugates for the optical diagnostics of cancerous tumours.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.2/100
+  核心关键词: fluorescence...
+
+[312] 2020__Spiropyran-modified upconversion nanocomposite as a fluorescent sensor for diagnosis of histidinemia.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent sensor...
+
+[313] 2020__UV-emitting polyelectrolyte-modified MoS2 quantum dots for selective determination of nitrophenol in water samples based on inner filter effect.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[314] 2021_ACS Applied Nano Materials_Controlled Synthesis of NaYF4_Yb,Er Upconversion Nanocrystals as Potential Probe for Bioimaging_ A Focus on Heat Treatment.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[318] 2021_crossref_Ratiometric determination of Cr(VI) based on a dua_10.1007_s00604-015-1508-6.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[324] 2021_Mikrochimica acta_Band-pass filter-assisted ratiometric fl.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[326] 2021_Nanoscale_Light-induced in situ chemical activatio.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent probe...
+
+[328] 2021_Nature Communications_A H2O2-activatable nanoprobe for diagnos.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 77.9/100
+  核心关键词: fluorescent imaging...
+
+[329] 2021_Nature Communications_Cellular lensing and near infrared fluor.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.7/100
+  核心关键词: fluorescent nanosensor...
+
+[331] 2021_OPTICAL MATERIALS_Functionalized CdTe fluorescence nanosen.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[332] 2021_OPTICAL MATERIALS_Functionalized CdTe fluorescence nanosensor for the sensitive detection of water borne environmentally hazardous metal ions.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[333] 2021_Polymer Chemistry_An AIE-driven fluorescent polysaccharide.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[334] 2021_Proceedings of the National Academy of Sciences of the United States of America_Imaging in vivo acetylcholine release in the peripheral nervous system with a fluorescent nanosensor..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.2/100
+  核心关键词: ...
+
+[338] 2021_RSC ADVANCES_Fluorescent PEI@Pd nanoclusters_ facile synthesis and application.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[343] 2021_Theranostics_Long-term live-cell lipid droplet-target.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[344] 2021__A fluorescent nanosensor paint reveals the heterogeneity of dopamine release from neurons at individual release sites.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 65.0/100
+  核心关键词: fluorescent nanosensor...
+
+[347] 2021__Determination of Prostate-Specific Antigen Via The Assembly of a Two-Dimensional Nanoplatform.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[349] 2021__Editorial_ Recent Advances in Fluorescent Probes for Super-Resolution Microscopy.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[350/606] 分析进度...
+
+[351] 2021__Fluorescent nanosensors reveal dynamic pH gradients during biofilm formation.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 71.4/100
+  核心关键词: fluorescent nanosensor...
+
+[352] 2021__Fluorescent PEI@Pd nanoclusters_ facile synthesis and application.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[353] 2021__Graphene Oxide_L-phenylalanine_polymetha.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[354] 2021__Graphene Oxide_L-phenylalanine_polymethacrylamide Nanocomposite as an Efficient Fluorescent Nanosensor for Heavy Metals Detection in Aqueous Media.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[355] 2021__GSH capped Cu-Zn-In-S quantum dots_ one-pot aqueous synthesis and cell labeling applications.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[356] 2021__Microwave-Assisted Green Synthesis of Carbon Quantum Dots Derived from Calotropis Gigantea as a Fluorescent Probe for Bioimaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[360] 2021__Sensitive Detection of Sulfide Ion Based on Fluorescent Ionic Liquid–Graphene Quantum Dots Nanocomposite.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[361] 2021__Solvophobic-controlled synthesis of smar.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[362] 2022_ACTA CHIMICA SLOVENICA_Design of _Turn-Off_ Fluorescent Nanopro.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[363] 2022_Analytical and bioanalytical chemistry_Facile high-quantum-yield sulfur-quantum-dot-based photoluminescent probe for nifedipine detection..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[366] 2022_arXiv_Exploiting dynamic nonlinearity in upconversion nanoparticles for super-resolution imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[369] 2022_crossref_Visualization of the process_ selenocysteine activ_10.1007_s11426-022-1250-5.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 61.0/100
+  核心关键词: fluorescent probe...
+
+[370] 2022_Frontiers in Bioengineering and Biotechnology_Synthesis of Fluorescent Sulfur Quantum Dots for Bioimaging and Biosensing.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[371] 2022_Highlights in Science, Engineering and Technology_Applications of fluorescent biosensors based on quantum dots.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[372] 2022_Journal of Inorganic Materials_Construction of Prussian Blue Fluorescen.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[374] 2022_Nano Research_Single-wavelength-excited fluorogenic na.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[375] 2022_Nanoscale Advances_Protease-activated indocyanine green nanoprobes for intraoperative NIR fluorescence imaging of primary tumors.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 71.2/100
+  核心关键词: fluorescence...
+
+[376] 2022_Nanoscale_Correction_ Light-induced in situ chemic.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 65.2/100
+  核心关键词: fluorescent probe...
+
+[381] 2022_RSC Advances_Dual-emissive ratiometric fluorescent na.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.4/100
+  核心关键词: fluorescent nanosensor...
+
+[385] 2022_Sains Malaysiana_Microwave Synthesis of Blue Emissive N-Doped Carbon Quantum Dots as a Fluorescent Probe for Free Chlorine Detection.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[388] 2022_Scientific reports_Monitoring and imaging pH in biofilms utilizing a fluorescent polymeric nanosensor..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[389] 2022_SCIENTIFIC REPORTS_Monitoring and imaging pH in biofilms utilizing a fluorescent polymeric nanosensor.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.0/100
+  核心关键词: ...
+
+[391] 2022_Scientific Reports_Real-time imaging of glutamate transients in the extracellular space of acute human brain slices using a single-wavelength glutamate fluorescence nanosensor.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.0/100
+  核心关键词: fluorescence...
+
+[392] 2022_semantic_scholar_Amine-Functionalized Quantum Dots as a Universal F_10.1021_acsami.2c02508.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[393] 2022_semantic_scholar_Fluorogenic Dimers as Bright Switchable Probes for_10.1021_jacs.2c07542.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 66.4/100
+  核心关键词: ...
+
+[394] 2022__Application of fluorescent biosensors for heavy metal ions detection.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[395] 2022__Carbon quantum dots from biomass cicada sloughs as fluorescent probes for detection of enrofloxacin in aquatic products.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[396] 2022__Carbon Quantum Dots Nanoprobes from Magnolia Grandiflora for Nickel Ion and Latent Fingerprint Detection.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[398] 2022__DNA-enabled fluorescent-based nanosensor.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.4/100
+  核心关键词: ...
+
+[400/606] 分析进度...
+
+[406] 2022__Highly bright silica-coated InP_ZnS quantum dot-embedded silica nanoparticles as biocompatible nanoprobes.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[407] 2022__Lanthanide-based NIR-II Fluorescent Nanoprobes and Their Biomedical Applications※.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[408] 2022__Monitoring And Imaging Ph In Biofilms Utilizing A Fluorescent Polymeric Nanosensor.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[411] 2022__Novel green fluorescent probe stem from carbon quantum dots for specific recognition of tyrosinase in serum and living cells.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[415] 2022__Study on the genetic damage caused by cadmium sulfide quantum dots in human lymphocytes.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[417] 2022__Ultrabright AIEdots with tunable narrow emission for multiplexed fluorescence imaging.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescence...
+
+[418] 2023_arXiv_Engineering Spin Coherence in Core-Shell Diamond Nanocrystals.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[424] 2023_crossref_Endogenous formaldehyde responsive fluorescent pro_10.1007_s12274-023-5766-z.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[431] 2023_Journal of Nanobiotechnology_A TMVP1-modified near-infrared nanoprobe_ molecular imaging for tumor metastasis in sentinel lymph node and targeted enhanced photothermal therapy.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[432] 2023_Journal of Nanobiotechnology_In-Vivo fluorescent nanosensor implants .pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[436] 2023_Mikrochimica acta_Self-ratiometric fluorescence approach based on plant extract-assisted synthesized silver nanoparticles for the determination of vanillin..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[443] 2023_unpaywall_Genetic Targeting of Solvatochromic Dyes for Probi_10.1021_acs.analchem.3c00515.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[449] 2023__Carbon dots as fluorescent nanoprobes fo.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 68.0/100
+  核心关键词: fluorescent nanoprobe, luminescent...
+
+[450/606] 分析进度...
+
+[450] 2023__Construction of carbon quantum dots_riboflavin fluorescent probe and its application in the detection of ciprofloxacin.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[454] 2023__Editorial_ Advanced polymeric biomaterial technologies for biomedical applications.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.4/100
+  核心关键词: ...
+
+[455] 2023__Effect of pH and ionic strength on the photoluminescence of size-fractionated AgInS2_ZnS quantum dots.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[457] 2023__Furan-Dihydroquinazolinone based Fluores.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[459] 2023__Ligand-protected nanocluster-mediated ph.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.2/100
+  核心关键词: fluorescent nanoprobe...
+
+[461] 2023__Multifunctional biomass-derived and N-do.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[464] 2023__Rapid Detection of Sodium Hexametaphosph.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[465] 2023__Rapid determination of warfarin in biolo.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[470] 2023__Synthesis of carbon quantum dots and Fe-doped carbon quantum dots as fluorescent probes via one-step microwave process for rapid and accurate detection of Diclofenac sodium.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[471] 2023_Доклады Российской академии наук. Науки о жизни_INVESTIGATION OF THE INTRACELLULAR DISTR.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[473] 2024_arXiv_Fluorescent nano- and microparticles for sensing cellular microenvironment_ past, present and future applications.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[474] 2024_arXiv_Microsphere-assisted generation of localized optical emitters in 2D hexagonal boron nitride.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.4/100
+  核心关键词: ...
+
+[475] 2024_arXiv_Optical detection of single sub-15 nm objects using elastic scattering strong coupling.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[482] 2024_Materials Science-Poland_Advances in the application of biosynthe.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[484] 2024_Mikrochimica acta_Aminophenylboronic acid-modified nitrogen-doped graphene quantum dots and their applications in lysine sensing based on interplaying fluorescent mechanisms..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 69.0/100
+  核心关键词: fluorescence...
+
+[486] 2024_Nanotheranostics_Biodegradable Nanocomposite of ZnS(Mn) Q.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[492] 2024_semantic_scholar_A novel nanoprobe for visually investigating the c_10.1039_d3ay02270f.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[499] 2024__Aminopropyl triethoxy silane capped ZnO quantum dots for highly selective dopamine.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 56.0/100
+  核心关键词: ...
+
+[500/606] 分析进度...
+
+[500] 2024__Applications of Quantum Dots in Preventive Oncology.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[510] 2024__Fluorescent pH-sensitive nanosensors enable precise low-volume monitoring in high-throughput bioprocess manufacturing.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[520] 2024__Quantum dots as a fluorescent labeling tool for live-cell imaging of Leptospira.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.4/100
+  核心关键词: quantum dot...
+
+[521] 2024__Recent advances on nanomaterial-based glutathione sensors.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[528] 2025_arxiv_doi_Near-infrared fluorescent nanoprobes for irreversi_10.48550_arxiv.2512.05443.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[531] 2025_bioRxiv_Wide-field fluorescence lifetime imaging of single molecules with a gated single-photon camera.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 73.4/100
+  核心关键词: fluorescence...
+
+[536] 2025_crossref_Target-responsive vesicular nanoprobe for fluoresc_10.1007_s10924-008-0104-9.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[543] 2025_Journal of inorganic materials_Functionalized Quantum Dot Fluorescent Probes with Dopamine Quinone_ Construction and pH Response.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[544] 2025_Journal of Nanobiotechnology_Entropy-driven signal amplification integrated with machine learning in multiplex lateral flow immunoassay for sensitive Point-of-Care colon cancer diagnosis.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[549] 2025_MICROCHIMICA ACTA_Luminescent Cu nanoclusters-encapsulated ZIF-8 as on-off-on fluorescent probe for efficient and selective quantification of E. coli.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 74.2/100
+  核心关键词: fluorescent probe, luminescent...
+
+[550/606] 分析进度...
+
+[550] 2025_Microchimica Acta_Luminescent Cu nanoclusters–encapsulated ZIF-8 as on–off–on fluorescent probe for efficient and selective quantification of E. coli.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 74.2/100
+  核心关键词: fluorescent probe, luminescent...
+
+[560] 2025_Scientific Reports_Ultrafast green synthesis of silver nano.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[561] 2025_Scientific reports_Ultrafast green synthesis of silver nanoparticles as fluorescent nanosensors for determination of isoniazid and nitrofurantoin in biological fluids and pharmaceuticals..pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.2/100
+  核心关键词: ...
+
+[562] 2025_Scientific Reports_Ultrafast green synthesis of silver nanoparticles as fluorescent nanosensors for determination of isoniazid and nitrofurantoin in biological fluids and pharmaceuticals.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 62.0/100
+  核心关键词: ...
+
+[565] 2025_Theranostics_Engineered upconversion nanoparticles for breast cancer theranostics.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[571] 2025__Carbon quantum dots from silymarin extraction for multi-fluorescent sensors, photocatalysis, and anticancer activity applications.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[581] 2025__NIR-II-excited off-on-off fluorescent nanoprobes for sensitive molecular imaging in vivo.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 80.1/100
+  核心关键词: fluorescent nanoprobe...
+
+[582] 2025__Novel onion derived sulfur nitrogen carbon quantum dots_cellulose sulfate naked-eye pH-sensitive sensor for chromium, bacterial and fungal detection in green beans.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.0/100
+  核心关键词: ...
+
+[585] 2025__Rapid catecholamine trafficking regulates neutrophil functions and neutrophil-platelet interactions.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 58.0/100
+  核心关键词: ...
+
+[587] 2025__Studies on glucose detection using graphene quantum dots prepared by hydrothermal method.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[589] 2025__Ultrasensitive optical detection of Fe3+ ions using fluorescent carbon quantum dots derived from Simmondsia Chinensis Jojoba leaves.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 60.2/100
+  核心关键词: ...
+
+[594] 2026_JOURNAL OF INORGANIC MATERIALS_Functionalized Quantum Dot Fluorescent Probes with Dopamine Quinone_ Construction and pH Response.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 64.2/100
+  核心关键词: ...
+
+[597] 2026_RSC advances_A novel room-temperature CQD fluorescent.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 67.2/100
+  核心关键词: fluorescent nanosensor...
+
+[598] 2026_RSC Advances_Lanthanide ion-doped carbon dots (Ln-CDs) as fluorescent nanoprobes_ a review.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 71.4/100
+  核心关键词: fluorescent nanoprobe...
+
+[600/606] 分析进度...
+
+[604] 2026__Highly selective sensing of tetracycline by fluorescent carbon dots derived from spent coffee grounds via a green microwave route.pdf
+  评级: F - 不合格：缺少所有必需字段，无法提取有效信息
+  分数: 68.4/100
+  核心关键词: ...
+
+详细分析结果已保存到: /home/weeqe/WSL/DATA-Download_Extraction/outputs/analysis/pdf_quality_analysis_strings.json
+CSV报告已保存到: /home/weeqe/WSL/DATA-Download_Extraction/outputs/analysis/pdf_quality_report_strings.csv
+
+================================================================================
+分析统计摘要
+================================================================================
+
+总PDF文件数: 606
+
+评级分布:
+  C: 70 个 (11.6%)
+  D: 130 个 (21.5%)
+  F: 220 个 (36.3%)
+  INVALID: 186 个 (30.7%)
+
+NFP相关文件数: 420
+有效PDF文件数: 420
+
+平均质量分数: 73.1/100
+
+字段可用性统计:
+  核心材料: 136/606 (22.4%)
+  发射波长: 0/606 (0.0%)
+  目标分析物: 134/606 (22.1%)
+  壳层/掺杂剂: 4/606 (0.7%)
+  表面配体: 21/606 (3.5%)
+  尺寸: 25/606 (4.1%)
+  激发波长: 173/606 (28.5%)
+  量子产率: 69/606 (11.4%)
+  检测限: 38/606 (6.3%)
+  测试介质: 5/606 (0.8%)
+  响应类型: 35/606 (5.8%)
+  线性范围: 7/606 (1.2%)
+
+================================================================================
+推荐用于数据提取的文件 (评级A和B)
+================================================================================
+
+没有评级为A或B的文件
+
+================================================================================
+不合格文件 (评级F)
+================================================================================
+
+共 220 个文件不合格:
+
+不合格：缺少所有必需字段，无法提取有效信息 (220 个文件):
+  - 2005_crossref_Preparation, characterization and application of f_10.1007_s10895-005-2823-9.pdf
+  - 2006_arXiv_On-command enhancement of single molecule fluorescence using a gold nanoparticle as an optical nano-antenna.pdf
+  - 2008__A nano- and micro- integrated protein chip based on quantum dot probes and a microfluidic network.pdf
+  - 2009_arXiv_Continuous-wave versus time-resolved measurements of Purcell-factors for quantum dots in semiconductor microcavities.pdf
+  - 2009_arXiv_Electrostatic co-assembly of magnetic nanoparticles and fluorescent nanospheres_ a versatile approach toward bimodal nanorods.pdf
+  - 2009_arXiv_Monitoring Ion Channel Function In Real Time Through Quantum Decoherence.pdf
+  - 2009__A FLUORESCENCE QUENCHING METHOD FOR DETERMINATION OF COPPER IONS WITH CDTE QUANTUM DOTS.pdf
+  - 2009__One-pot synthesis of highly luminescent CdTe quantum dots by microwave irradiation reduction and their Hg2+-sensitive properties.pdf
+  - 2009__Proton-resistant quantum dots_ Stability in gastrointestinal fluids and implications for oral delivery of nanoparticle agents.pdf
+  - 2010_arXiv_Energy transfer from an individual quantum dot to a carbon nanotube.pdf
+  ... 还有 210 个文件
+
+================================================================================
+分析完成！
+================================================================================

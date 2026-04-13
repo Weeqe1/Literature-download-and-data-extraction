@@ -75,6 +75,9 @@ class LiteratureHarvester:
         # Propagate rate limit
         rps = self.get_config("runtime.requests_per_second", 4)
         configure_rate_limit(rps)
+        
+        # 配置反封锁模块
+        self._configure_anti_ban()
 
         # Configure source modules
         self._configure_sources()
@@ -103,6 +106,32 @@ class LiteratureHarvester:
         wos.configure(api_key=os.environ.get("WOS_API_KEY", self.get_config("api_keys.wos", "")))
         semantic_scholar.configure(api_key=os.environ.get("SEMANTIC_SCHOLAR_API_KEY", self.get_config("api_keys.semantic_scholar", "")))
         pubmed_mod.configure(email=self._email)
+    
+    def _configure_anti_ban(self) -> None:
+        """配置反封锁模块"""
+        from .anti_ban import configure_anti_ban
+        
+        # 从配置中读取反封锁设置
+        anti_ban_config = {
+            'min_delay': float(self.get_config("runtime.anti_ban.min_delay", 1.0) or 1.0),
+            'max_delay': float(self.get_config("runtime.anti_ban.max_delay", 5.0) or 5.0),
+            'max_requests_per_minute': int(self.get_config("runtime.anti_ban.max_requests_per_minute", 20) or 20),
+            'ban_threshold': int(self.get_config("runtime.anti_ban.ban_threshold", 5) or 5),
+            'ban_duration': int(self.get_config("runtime.anti_ban.ban_duration", 300) or 300),
+            'use_proxy': bool(self.get_config("runtime.anti_ban.use_proxy", False)),
+            'rotate_user_agent': bool(self.get_config("runtime.anti_ban.rotate_user_agent", True)),
+            'add_random_delay': bool(self.get_config("runtime.anti_ban.add_random_delay", True)),
+        }
+        
+        configure_anti_ban(anti_ban_config)
+        
+        # 如果有代理配置，加载代理
+        proxy_file = self.get_config("runtime.anti_ban.proxy_file", None)
+        if proxy_file and os.path.exists(proxy_file):
+            from .anti_ban import get_anti_ban_manager
+            manager = get_anti_ban_manager()
+            manager.load_proxies_from_file(proxy_file)
+            logger.info("[AntiBan] Loaded proxies from %s", proxy_file)
 
     # ---- work_to_row ----
     @staticmethod
@@ -463,12 +492,32 @@ class LiteratureHarvester:
         max_workers = self.get_config("runtime.max_concurrent_downloads", 4)
         checkpoint_interval = self.get_config("runtime.checkpoint_interval", 100)
         checkpoint_path = os.path.join(out_base, "_checkpoint.xlsx")
-
-        df_final = download_pdfs_and_assemble(
-            merged, out_base, mailto=self._email, email=self._email,
-            max_workers=max_workers, checkpoint_interval=checkpoint_interval,
-            checkpoint_path=checkpoint_path, verbose=verbose,
-        )
+        
+        # 检查是否启用增强的PDF下载源
+        enhanced_sources = self.get_config("runtime.enhanced_pdf_sources", False)
+        
+        if enhanced_sources:
+            logger.info("[Download] Using enhanced PDF sources for better coverage...")
+            try:
+                from .downloader_enhanced import download_pdfs_enhanced
+                df_final = download_pdfs_enhanced(
+                    merged, out_base, mailto=self._email, email=self._email,
+                    max_workers=max_workers, checkpoint_interval=checkpoint_interval,
+                    checkpoint_path=checkpoint_path, verbose=verbose,
+                )
+            except ImportError:
+                logger.warning("[Download] Enhanced downloader not available, falling back to standard...")
+                df_final = download_pdfs_and_assemble(
+                    merged, out_base, mailto=self._email, email=self._email,
+                    max_workers=max_workers, checkpoint_interval=checkpoint_interval,
+                    checkpoint_path=checkpoint_path, verbose=verbose,
+                )
+        else:
+            df_final = download_pdfs_and_assemble(
+                merged, out_base, mailto=self._email, email=self._email,
+                max_workers=max_workers, checkpoint_interval=checkpoint_interval,
+                checkpoint_path=checkpoint_path, verbose=verbose,
+            )
 
         if incremental and os.path.exists(excel_path):
             try:

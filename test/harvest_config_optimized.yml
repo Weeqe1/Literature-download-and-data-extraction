@@ -1,0 +1,143 @@
+# harvest_config_optimized.yml
+# 优化后的文献采集配置文件 - 用于 harvest_literature.py
+# 针对低下载成功率和性能问题进行优化
+
+# ==================================================
+# API Keys - 各数据源的 API 密钥
+# ==================================================
+api_keys:
+  # OpenAlex API Key
+  openalex: "Ql0gtMYS3me7ATjFqjE4VZ"
+
+  # Web of Science API Key
+  wos: "66330c65e1e2258a48717815e13522dd47aa66bf"
+  
+  # Semantic Scholar API Key
+  semantic_scholar: "lta6aC9TYm5gQZcPL2NFT8zmdidXl8ag8rqAjZ8Z"
+  
+  # Unpaywall 和 Crossref 的联系邮箱（用于 polite API 请求）
+  contact_email: "wangqi@ahut.edu.cn"
+
+# ==================================================
+# 搜索参数 - 优化后的搜索策略
+# ==================================================
+search:
+  # 搜索关键词（支持布尔表达式 AND/OR/NOT）
+  # 使用 YAML 多行字符串格式
+  keywords: |
+    ("nano fluorescent probe") OR 
+    ("nanoscale fluorescent probe") OR 
+    ("fluorescent nanoprobe") OR 
+    ("fluorescent nanosensor") OR 
+    ("quantum dot" AND "fluorescent probe") OR 
+    ("upconversion nanoparticle fluorescent probe") OR 
+    ("polymeric nanoparticle" AND "fluorescent probe") OR 
+    ("targeted fluorescent nanoprobe")
+
+  # 数据源及优先级顺序
+  sources_order:
+    - openalex
+    - wos
+    - semantic_scholar
+    - pubmed
+    - arxiv
+    - crossref
+
+  # 年份范围
+  year_from: 2000
+  year_to: 2028
+
+  # 每个子句每个数据源的最大结果数 - 减少以避免过多无效文献
+  max_results_per_clause: 500  # 从1200减少到500
+  
+  # 最大子句数（从关键词拆分）
+  max_clauses: 10
+  
+  # 总结果数上限
+  max_total: 5000  # 从1000000000减少到5000，避免过多无效文献
+
+# ==================================================
+# 输出设置
+# ==================================================
+output:
+  # 输出基础目录
+  base_dir: "outputs/literature"
+  
+  # Excel 输出文件名
+  excel_filename: "nano_fluorescent_probes.xlsx"
+
+  # 本地匹配被过滤样本的审计文件
+  audit_rejected_filename: "filtered_out_audit.xlsx"
+
+  # 审计样本最大导出数（用于防止内存和文件过大）
+  audit_rejected_limit: 2000
+  
+  # PDF 下载子目录名
+  pdf_subdir: "PDF"
+
+# ==================================================
+# 运行时设置 - 优化后的性能参数
+# ==================================================
+runtime:
+  # 增量模式：跳过已存在的 DOI
+  incremental: true
+
+  # PDF检查是否输出每篇文献的详情日志（missing/invalid）
+  pdf_check_log_each: false
+
+  # PDF检查是否删除无效PDF对应行（false=保留文献行，仅清空pdf_path并标记pdf_valid）
+  pdf_check_remove_invalid_rows: false
+  
+  # 每秒请求数（用于速率限制，建议 0.3~1.0，太高会被封IP）
+  # 0.3 = 每3秒1个请求，对各API友好
+  requests_per_second: 0.3
+  
+  # 下载超时时间（秒）- 增加以处理慢速连接
+  download_timeout: 90  # 从60增加到90
+  
+  # API 请求超时时间（秒）
+  api_timeout: 30
+
+  # OpenAlex 单次请求超时（秒）
+  openalex_timeout_sec: 45
+
+  # OpenAlex 请求失败后的总重试次数（含首次请求）
+  openalex_retry_attempts: 4
+
+  # OpenAlex 遇到 429 Insufficient budget 后，是否在本次运行内自动停用（避免重复失败）
+  openalex_disable_on_budget_exhausted: true
+
+  # 本地子句匹配严格度（0-1）
+  # 1.0=严格（几乎全匹配），0.7=推荐平衡，0.5=更宽松
+  match_strictness: 0.7
+  
+  # 是否显示详细输出
+  verbose: true
+
+  # PDF 下载重试次数 - 增加以提高成功率
+  download_retries: 5  # 从3增加到5
+  
+  # 检查点保存间隔（每下载 N 篇保存一次）- 减少以更频繁保存进度
+  checkpoint_interval: 50  # 从100减少到50
+  
+  # 并发下载线程数（1 = 顺序下载）- 增加以提高下载速度
+  max_concurrent_downloads: 8  # 从4增加到8
+  
+  # DOI填充限制 - 减少以避免过多API调用
+  doi_fill_limit: 500  # 从2000减少到500
+
+# ==================================================
+# 质量控制设置 - 启用以过滤低质量文献
+# ==================================================
+quality:
+  # 是否启用质量过滤 (true/false) - 启用以过滤低质量文献
+  enabled: true  # 从false改为true
+  
+  # 最低相关性分数 (0-1，0.05为非常宽松，0.1为宽松，0.3为中等，0.5为严格)
+  min_relevance: 0.3  # 从0.05提高到0.3，过滤不相关文献
+  
+  # 最低完整性分数 (0-1，0.1为宽松，0.3为中等，0.5为严格)
+  min_completeness: 0.5  # 从0.1提高到0.5，过滤不完整文献
+  
+  # 最低综合评分 (0-1，0.1为宽松，0.2为中等，0.4为严格)
+  min_overall: 0.4  # 从0.1提高到0.4，过滤低质量文献

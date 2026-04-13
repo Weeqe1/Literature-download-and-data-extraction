@@ -28,6 +28,8 @@ _SOURCE_INTERVALS: Dict[str, float] = {
     "arxiv": 5.0,        # arXiv is very strict about rate limits
     "crossref": 2.0,
     "download": 0.5,      # PDF download requests (light throttle)
+    "scihub": 3.0,        # Sci-Hub rate limiting
+    "researchgate": 4.0,  # ResearchGate rate limiting
 }
 _SOURCE_LAST_TS: Dict[str, float] = {}
 

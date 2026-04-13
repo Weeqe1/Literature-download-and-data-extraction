@@ -2,11 +2,13 @@
 
 Provides functions for downloading OA PDFs and assembling a final DataFrame.
 Supports Unpaywall + PMC as download sources with detailed failure diagnostics.
+Includes anti-ban protection with User-Agent rotation and smart delays.
 """
 
 import os
 import re
 import time
+import random
 from typing import List, Dict, Any, Optional, Tuple
 
 import requests
@@ -17,6 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .sources.base import sanitize_filename, doi_normalize, rate_limit_source
+from .anti_ban import get_anti_ban_manager, get_safe_headers, safe_request, wait_for_source
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -82,12 +85,186 @@ def _check_disk_space(path: str, min_mb: int = 500) -> bool:
         return True
 
 
+def _download_from_scihub(doi: str, out_path: str, timeout: int = 60, max_retries: int = 3) -> Tuple[bool, str]:
+    """Download PDF from Sci-Hub.
+    
+    Args:
+        doi: DOI string.
+        out_path: Output file path.
+        timeout: Request timeout.
+        max_retries: Maximum retry attempts.
+        
+    Returns:
+        Tuple of (success: bool, fail_reason: str).
+    """
+    import re
+    from urllib.parse import urljoin
+    
+    scihub_mirrors = [
+        "https://sci-hub.se",
+        "https://sci-hub.st", 
+        "https://sci-hub.ru",
+    ]
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    
+    for mirror in scihub_mirrors:
+        for attempt in range(1, max_retries + 1):
+            try:
+                rate_limit_source('scihub')
+                
+                # 构建Sci-Hub URL
+                scihub_url = f"{mirror}/{doi}"
+                
+                # 获取Sci-Hub页面
+                response = requests.get(scihub_url, headers=headers, timeout=timeout, allow_redirects=True)
+                
+                if response.status_code != 200:
+                    if attempt < max_retries:
+                        time.sleep(2 ** attempt)
+                        continue
+                    continue
+                
+                # 从页面中提取PDF链接
+                pdf_url_patterns = [
+                    r'location\.href\s*=\s*["\']([^"\']+\.pdf)["\']',
+                    r'iframe[^>]+src\s*=\s*["\']([^"\']+)["\']',
+                    r'<a[^>]+href\s*=\s*["\']([^"\']+\.pdf)["\']',
+                ]
+                
+                pdf_url = None
+                for pattern in pdf_url_patterns:
+                    match = re.search(pattern, response.text, re.IGNORECASE)
+                    if match:
+                        pdf_url = match.group(1)
+                        break
+                
+                if not pdf_url:
+                    if attempt < max_retries:
+                        time.sleep(2 ** attempt)
+                        continue
+                    continue
+                
+                # 确保URL完整
+                if not pdf_url.startswith('http'):
+                    pdf_url = urljoin(mirror, pdf_url)
+                
+                # 下载PDF
+                pdf_response = requests.get(pdf_url, headers=headers, timeout=timeout, stream=True)
+                
+                if pdf_response.status_code == 200:
+                    content = b''
+                    for chunk in pdf_response.iter_content(chunk_size=8192):
+                        if chunk:
+                            content += chunk
+                    
+                    # 验证PDF内容
+                    if len(content) > 100 and content.startswith(b'%PDF'):
+                        with open(out_path, 'wb') as f:
+                            f.write(content)
+                        return True, "ok"
+                
+            except Exception as e:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+                    continue
+    
+    return False, "scihub_failed"
+
+
+def _download_from_researchgate(doi: str, title: str, out_path: str, timeout: int = 45, max_retries: int = 2) -> Tuple[bool, str]:
+    """Download PDF from ResearchGate.
+    
+    Args:
+        doi: DOI string.
+        title: Paper title.
+        out_path: Output file path.
+        timeout: Request timeout.
+        max_retries: Maximum retry attempts.
+        
+    Returns:
+        Tuple of (success: bool, fail_reason: str).
+    """
+    import re
+    from urllib.parse import urljoin, quote
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            rate_limit_source('researchgate')
+            
+            # 构建ResearchGate搜索URL
+            search_url = f"https://www.researchgate.net/search/publication?q={quote(doi)}"
+            
+            response = requests.get(search_url, headers=headers, timeout=timeout)
+            
+            if response.status_code != 200:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+                continue
+            
+            # 从页面中提取PDF链接
+            pdf_patterns = [
+                r'href\s*=\s*["\']([^"\']+\.pdf)["\']',
+                r'data-pdf-url\s*=\s*["\']([^"\']+)["\']',
+                r'"pdf_url"\s*:\s*"([^"]+)"',
+            ]
+            
+            pdf_url = None
+            for pattern in pdf_patterns:
+                match = re.search(pattern, response.text, re.IGNORECASE)
+                if match:
+                    pdf_url = match.group(1)
+                    break
+            
+            if not pdf_url:
+                if attempt < max_retries:
+                    time.sleep(2 ** attempt)
+                continue
+            
+            # 确保URL完整
+            if not pdf_url.startswith('http'):
+                pdf_url = urljoin("https://www.researchgate.net", pdf_url)
+            
+            # 下载PDF
+            pdf_response = requests.get(pdf_url, headers=headers, timeout=timeout, stream=True)
+            
+            if pdf_response.status_code == 200:
+                content = b''
+                for chunk in pdf_response.iter_content(chunk_size=8192):
+                    if chunk:
+                        content += chunk
+                
+                # 验证PDF内容
+                if len(content) > 100 and content.startswith(b'%PDF'):
+                    with open(out_path, 'wb') as f:
+                        f.write(content)
+                    return True, "ok"
+            
+        except Exception as e:
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+                continue
+    
+    return False, "researchgate_failed"
+
+
 def download_file(
     url: str,
     out_path: str,
     timeout: int = 60,
     max_retries: int = 3,
     verbose: bool = False,
+    source: str = "standard",
+    doi: str = None,
+    title: str = None,
 ) -> Tuple[bool, str]:
     """Download a file from URL with retry logic and partial file cleanup.
 
@@ -97,6 +274,9 @@ def download_file(
         timeout: Request timeout in seconds.
         max_retries: Maximum number of retry attempts.
         verbose: Print retry messages.
+        source: Download source type (standard, scihub, researchgate).
+        doi: DOI string for special sources.
+        title: Paper title for special sources.
 
     Returns:
         Tuple of (success: bool, fail_reason: str).
@@ -105,82 +285,111 @@ def download_file(
         return False, "no_url"
 
     ensure_dir(os.path.dirname(out_path))
+    
+    # 处理特殊来源
+    if source == "scihub" and doi:
+        if verbose:
+            logger.debug("  [Download] Trying Sci-Hub for %s", doi[:50])
+        return _download_from_scihub(doi, out_path, timeout, max_retries)
+    
+    if source == "researchgate" and doi:
+        if verbose:
+            logger.debug("  [Download] Trying ResearchGate for %s", doi[:50])
+        return _download_from_researchgate(doi, title or "", out_path, timeout, max_retries)
 
-    # Publisher-friendly headers to reduce 403 errors
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/pdf,*/*",
-    }
-    # Add Referer based on domain if possible
-    try:
-        from urllib.parse import urlparse
-        parsed = urlparse(url)
-        headers["Referer"] = f"{parsed.scheme}://{parsed.netloc}/"
-    except Exception:
-        pass
+    # 标准下载逻辑 - 使用反封锁保护
+    # 获取反封锁管理器
+    anti_ban = get_anti_ban_manager()
+    
+    # 检查是否被封锁
+    if anti_ban.is_source_banned(source):
+        if verbose:
+            logger.debug("  [Download] Source '%s' is banned, skipping", source)
+        return False, "source_banned"
 
     for attempt in range(1, max_retries + 1):
         try:
-            rate_limit_source('download')
-            with requests.get(url, stream=True, timeout=timeout, headers=headers, allow_redirects=True) as r:
-                if r.status_code == 404:
-                    if verbose:
-                        logger.debug("  [Download] HTTP 404 for %s", url[:80])
-                    return False, "http_404"
-                if r.status_code == 403:
-                    if verbose:
-                        logger.debug("  [Download] HTTP 403 for %s (attempt %d/%d)", url[:80], attempt, max_retries)
-                    if attempt < max_retries:
-                        time.sleep(3 * attempt)
-                        continue
-                    return False, "http_403"
-                if r.status_code != 200:
-                    if verbose:
-                        logger.debug("  [Download] HTTP %d (attempt %d/%d)", r.status_code, attempt, max_retries)
-                    if attempt < max_retries:
-                        time.sleep(2 ** attempt)
-                        continue
-                    return False, "http_other"
+            # 使用反封锁模块发送请求
+            response = safe_request('GET', url, source=source, timeout=timeout, stream=True)
+            
+            if response is None:
+                if verbose:
+                    logger.debug("  [Download] Request blocked or failed (attempt %d/%d)", attempt, max_retries)
+                if attempt < max_retries:
+                    # 指数退避
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
+                    time.sleep(wait_time)
+                    continue
+                return False, "request_blocked"
+            
+            # 检查响应状态
+            if response.status_code == 404:
+                if verbose:
+                    logger.debug("  [Download] HTTP 404 for %s", url[:80])
+                return False, "http_404"
+            
+            if response.status_code == 403:
+                if verbose:
+                    logger.debug("  [Download] HTTP 403 for %s (attempt %d/%d)", url[:80], attempt, max_retries)
+                if attempt < max_retries:
+                    wait_time = (3 * attempt) + random.uniform(0, 2)
+                    time.sleep(wait_time)
+                    continue
+                return False, "http_403"
+            
+            if response.status_code != 200:
+                if verbose:
+                    logger.debug("  [Download] HTTP %d (attempt %d/%d)", response.status_code, attempt, max_retries)
+                if attempt < max_retries:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
+                    time.sleep(wait_time)
+                    continue
+                return False, "http_other"
 
-                with open(out_path, "wb") as fh:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        if chunk:
-                            fh.write(chunk)
+            # 保存文件
+            with open(out_path, "wb") as fh:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        fh.write(chunk)
 
-                # Check if we got an HTML error page instead of PDF
-                file_size = os.path.getsize(out_path)
-                if file_size < 100:
-                    if verbose:
-                        logger.debug("  [Download] File too small (%d bytes), discarding", file_size)
-                    _cleanup_partial_file(out_path)
-                    if attempt < max_retries:
-                        time.sleep(2 ** attempt)
-                        continue
-                    return False, "too_small"
+            # 检查文件大小
+            file_size = os.path.getsize(out_path)
+            if file_size < 100:
+                if verbose:
+                    logger.debug("  [Download] File too small (%d bytes), discarding", file_size)
+                _cleanup_partial_file(out_path)
+                if attempt < max_retries:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
+                    time.sleep(wait_time)
+                    continue
+                return False, "too_small"
 
-                # Check if response is actually a PDF (not an HTML redirect page)
-                try:
-                    with open(out_path, "rb") as fh:
-                        header_bytes = fh.read(8)
-                        if not header_bytes.startswith(b"%PDF"):
-                            if verbose:
-                                logger.debug("  [Download] Response is not a PDF (got HTML?), discarding")
-                            _cleanup_partial_file(out_path)
-                            if attempt < max_retries:
-                                time.sleep(2 ** attempt)
-                                continue
-                            return False, "too_small"
-                except Exception:
-                    pass
+            # 检查是否为有效PDF
+            try:
+                with open(out_path, "rb") as fh:
+                    header_bytes = fh.read(8)
+                    if not header_bytes.startswith(b"%PDF"):
+                        if verbose:
+                            logger.debug("  [Download] Response is not a PDF (got HTML?), discarding")
+                        _cleanup_partial_file(out_path)
+                        if attempt < max_retries:
+                            wait_time = (2 ** attempt) + random.uniform(0, 1)
+                            time.sleep(wait_time)
+                            continue
+                        return False, "too_small"
+            except Exception:
+                pass
 
-                return True, "ok"
+            # 成功
+            return True, "ok"
 
         except requests.exceptions.ConnectionError as e:
             if verbose:
                 logger.debug("  [Download] Connection error (attempt %d/%d): %s", attempt, max_retries, e)
             _cleanup_partial_file(out_path)
             if attempt < max_retries:
-                time.sleep(2 ** attempt)
+                wait_time = (2 ** attempt) + random.uniform(0, 1)
+                time.sleep(wait_time)
                 continue
             return False, "connection_error"
 
@@ -189,7 +398,8 @@ def download_file(
                 logger.debug("  [Download] Timeout (attempt %d/%d): %s", attempt, max_retries, e)
             _cleanup_partial_file(out_path)
             if attempt < max_retries:
-                time.sleep(2 ** attempt)
+                wait_time = (2 ** attempt) + random.uniform(0, 1)
+                time.sleep(wait_time)
                 continue
             return False, "timeout"
 
@@ -198,7 +408,8 @@ def download_file(
                 logger.debug("  [Download] Request error (attempt %d/%d): %s", attempt, max_retries, e)
             _cleanup_partial_file(out_path)
             if attempt < max_retries:
-                time.sleep(2 ** attempt)
+                wait_time = (2 ** attempt) + random.uniform(0, 1)
+                time.sleep(wait_time)
                 continue
             return False, "request_error"
 
@@ -274,7 +485,10 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
     1. Existing pdf_url from row (includes OpenAlex OA URL)
     2. Unpaywall API lookup (with full OA location scan)
     3. PMC fallback (DOI -> PMCID -> PDF)
-    4. DOI.org redirect as last resort
+    4. arXiv fallback (if DOI contains arXiv ID)
+    5. DOI.org redirect as last resort
+    6. Sci-Hub (for academic research)
+    7. ResearchGate search
 
     Args:
         row: Work row dict.
@@ -305,7 +519,16 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
             if pdf_url:
                 return pdf_url, True, "pmc"
 
-    # 4. Try doi.org redirect as last resort for OA articles
+    # 4. arXiv fallback (if DOI contains arXiv ID)
+    if doi and 'arxiv' in doi.lower():
+        import re
+        match = re.search(r'(\d{4}\.\d{4,5})', doi)
+        if match:
+            arxiv_id = match.group(1)
+            arxiv_pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+            return arxiv_pdf_url, True, "arxiv"
+
+    # 5. Try doi.org redirect as last resort for OA articles
     if doi:
         doi_url = f"https://doi.org/{doi}"
         try:
@@ -320,6 +543,18 @@ def _resolve_pdf_url(row: dict, doi: str, email: str) -> Tuple[Optional[str], bo
                     return final_url, True, "doi_redirect"
         except Exception:
             pass
+
+    # 6. Try Sci-Hub (for academic research)
+    if doi:
+        scihub_url = f"https://sci-hub.se/{doi}"
+        return scihub_url, False, "scihub"
+
+    # 7. Try ResearchGate search
+    if doi:
+        title = row.get("title") or row.get("display_name") or ""
+        if title:
+            researchgate_url = f"https://www.researchgate.net/search/publication?q={doi}"
+            return researchgate_url, False, "researchgate"
 
     return None, False, "none"
 
@@ -351,7 +586,17 @@ def _download_single_work(args: Tuple) -> Dict[str, Any]:
             f"{row.get('year')}_{row.get('journal')}_{row.get('title') or row.get('display_name') or 'paper'}.pdf"
         )
         out_file = os.path.join(pdf_dir, fn_title)
-        ok, fail_reason = download_file(pdf_url, out_file, max_retries=3, verbose=False)
+        
+        # 根据来源选择下载方法
+        title = row.get('title') or row.get('display_name') or ""
+        ok, fail_reason = download_file(
+            pdf_url, out_file, 
+            max_retries=5,  # 增加重试次数
+            verbose=False,
+            source=url_source,
+            doi=doi,
+            title=title
+        )
         row["pdf_path"] = out_file if ok else None
         row["download_status"] = "ok" if ok else fail_reason
         if not ok:
