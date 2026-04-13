@@ -19,3 +19,6 @@ outputs/
 
 # 配置文件（包含敏感密钥）
 configs/extraction/llm_backends.yml
+
+# Local test artifacts
+test/
