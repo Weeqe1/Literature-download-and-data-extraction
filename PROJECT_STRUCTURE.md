@@ -48,9 +48,9 @@ DATA-Download_Extraction/
 ├── outputs/                       # 输出目录
 │   └── literature/                # 文献数据输出
 │       ├── PDF/                   # 下载的PDF文件
-│       ├── nano_fluorescent_probes.xlsx  # 元数据Excel
-│       ├── _checkpoint.xlsx       # 检查点文件
-│       ├── filtered_out_audit.xlsx # 过滤审计
+│       ├── nano_fluorescent_probes.csv  # 元数据CSV
+│       ├── _checkpoint.csv       # 检查点文件
+│       ├── filtered_out_audit.csv # 过滤审计
 │       ├── duplicates/            # 重复文件备份
 │       └── invalid_backup/        # 无效文件备份
 │
@@ -268,10 +268,10 @@ ls analysis/
 
 ### 1. 文献收割输出 (outputs/literature/)
 
-- `nano_fluorescent_probes.xlsx` - 元数据Excel文件
+- `nano_fluorescent_probes.csv` - 元数据CSV文件
 - `PDF/` - 下载的PDF文件目录
-- `_checkpoint.xlsx` - 检查点文件
-- `filtered_out_audit.xlsx` - 过滤审计文件
+- `_checkpoint.csv` - 检查点文件
+- `filtered_out_audit.csv` - 过滤审计文件
 
 ### 2. 信息提取输出 (outputs/extraction/)
 

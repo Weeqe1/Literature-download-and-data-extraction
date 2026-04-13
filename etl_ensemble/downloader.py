@@ -612,13 +612,13 @@ def _download_single_work(args: Tuple) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Checkpoint save
 # ---------------------------------------------------------------------------
-def _save_checkpoint(rows: List[Dict], cols: List[str], excel_path: str) -> None:
-    """Save current progress as a checkpoint Excel file.
+def _save_checkpoint(rows: List[Dict], cols: List[str], checkpoint_path: str) -> None:
+    """Save current progress as a checkpoint CSV file.
 
     Args:
         rows: List of row dicts.
         cols: Column order for DataFrame.
-        excel_path: Output Excel path.
+        checkpoint_path: Output CSV path.
     """
     try:
         df = pd.DataFrame(rows)
@@ -626,7 +626,7 @@ def _save_checkpoint(rows: List[Dict], cols: List[str], excel_path: str) -> None
             if c not in df.columns:
                 df[c] = None
         df = df[cols]
-        df.to_excel(excel_path, index=False)
+        df.to_csv(checkpoint_path, index=False, encoding='utf-8-sig')
     except OSError as e:
         logger.warning("  [Checkpoint] Failed to save: %s", e)
 
@@ -674,7 +674,7 @@ def download_pdfs_and_assemble(
     email_addr = email or mailto or DEFAULT_EMAIL
 
     if not checkpoint_path:
-        checkpoint_path = os.path.join(out_dir, "_checkpoint.xlsx")
+        checkpoint_path = os.path.join(out_dir, "_checkpoint.csv")
 
     cols = [
         "title", "abstract", "journal", "year", "doi", "authors",
@@ -686,7 +686,7 @@ def download_pdfs_and_assemble(
     existing_dois: Dict[str, bool] = {}
     if os.path.exists(checkpoint_path):
         try:
-            df_ckpt = pd.read_excel(checkpoint_path)
+            df_ckpt = pd.read_csv(checkpoint_path, encoding='utf-8-sig')
             for _, row in df_ckpt.iterrows():
                 d = doi_normalize(str(row.get("doi", "")) if pd.notna(row.get("doi")) else "")
                 if d:
@@ -703,7 +703,7 @@ def download_pdfs_and_assemble(
 
     if not works_to_process:
         if os.path.exists(checkpoint_path):
-            df = pd.read_excel(checkpoint_path)
+            df = pd.read_csv(checkpoint_path, encoding='utf-8-sig')
             for c in cols:
                 if c not in df.columns:
                     df[c] = None

@@ -84,12 +84,12 @@ def pdf_check_and_cleanup(
     log_each: bool = False,
     remove_invalid_rows: bool = False,
 ) -> Tuple[int, int]:
-    """Check each PDF path listed in the Excel file and clean up invalids.
+    """Check each PDF path listed in the CSV file and clean up invalids.
 
     Args:
-        excel_path: Path to Excel file with pdf_path column.
+        excel_path: Path to CSV file with pdf_path column.
         pdf_base_dir: Base directory where PDFs are stored.
-        backup: If True, write checked results to a separate _check.xlsx file.
+        backup: If True, write checked results to a separate _check.csv file.
         verbose: Log summary.
         log_each: Log each invalid PDF individually.
         remove_invalid_rows: If True, remove rows with invalid PDFs entirely.
@@ -99,10 +99,10 @@ def pdf_check_and_cleanup(
     """
     if not os.path.exists(excel_path):
         if verbose:
-            logger.warning("[PDF-Check] excel not found: %s", excel_path)
+            logger.warning("[PDF-Check] CSV not found: %s", excel_path)
         return 0, 0
 
-    df = pd.read_excel(excel_path)
+    df = pd.read_csv(excel_path, encoding='utf-8-sig')
     if df.empty:
         return 0, 0
 
@@ -152,8 +152,8 @@ def pdf_check_and_cleanup(
         to_keep.append(row)
 
     if backup:
-        base_name = excel_path.rsplit('.xlsx', 1)[0]
-        checked_path = base_name + '_check.xlsx'
+        base_name = excel_path.rsplit('.csv', 1)[0]
+        checked_path = base_name + '_check.csv'
     else:
         checked_path = excel_path
 
@@ -161,7 +161,7 @@ def pdf_check_and_cleanup(
         new_df = pd.DataFrame(to_keep)
     else:
         new_df = pd.DataFrame(columns=df.columns)
-    new_df.to_excel(checked_path, index=False)
+    new_df.to_csv(checked_path, index=False, encoding='utf-8-sig')
 
     if verbose:
         logger.info("[PDF-Check] completed: checked_pdfs=%d, invalid_pdfs=%d, dropped_rows=%d", checked, invalid, dropped_rows)

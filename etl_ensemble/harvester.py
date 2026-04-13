@@ -361,9 +361,9 @@ class LiteratureHarvester:
             keywords = '("nano fluorescent probe") OR ("nanoscale fluorescent probe") OR ("fluorescent nanoprobe")'
 
         out_base = self.get_config("output.base_dir", "outputs/literature")
-        excel_filename = self.get_config("output.excel_filename", "nano_fluorescent_probes.xlsx")
+        excel_filename = self.get_config("output.excel_filename", "nano_fluorescent_probes.csv")
         excel_path = os.path.join(out_base, excel_filename)
-        audit_filename = self.get_config("output.audit_rejected_filename", "filtered_out_audit.xlsx")
+        audit_filename = self.get_config("output.audit_rejected_filename", "filtered_out_audit.csv")
         audit_limit = self.get_config("output.audit_rejected_limit", 2000)
         audit_path = os.path.join(out_base, audit_filename)
 
@@ -382,7 +382,7 @@ class LiteratureHarvester:
         existing_dois: set = set()
         if incremental and os.path.exists(excel_path):
             try:
-                df_exist = pd.read_excel(excel_path)
+                df_exist = pd.read_csv(excel_path, encoding='utf-8-sig')
                 doi_values = df_exist["doi"].tolist() if "doi" in df_exist.columns else []
                 for d in doi_values:
                     if pd.isna(d):
@@ -491,7 +491,7 @@ class LiteratureHarvester:
         logger.info("[Download] attempting to download OA PDFs and assembling table...")
         max_workers = self.get_config("runtime.max_concurrent_downloads", 4)
         checkpoint_interval = self.get_config("runtime.checkpoint_interval", 100)
-        checkpoint_path = os.path.join(out_base, "_checkpoint.xlsx")
+        checkpoint_path = os.path.join(out_base, "_checkpoint.csv")
         
         # 检查是否启用增强的PDF下载源
         enhanced_sources = self.get_config("runtime.enhanced_pdf_sources", False)
@@ -521,7 +521,7 @@ class LiteratureHarvester:
 
         if incremental and os.path.exists(excel_path):
             try:
-                old = pd.read_excel(excel_path)
+                old = pd.read_csv(excel_path, encoding='utf-8-sig')
                 combined = pd.concat([old, df_final], ignore_index=True)
                 combined["doi_norm"] = combined["doi"].apply(lambda x: doi_normalize(str(x)) if pd.notna(x) else None)
                 combined = combined.sort_values(["year", "journal", "title"], ascending=[False, True, True])
@@ -534,8 +534,8 @@ class LiteratureHarvester:
             final_df = df_final
 
         ensure_dir(out_base)
-        final_df.to_excel(excel_path, index=False)
-        logger.info("[OK] XLSX written: %s (%d rows)", excel_path, len(final_df))
+        final_df.to_csv(excel_path, index=False, encoding='utf-8-sig')
+        logger.info("[OK] CSV written: %s (%d rows)", excel_path, len(final_df))
 
         logger.info("[PDF-Check] verifying downloaded PDFs...")
         pdf_check_log_each = self.get_config("runtime.pdf_check_log_each", False)

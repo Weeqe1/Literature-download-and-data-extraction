@@ -62,11 +62,11 @@ output:
   # 输出基础目录
   base_dir: "outputs/literature"
   
-  # Excel 输出文件名
-  excel_filename: "nano_fluorescent_probes.xlsx"
+  # CSV 输出文件名
+  excel_filename: "nano_fluorescent_probes.csv"
 
   # 本地匹配被过滤样本的审计文件
-  audit_rejected_filename: "filtered_out_audit.xlsx"
+  audit_rejected_filename: "filtered_out_audit.csv"
 
   # 审计样本最大导出数（用于防止内存和文件过大）
   audit_rejected_limit: 2000
