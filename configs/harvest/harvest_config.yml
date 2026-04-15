@@ -23,16 +23,18 @@ api_keys:
 search:
   # 搜索关键词（支持布尔表达式 AND/OR/NOT）
   # 使用 YAML 多行字符串格式
-  keywords: |
-    ("nano fluorescent probe") OR 
-    ("nanoscale fluorescent probe") OR 
-    ("fluorescent nanoprobe") OR 
-    ("fluorescent nanosensor") OR 
-    ("quantum dot" AND "fluorescent probe") OR 
-    ("upconversion nanoparticle fluorescent probe") OR 
-    ("polymeric nanoparticle" AND "fluorescent probe") OR 
-    ("targeted fluorescent nanoprobe")
 
+  keywords: |
+      ("chiral fluorescent nanoprobe") OR
+      ("chiral quantum dots" AND "fluorescent") OR
+      ("chiral carbon dots" AND "fluorescent") OR
+      ("chiral polymer dots" AND "fluorescent") OR
+      ("chiral nanosensor" AND "fluorescence") OR
+      ("chiral upconversion nanoparticle" AND "fluorescent") OR
+      ("chiral AIE" AND "fluorescent probe") OR
+      ("enantioselective" AND "fluorescent" AND "detection") OR
+      ("chiral recognition" AND "fluorescent sensor") OR
+      ("chiral luminescent probe")
   # 数据源及优先级顺序
   sources_order:
     - openalex
