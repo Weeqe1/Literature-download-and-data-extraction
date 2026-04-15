@@ -1,0 +1,154 @@
+# Chiral Nano Fluorescent Probe Extraction Schema
+# Version 1.0 - ML-Ready Schema for Chiral Nanoprobe Prediction
+
+version: 1.0.0
+
+paper_meta:
+  - {name: title, type: str, desc: "Paper Title"}
+  - {name: doi, type: str, desc: "DOI"}
+  - {name: year, type: int, desc: "Year of Publication"}
+  - {name: journal, type: str, desc: "Journal Name"}
+
+# 手性相关字段（核心新增）
+chiral_properties:
+  - {name: chiral_type, type: enum, enum: [R, S, D, L, (+), (-), racemic, other], 
+     desc: "Chirality type of the probe. REQUIRED for chiral probes."}
+  
+  - {name: chiral_source, type: str, 
+     desc: "Source of chirality (e.g., L-cysteine, D-penicillamine, BINOL, chiral polymer, amino acid). REQUIRED."}
+  
+  - {name: chiral_center_count, type: int, 
+     desc: "Number of chiral centers in the chiral ligand/modifier."}
+  
+  - {name: enantioselectivity_factor, type: float, 
+     desc: "Enantioselectivity factor (e.g., EF = I(R)/I(S) or Ksv(R)/Ksv(S))."}
+  
+  - {name: chiral_recognition_mechanism, type: str, 
+     desc: "Mechanism of chiral recognition (e.g., hydrogen bonding, π-π stacking, host-guest interaction)."}
+  
+  - {name: glum_value, type: float, 
+     desc: "Luminescence dissymmetry factor (glum) for CPL-active probes."}
+  
+  - {name: cpl_wavelength_nm, type: float, unit: nm, 
+     desc: "Circularly polarized luminescence wavelength."}
+  
+  - {name: cpl_intensity, type: str, 
+     desc: "CPL intensity or signal description."}
+
+# 探针材料组成
+probe_composition:
+  - {name: core_material, type: str, 
+     desc: "Core material/composition (e.g., CdSe, Carbon dot, NaYF4, Au, Ag). REQUIRED."}
+  
+  - {name: core_chirality, type: str, 
+     desc: "Chirality of core material if applicable (e.g., chiral CdTe QDs)."}
+  
+  - {name: shell_or_dopant, type: str, 
+     desc: "Shell material or dopant elements (e.g., ZnS, Er, Nd)."}
+  
+  - {name: chiral_ligand, type: str, 
+     desc: "Chiral surface ligand or modifier (e.g., L-cysteine, D-penicillamine, BINOL). REQUIRED."}
+  
+  - {name: achiral_ligands, type: str, 
+     desc: "Other achiral surface ligands (e.g., PEG, MUA, GSH)."}
+  
+  - {name: size_nm, type: float, unit: nm, 
+     desc: "Average particle size/diameter in nanometers."}
+  
+  - {name: morphology, type: str, 
+     desc: "Particle morphology (e.g., spherical, rod, dot, fiber, gel)."}
+
+# 光学性能
+optical_properties:
+  - {name: excitation_wavelength_nm, type: float, unit: nm, 
+     desc: "Excitation wavelength."}
+  
+  - {name: emission_wavelength_nm, type: float, unit: nm, 
+     desc: "Emission wavelength peak(s). REQUIRED."}
+  
+  - {name: stokes_shift_nm, type: float, unit: nm, 
+     desc: "Stokes shift (excitation - emission)."}
+  
+  - {name: quantum_yield_percent, type: float, unit: "%", 
+     desc: "Fluorescence quantum yield."}
+  
+  - {name: fluorescence_lifetime_ns, type: float, unit: ns, 
+     desc: "Fluorescence lifetime."}
+  
+  - {name: photostability, type: str, 
+     desc: "Photostability description (e.g., stable for 30 min under UV)."}
+  
+  - {name: emission_color, type: str, 
+     desc: "Emission color (e.g., blue, green, red, NIR)."}
+
+# 检测应用
+detection_application:
+  - {name: target_analyte, type: str, 
+     desc: "Target analyte detected (e.g., D-cysteine, L-alanine, Fe3+). REQUIRED."}
+  
+  - {name: target_enantiomer, type: enum, enum: [R, S, D, L, (+), (-), both, achiral, other], 
+     desc: "Target enantiomer if chiral detection."}
+  
+  - {name: analyte_category, type: enum, 
+     enum: [amino_acid, drug, sugar, metal_ion, protein, nucleic_acid, other], 
+     desc: "Category of target analyte."}
+  
+  - {name: limit_of_detection, type: str, 
+     desc: "Limit of Detection (LOD) with units (e.g., 0.1 nM, 1.2 μM)."}
+  
+  - {name: linear_range, type: str, 
+     desc: "Linear detection range with units (e.g., 0.1-100 μM)."}
+  
+  - {name: response_type, type: enum, 
+     enum: [turn-on, turn-off, ratiometric, colorimetric, cpl_on, cpl_off, other], 
+     desc: "Fluorescence/CPL response mechanism."}
+  
+  - {name: selectivity, type: str, 
+     desc: "Selectivity description (e.g., high selectivity over L-form)."}
+  
+  - {name: response_time, type: str, 
+     desc: "Response time (e.g., < 1 min, rapid)."}
+
+# 实验条件
+experimental_conditions:
+  - {name: test_solvent_or_medium, type: str, 
+     desc: "Testing medium or solvent (e.g., PBS, water, ethanol, serum)."}
+  
+  - {name: ph_value, type: float, 
+     desc: "pH value of testing medium."}
+  
+  - {name: temperature_celsius, type: float, unit: "°C", 
+     desc: "Testing temperature."}
+  
+  - {name: incubation_time, type: str, 
+     desc: "Incubation or reaction time."}
+
+# 合成方法
+synthesis_method:
+  - {name: synthesis_method, type: str, 
+     desc: "Main synthesis method (e.g., hydrothermal, microwave, reflux)."}
+  
+  - {name: synthesis_temperature_celsius, type: float, unit: "°C", 
+     desc: "Synthesis temperature."}
+  
+  - {name: synthesis_time_hours, type: float, unit: hours, 
+     desc: "Synthesis duration."}
+  
+  - {name: chiral_modification_method, type: str, 
+     desc: "Method for introducing chirality (e.g., surface modification, co-doping, template)."}
+
+# 应用场景
+application_scenario:
+  - {name: application_type, type: enum, 
+     enum: [chiral_drug_detection, enantiomer_discrimination, chiral_bioimaging, 
+            environmental_monitoring, food_analysis, clinical_diagnosis, other], 
+     desc: "Primary application type."}
+  
+  - {name: in_vivo_or_in_vitro, type: enum, enum: [in_vitro, in_vivo, both, not_specified], 
+     desc: "Whether tested in vivo or in vitro."}
+  
+  - {name: biological_sample, type: str, 
+     desc: "Biological sample type if applicable (e.g., cell, serum, tissue, brain)."}
+  
+  - {name: validation_method, type: str, 
+     desc: "Validation method (e.g., HPLC, CD spectroscopy, comparison with standard)."}

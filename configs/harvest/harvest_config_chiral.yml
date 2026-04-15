@@ -1,0 +1,130 @@
+# harvest_config_chiral.yml
+# 手性纳米荧光探针文献采集配置文件
+
+# ==================================================
+# API Keys - 各数据源的 API 密钥
+# ==================================================
+api_keys:
+  openalex: "Ql0gtMYS3me7ATjFqjE4VZ"
+  wos: "66330c65e1e2258a48717815e13522dd47aa66bf"
+  semantic_scholar: "lta6aC9TYm5gQZcPL2NFT8zmdidXl8ag8rqAjZ8Z"
+  contact_email: "wangqi@ahut.edu.cn"
+
+# ==================================================
+# 搜索参数 - 手性纳米荧光探针专用
+# ==================================================
+search:
+  # 搜索关键词 - 手性纳米荧光探针相关
+  keywords: |
+    ("chiral fluorescent nanoprobe") OR 
+    ("chiral quantum dots" AND "fluorescent") OR 
+    ("chiral carbon dots" AND "fluorescent") OR 
+    ("chiral polymer dots" AND "fluorescent") OR 
+    ("chiral nanosensor" AND "fluorescence") OR 
+    ("chiral upconversion nanoparticle" AND "fluorescent") OR 
+    ("chiral AIE" AND "fluorescent probe") OR 
+    ("enantioselective" AND "fluorescent" AND "detection") OR 
+    ("chiral recognition" AND "fluorescent sensor") OR 
+    ("chiral luminescent probe") OR
+    ("chiral nanoparticle" AND "fluorescent" AND "detection") OR
+    ("chiral quantum dot" AND "chiral ligand") OR
+    ("chiral carbon dot" AND "chiral molecule") OR
+    ("CPL" AND "nanoprobe") OR
+    ("circularly polarized luminescence" AND "probe") OR
+    ("chiral" AND "fluorescent" AND "drug detection") OR
+    ("chiral" AND "fluorescent" AND "amino acid") OR
+    ("chiral" AND "fluorescent" AND "enantioselective sensing")
+
+  # 数据源及优先级顺序
+  sources_order:
+    - openalex
+    - semantic_scholar
+    - pubmed
+    - crossref
+    - arxiv
+    - wos
+
+  # 年份范围
+  year_from: 2010
+  year_to: 2026
+
+  # 每个子句每个数据源的最大结果数
+  max_results_per_clause: 500
+  
+  # 最大子句数
+  max_clauses: 20
+  
+  # 总结果数上限
+  max_total: 10000
+
+# ==================================================
+# 输出设置
+# ==================================================
+output:
+  base_dir: "outputs/chiral_literature"
+  excel_filename: "chiral_nanoprobes.csv"
+  audit_rejected_filename: "chiral_filtered_out_audit.csv"
+  audit_rejected_limit: 2000
+  pdf_subdir: "PDF"
+
+# ==================================================
+# 运行时设置
+# ==================================================
+runtime:
+  incremental: true
+  pdf_check_log_each: false
+  pdf_check_remove_invalid_rows: false
+  requests_per_second: 0.3
+  download_timeout: 90
+  api_timeout: 45
+  openalex_timeout_sec: 60
+  openalex_retry_attempts: 4
+  openalex_disable_on_budget_exhausted: true
+  match_strictness: 0.7
+  verbose: true
+  download_retries: 5
+  checkpoint_interval: 50
+  max_concurrent_downloads: 8
+  doi_fill_limit: 1000
+  enhanced_pdf_sources: true
+
+# ==================================================
+# 质量控制设置
+# ==================================================
+quality:
+  enabled: true
+  min_relevance: 0.25
+  min_completeness: 0.3
+  min_overall: 0.3
+  
+  # 手性相关核心关键词
+  core_keywords:
+    - "chiral"
+    - "chirality"
+    - "enantioselective"
+    - "enantioselectivity"
+    - "enantiomer"
+    - "chiral recognition"
+    - "circularly polarized"
+    - "CPL"
+  
+  # 荧光相关关键词
+  fluorescent_keywords:
+    - "fluorescent"
+    - "fluorescence"
+    - "luminescent"
+    - "luminescence"
+    - "quantum dot"
+    - "carbon dot"
+    - "nanoprobe"
+    - "nanosensor"
+  
+  # 手性纳米材料关键词
+  material_keywords:
+    - "chiral quantum dot"
+    - "chiral carbon dot"
+    - "chiral polymer"
+    - "chiral nanoparticle"
+    - "chiral nanotube"
+    - "chiral MOF"
+    - "chiral upconversion"
