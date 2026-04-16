@@ -56,11 +56,11 @@ def check_pdf_valid(path: str) -> bool:
 
 
 def export_rejected_audit(audit_rows: List[Dict[str, Any]], out_path: str, verbose: bool = True) -> None:
-    """Export locally filtered-out samples to an audit Excel file.
+    """Export locally filtered-out samples to an audit CSV file.
 
     Args:
         audit_rows: List of rejected item dicts.
-        out_path: Output Excel path.
+        out_path: Output CSV path.
         verbose: Log messages.
     """
     if not audit_rows:
@@ -69,7 +69,7 @@ def export_rejected_audit(audit_rows: List[Dict[str, Any]], out_path: str, verbo
         return
     try:
         df = pd.DataFrame(audit_rows)
-        df.to_excel(out_path, index=False)
+        df.to_csv(out_path, index=False, encoding='utf-8-sig')
         if verbose:
             logger.info("[Audit] exported filtered-out samples: %d -> %s", len(df), out_path)
     except Exception as e:

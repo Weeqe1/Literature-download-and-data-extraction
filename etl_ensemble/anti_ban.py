@@ -118,16 +118,29 @@ class AntiBanManager:
         self._proxies: List[Dict[str, str]] = []
         self._current_proxy_index = 0
         
-        # 配置
+        # 配置 - 优化后的反封锁参数
         self.config = {
-            'min_delay': 1.0,  # 最小延迟（秒）
-            'max_delay': 5.0,  # 最大延迟（秒）
-            'max_requests_per_minute': 20,  # 每分钟最大请求数
-            'ban_threshold': 5,  # 失败次数阈值
-            'ban_duration': 300,  # 封锁持续时间（秒）
+            'min_delay': 2.0,  # 最小延迟（秒）- 从1.0增加到2.0
+            'max_delay': 10.0,  # 最大延迟（秒）- 从5.0增加到10.0
+            'max_requests_per_minute': 10,  # 每分钟最大请求数 - 从20减少到10
+            'ban_threshold': 3,  # 失败次数阈值 - 从5减少到3，更快触发封禁
+            'ban_duration': 600,  # 封锁持续时间（秒）- 从300增加到600
             'use_proxy': False,  # 是否使用代理
             'rotate_user_agent': True,  # 是否轮换User-Agent
             'add_random_delay': True,  # 是否添加随机延迟
+            # 新增：针对不同来源的特殊配置
+            'source_specific_delays': {
+                'direct': 5.0,  # 直接下载增加延迟
+                'unpaywall': 3.0,  # Unpaywall增加延迟
+                'scihub': 2.0,  # Sci-Hub保持较低延迟
+                'pmc': 2.0,  # PMC保持较低延迟
+            },
+            # 新增：超时设置
+            'timeout_settings': {
+                'default': 90,  # 默认超时从60增加到90
+                'ssrn': 120,  # SSRN网站超时120秒
+                'mdpi': 90,  # MDPI网站超时90秒
+            },
         }
         
         # 线程锁
@@ -240,7 +253,7 @@ class AntiBanManager:
             self._failure_counts[source] = 0
     
     def get_smart_delay(self, source: str) -> float:
-        """获取智能延迟时间"""
+        """获取智能延迟时间 - 支持针对不同来源的特殊延迟配置"""
         with self._history_lock:
             now = time.time()
             recent_requests = self._request_history[source]
@@ -252,23 +265,28 @@ class AntiBanManager:
             # 计算最近1分钟的请求数
             requests_per_minute = len(recent_requests)
             
+            # 获取针对该来源的基础延迟
+            source_delays = self.config.get('source_specific_delays', {})
+            base_min_delay = source_delays.get(source, self.config['min_delay'])
+            base_max_delay = max(base_min_delay * 2, self.config['max_delay'])
+            
             # 根据请求数调整延迟
             if requests_per_minute >= self.config['max_requests_per_minute']:
                 # 超过限制，增加延迟
-                delay = self.config['max_delay'] * 2
+                delay = base_max_delay * 2
             elif requests_per_minute >= self.config['max_requests_per_minute'] * 0.8:
                 # 接近限制，使用最大延迟
-                delay = self.config['max_delay']
+                delay = base_max_delay
             elif requests_per_minute >= self.config['max_requests_per_minute'] * 0.5:
                 # 中等负载，使用中间值
-                delay = (self.config['min_delay'] + self.config['max_delay']) / 2
+                delay = (base_min_delay + base_max_delay) / 2
             else:
                 # 低负载，使用最小延迟
-                delay = self.config['min_delay']
+                delay = base_min_delay
             
-            # 添加随机抖动
-            jitter = random.uniform(-0.5, 0.5)
-            delay = max(0.5, delay + jitter)
+            # 添加随机抖动（增加抖动范围以避免规律性）
+            jitter = random.uniform(-1.0, 1.0)
+            delay = max(1.0, delay + jitter)  # 最小延迟增加到1秒
             
             return delay
     

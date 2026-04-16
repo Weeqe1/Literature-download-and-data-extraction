@@ -124,6 +124,36 @@ runtime:
   # 并发下载线程数（1 = 顺序下载）
   max_concurrent_downloads: 4
 
+  # 反封锁配置
+  anti_ban:
+    # 最小延迟（秒）
+    min_delay: 2.0
+    
+    # 最大延迟（秒）
+    max_delay: 10.0
+    
+    # 每分钟最大请求数
+    max_requests_per_minute: 10
+    
+    # 失败次数阈值（超过此值将封锁来源）
+    ban_threshold: 3
+    
+    # 封锁持续时间（秒）
+    ban_duration: 600
+    
+    # 是否轮换User-Agent
+    rotate_user_agent: true
+    
+    # 是否添加随机延迟
+    add_random_delay: true
+    
+    # 针对不同来源的特殊延迟配置
+    source_specific_delays:
+      direct: 5.0  # 直接下载增加延迟
+      unpaywall: 3.0  # Unpaywall增加延迟
+      scihub: 2.0  # Sci-Hub保持较低延迟
+      pmc: 2.0  # PMC保持较低延迟
+
 # ==================================================
 # 质量控制设置
 # ==================================================
