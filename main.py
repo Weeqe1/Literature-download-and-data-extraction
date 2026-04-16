@@ -18,13 +18,29 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'scripts'))
 sys.path.insert(0, os.path.dirname(__file__))
 
-# 设置日志
+# 创建logs目录
+log_dir = os.path.join(os.path.dirname(__file__), "logs")
+os.makedirs(log_dir, exist_ok=True)
+
+# 生成带有时间戳的日志文件名
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = os.path.join(log_dir, f"main_{timestamp}.log")
+
+# 设置日志（同时输出到控制台和文件）
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(log_file, encoding='utf-8')
+    ]
 )
 logger = logging.getLogger(__name__)
+logger.info("=" * 60)
+logger.info("手性纳米荧光探针数据库构建系统启动")
+logger.info("日志文件: %s", log_file)
+logger.info("=" * 60)
 
 
 def print_banner():
@@ -44,6 +60,7 @@ def print_menu():
     print("  [2] 数据提取与数据集构建")
     print("  [3] 查看运行状态和统计")
     print("  [4] 分析运行日志")
+    print("  [5] Ensemble对比分析")
     print("  [0] 退出程序")
     print("-" * 40)
 
@@ -360,13 +377,92 @@ def analyze_logs():
         print("请输入有效的数字")
 
 
+def analyze_ensemble():
+    """分析ensemble对比结果"""
+    print("\n" + "=" * 50)
+    print("  Ensemble对比分析")
+    print("=" * 50)
+    
+    # 检查ensemble对比目录
+    ensemble_dir = "outputs/ensemble_comparison"
+    if not os.path.exists(ensemble_dir):
+        print("\n没有找到ensemble对比结果目录。")
+        print("请先使用ensemble模式运行数据提取。")
+        return
+    
+    # 查找对比报告文件
+    report_files = list(Path(ensemble_dir).glob("comparison_*.json"))
+    if not report_files:
+        print("\n没有找到对比报告文件。")
+        return
+    
+    # 列出可用的报告
+    print("\n可用的对比报告：")
+    for i, report_file in enumerate(sorted(report_files, reverse=True), 1):
+        mtime = datetime.fromtimestamp(report_file.stat().st_mtime)
+        print(f"  [{i}] {report_file.name} ({mtime.strftime('%Y-%m-%d %H:%M')})")
+    
+    print(f"  [0] 返回主菜单")
+    
+    choice = input("\n请选择要分析的报告 (序号): ").strip()
+    
+    if choice == '0':
+        return
+    
+    try:
+        idx = int(choice) - 1
+        if 0 <= idx < len(report_files):
+            selected_report = sorted(report_files, reverse=True)[idx]
+            print(f"\n分析报告: {selected_report.name}")
+            
+            # 读取并显示报告摘要
+            import json
+            with open(selected_report, 'r', encoding='utf-8') as f:
+                report = json.load(f)
+            
+            # 显示摘要信息
+            print("\n" + "-" * 50)
+            print("报告摘要：")
+            print("-" * 50)
+            
+            if "pdf" in report:
+                print(f"PDF文件: {report['pdf']}")
+            
+            if "success_count" in report:
+                print(f"成功模型数: {report['success_count']}")
+            if "failed_count" in report:
+                print(f"失败模型数: {report['failed_count']}")
+            
+            if "consensus_stats" in report:
+                stats = report["consensus_stats"]
+                print(f"共识字段数: {stats.get('consensus_fields', 0)}")
+                print(f"总字段数: {stats.get('total_fields', 0)}")
+                print(f"共识比例: {stats.get('consensus_ratio', 0) * 100:.1f}%")
+            
+            if "model_performance" in report:
+                print("\n模型性能：")
+                for model_id, perf in report["model_performance"].items():
+                    accuracy = perf.get("accuracy", 0) * 100
+                    duration = perf.get("duration", 0)
+                    print(f"  {model_id}: 准确率={accuracy:.1f}%, 耗时={duration:.2f}s")
+            
+            print("\n详细信息请查看完整报告文件。")
+            print(f"报告路径: {selected_report}")
+        else:
+            print("无效选择")
+    except ValueError:
+        print("请输入有效的数字")
+    except Exception as e:
+        print(f"读取报告时出错: {e}")
+
+
 def main():
     """主函数"""
     print_banner()
     
     while True:
         print_menu()
-        choice = input("请输入选择 (0-4): ").strip()
+        choice = input("请输入选择 (0-5): ").strip()
         
         if choice == '1':
             run_harvest()
@@ -376,6 +472,8 @@ def main():
             show_status()
         elif choice == '4':
             analyze_logs()
+        elif choice == '5':
+            analyze_ensemble()
         elif choice == '0':
             print("\n感谢使用，再见！")
             break

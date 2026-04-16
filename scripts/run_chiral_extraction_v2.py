@@ -568,11 +568,36 @@ def main():
     
     args = parser.parse_args()
     
-    # Setup logging
+    # Setup logging（同时输出到控制台和文件）
+    # 获取项目根目录
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    log_dir = os.path.join(project_root, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # 生成带有时间戳的日志文件名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = os.path.join(log_dir, f"extraction_{timestamp}.log")
+    
+    # 配置日志处理器
+    file_handler = logging.FileHandler(log_file, encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+    
+    # 配置根日志器
     logging.basicConfig(
-        level=logging.INFO, 
-        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        level=logging.INFO,
+        handlers=[file_handler, console_handler]
     )
+    
+    logger.info("=" * 60)
+    logger.info("Starting chiral nanoprobe data extraction")
+    logger.info("Log file: %s", log_file)
+    logger.info("=" * 60)
     
     # Load configuration
     cfg = load_config(args.cfg)

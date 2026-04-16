@@ -188,14 +188,73 @@ python build_chiral_dataset.py \
 - ✅ **LLM重试**：失败自动重试3次
 - ✅ **详细日志**：记录每次提取
 
+### Ensemble提取（新增）
+
+系统支持**多模型ensemble提取**，通过多个LLM模型并行处理同一PDF，然后通过共识算法合并结果，显著提高提取准确性和可靠性。
+
+#### 配置方式
+
+在 `configs/extraction/llm_backends.yml` 中配置：
+
+```yaml
+ensemble:
+  enabled: true  # 启用ensemble模式
+  strategy: "majority_vote"  # 共识策略
+  min_agreement: 0.6  # 最小共识阈值 (60%)
+  max_workers: 4  # 最大并行worker数
+  output_format: "consensus"  # 输出格式
+```
+
+#### 共识策略
+
+1. **majority_vote** - 多数投票（默认）
+   - 每个字段取出现最多的值
+   - 需要至少60%模型达成共识
+
+2. **weighted_vote** - 加权投票
+   - 根据模型历史准确率加权
+   - 权重自动从模型性能日志中学习
+
+3. **confidence_based** - 基于置信度
+   - 选择置信度最高的结果
+   - 置信度基于字段完整性和一致性
+
+#### 输出格式
+
+- `consensus` - 只输出共识结果（默认）
+- `individual` - 保存每个模型的单独结果
+- `all` - 保存所有结果（共识 + 单独）
+
+#### 日志记录
+
+Ensemble过程会记录详细的日志到：
+- `logs/ensemble_<timestamp>.log` - 主日志
+- `outputs/ensemble_comparison/` - 对比报告目录
+
+#### 使用示例
+
+```bash
+# 使用ensemble模式运行提取
+python run_chiral_extraction_v2.py \
+    --pdf_dir outputs/literature/PDF \
+    --out_dir outputs/chiral_extraction \
+    --workers 4 \
+    --resume \
+    --ensemble
+
+# 查看ensemble对比报告
+python analyze_ensemble_logs.py
+```
+
 ### 性能对比
 
-| 指标 | 原版 | 优化版 |
-|------|------|--------|
-| 处理时间（410个PDF） | ~5小时 | ~1.25小时 |
-| API成本 | ~$100 | ~$50 |
-| 断点续传 | ❌ | ✅ |
-| 并行处理 | ❌ | ✅ |
+| 指标 | 原版 | 优化版 | Ensemble |
+|------|------|--------|----------|
+| 处理时间（410个PDF） | ~5小时 | ~1.25小时 | ~2小时 |
+| API成本 | ~$100 | ~$50 | ~$80 |
+| 准确性 | 中等 | 高 | 非常高 |
+| 断点续传 | ❌ | ✅ | ✅ |
+| 并行处理 | ❌ | ✅ | ✅ |
 
 ## 日志分析
 

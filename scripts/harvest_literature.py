@@ -7,8 +7,10 @@ from etl_ensemble.harvester import LiteratureHarvester, load_config
 
 
 def main():
-    # 创建logs目录
-    log_dir = os.path.join(os.path.dirname(__file__), "logs")
+    # 创建logs目录（在项目根目录下）
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)  # 向上一级到项目根目录
+    log_dir = os.path.join(project_root, "logs")
     os.makedirs(log_dir, exist_ok=True)
     
     # 生成带有时间戳的日志文件名

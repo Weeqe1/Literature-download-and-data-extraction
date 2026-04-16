@@ -52,10 +52,10 @@ search:
   max_results_per_clause: 2000
   
   # 最大子句数
-  max_clauses: 20
+  max_clauses: 50
   
   # 总结果数上限
-  max_total: 10000
+  max_total: 20000
 
 # ==================================================
 # 输出设置
@@ -64,7 +64,7 @@ output:
   base_dir: "outputs/literature"
   excel_filename: "chiral_nanoprobes.csv"
   audit_rejected_filename: "chiral_filtered_out_audit.csv"
-  audit_rejected_limit: 2000
+  audit_rejected_limit: 5000
   pdf_subdir: "PDF"
 
 # ==================================================

@@ -11,6 +11,7 @@ import glob
 import re
 import logging
 from typing import Dict, Any, List, Optional, Tuple
+from datetime import datetime
 import pandas as pd
 import numpy as np
 
@@ -363,9 +364,41 @@ def build_chiral_dataset(json_dir: str = 'outputs/chiral_extraction',
 
 
 if __name__ == '__main__':
-    # Setup logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    # 创建logs目录（在项目根目录下）
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)  # 向上一级到项目根目录
+    log_dir = os.path.join(project_root, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # 生成带有时间戳的日志文件名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = os.path.join(log_dir, f"dataset_build_{timestamp}.log")
+    
+    # 配置日志处理器
+    file_handler = logging.FileHandler(log_file, encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+    
+    # 配置根日志器
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=[file_handler, console_handler]
+    )
+    
+    logger.info("=" * 60)
+    logger.info("Starting chiral nanoprobe dataset building")
+    logger.info("Log file: %s", log_file)
+    logger.info("=" * 60)
     
     in_dir = sys.argv[1] if len(sys.argv) > 1 else 'outputs/chiral_extraction'
     out_file = sys.argv[2] if len(sys.argv) > 2 else 'outputs/chiral_nanoprobes_ml_dataset.csv'
     build_chiral_dataset(in_dir, out_file)
+    
+    logger.info("=" * 60)
+    logger.info("Dataset building completed")
+    logger.info("Log saved to: %s", log_file)
+    logger.info("=" * 60)
