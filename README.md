@@ -1,247 +1,245 @@
-# NFP-PDF-to-DB: 纳米荧光探针文献数据自动化提取系统
+# 手性纳米荧光探针数据库构建系统
+# Chiral Nanoprobe Database Builder
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## 概述
 
-## 📖 项目概述
+本系统用于自动化构建手性纳米荧光探针数据库，支持从科学文献中提取结构化数据，用于机器学习研究。
 
-**NFP-PDF-to-DB** 是一个端到端的科学文献数据自动化采集与结构化信息提取系统，专为纳米荧光探针（Nano Fluorescent Probes, NFP）领域研究设计。该系统实现了从文献检索、PDF下载到结构化数据提取的完整流水线，采用**多模型集成（Multi-Model Ensemble）**策略提升信息提取的准确性和可靠性。
+## 快速开始
 
-### 核心特性
-
-- **多源文献检索**：集成 OpenAlex、Web of Science、Semantic Scholar、PubMed、arXiv、Crossref 六大学术数据库
-- **智能 PDF 下载**：通过 Unpaywall 和开放获取链接自动获取全文 PDF
-- **多模型集成提取**：调用多个大语言模型（OpenAI GPT、Google Gemini、DeepSeek、Grok）并行提取，通过共识机制确保数据质量
-- **结构化数据输出**：根据预定义 Schema 提取材料组成、光学性能、工艺参数等关键字段
-- **增量处理模式**：支持断点续传，避免重复处理已采集的文献
-
----
-
-## 🏗️ 系统架构
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        NFP-PDF-to-DB Pipeline                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌──────────────────────┐     ┌──────────────────────┐                 │
-│  │  Stage 1: Harvest    │     │  Stage 2: Extraction │                 │
-│  │  文献检索与下载       │ ──► │  多模型信息提取       │                 │
-│  │  harvest_literature  │     │  run_etl_ensemble    │                 │
-│  └──────────────────────┘     └──────────────────────┘                 │
-│           │                            │                                │
-│           ▼                            ▼                                │
-│  ┌──────────────────┐         ┌──────────────────────┐                 │
-│  │ • OpenAlex       │         │ • PDF 文本解析        │                 │
-│  │ • Web of Science │         │ • 多 LLM 并行调用     │                 │
-│  │ • Semantic Scholar│        │ • 共识引擎比对        │                 │
-│  │ • PubMed         │         │ • 聚焦重提取          │                 │
-│  │ • arXiv          │         │ • 人工审核标记        │                 │
-│  │ • Crossref       │         └──────────────────────┘                 │
-│  └──────────────────┘                  │                                │
-│           │                            ▼                                │
-│           ▼                   ┌──────────────────────┐                 │
-│  ┌──────────────────┐         │  Structured JSON     │                 │
-│  │ Excel + PDF 文件 │         │  结构化数据输出       │                 │
-│  └──────────────────┘         └──────────────────────┘                 │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📁 项目结构
-
-```
-NFP-PDF-to-DB/
-├── harvest_literature.py       # 阶段一：文献检索与 PDF 下载
-├── run_etl_ensemble.py         # 阶段二：多模型集成信息提取
-├── requirements.txt            # Python 依赖
-│
-├── etl_ensemble/               # 多模型提取核心模块
-│   ├── pdf_parser.py           # PDF 文本/表格解析
-│   ├── llm_openai_client.py    # OpenAI API 客户端
-│   ├── llm_multi_client.py     # 多模型统一调用接口
-│   ├── consensus_engine.py     # 多模型输出共识引擎
-│   ├── focused_reextractor.py  # 分歧字段聚焦重提取
-│   └── human_review_manager.py # 人工审核管理
-│
-├── ml_dataset/                 # 机器学习数据集构建
-│   └── prepare_ml_dataset.py   # 数据预处理与特征工程
-│
-├── configs/                    # 配置文件
-│   ├── harvest/                # 文献检索配置
-│   │   └── harvest_config.yml  # API 密钥、搜索参数
-│   └── extraction/             # 信息提取配置
-│       ├── llm_backends.yml    # LLM 后端配置
-│       ├── schema.yml          # 数据提取字段定义
-│       ├── patterns.yml        # 字段别名与单位转换
-│       └── prompts/            # 提示词模板
-│
-├── data/                       # 数据目录
-│   ├── pdfs/                   # 输入 PDF 文件
-│   └── outputs/                # 输出结果
-│
-└── outputs/                    # 采集输出
-    └── literature/             # 下载的 PDF 与元数据
-```
-
----
-
-## 🚀 快速开始
-
-### 环境要求
-
-- Python 3.10+
-- 推荐使用 Conda 或 venv 创建虚拟环境
-
-### 安装依赖
+### 1. 安装依赖
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-repo/nfp-pdf-to-db.git
-
-# 创建虚拟环境
-conda create -n nfp_etl python=3.10
-conda activate nfp_etl
-
-# 安装依赖
 pip install -r requirements.txt
 ```
 
-### 配置 API 密钥
+### 2. 配置API密钥
 
-1. **文献检索配置** (`configs/harvest/harvest_config.yml`)：
-   ```yaml
-   api_keys:
-     wos: "your_wos_api_key"
-     semantic_scholar: "your_semantic_scholar_api_key"
-     contact_email: "your_email@example.com"
-   ```
+编辑 `configs/harvest/harvest_config.yml`，填入您的API密钥：
 
-2. **LLM 提取配置** (`configs/extraction/llm_backends.yml`)：
-   ```yaml
-   models:
-     - id: openai_chatgpt
-       provider: openai
-       model_name: gpt-4o
-       api_key_env: "your_openai_api_key"
-   ```
+```yaml
+api_keys:
+  openalex: "your_api_key"
+  wos: "your_api_key"
+  semantic_scholar: "your_api_key"
+  contact_email: "your_email@example.com"
+```
 
----
+### 3. 运行程序
 
-## 📋 使用方法
+```bash
+python main.py
+```
 
-### 阶段一：文献检索与下载
+## 项目结构
+
+```
+DATA-Download_Extraction/
+├── main.py                    # 主入口（交互式工作流程）
+├── README.md                  # 项目说明
+├── requirements.txt           # Python依赖
+│
+├── configs/                   # 配置文件
+│   ├── harvest/               # 文献检索配置
+│   └── extraction/            # 数据提取配置
+│
+├── scripts/                   # 核心脚本
+│   ├── harvest_literature.py  # 文献检索与下载
+│   ├── run_chiral_extraction_v2.py # 数据提取
+│   ├── build_chiral_dataset.py # 数据集构建
+│   ├── quality_control.py     # 质量控制
+│   ├── analyze_logs.py        # 日志分析
+│   └── logging_config.py      # 日志配置
+│
+├── etl_ensemble/              # 核心功能模块
+│   ├── harvester.py           # 文献收割器
+│   ├── downloader.py          # PDF下载器
+│   ├── pdf_parser.py          # PDF解析器
+│   ├── consensus_engine.py    # 共识引擎
+│   ├── llm_multi_client.py    # 多模型客户端
+│   └── sources/               # 数据源模块
+│
+├── docs/                      # 文档
+│   ├── PROJECT_STRUCTURE.md   # 项目结构说明
+│   ├── CHIRAL_EXTRACTION_GUIDE.md # 手性提取指南
+│   └── EXTRACTION_OPTIMIZATION.md # 优化指南
+│
+├── outputs/                   # 输出目录
+│   └── literature/            # 文献下载结果
+│       ├── PDF/               # PDF文件
+│       └── *.csv              # 元数据
+│
+└── logs/                      # 日志目录
+```   ├── pdf_parser.py                # PDF解析器
+│   ├── anti_ban.py                  # 反封锁模块
+│   ├── llm_multi_client.py          # 多模型客户端
+│   ├── llm_openai_client.py         # OpenAI客户端
+│   ├── consensus_engine.py          # 共识引擎
+│   ├── pdf_checker.py               # PDF检查器
+│   └── sources/                     # 数据源模块
+│       ├── openalex.py
+│       ├── wos.py
+│       ├── semantic_scholar.py
+│       ├── pubmed.py
+│       ├── arxiv.py
+│       └── crossref.py
+│
+├── configs/                         # 配置文件
+│   ├── harvest/
+│   │   └── harvest_config.yml       # 文献检索配置
+│   └── extraction/
+│       ├── llm_backends.yml         # LLM配置
+│       ├── schema_chiral.yml        # 数据Schema
+│       └── stages/
+│           └── stage1_chiral_extraction_v2.md  # 提取提示词
+│
+├── outputs/                         # 输出目录
+│   └── literature/                  # 文献下载输出
+│
+├── logs/                            # 运行日志
+│
+├── README.md                        # 本文件
+├── PROJECT_STRUCTURE.md             # 项目结构详细说明
+├── CHIRAL_EXTRACTION_GUIDE.md       # 数据提取指南
+├── EXTRACTION_OPTIMIZATION.md       # 优化说明
+├── requirements.txt                 # Python依赖
+└── .gitignore                       # Git忽略文件
+```
+
+## 工作流程
+
+### 使用 main.py（推荐）
+
+```bash
+python main.py
+```
+
+程序会显示交互式菜单：
+
+```
+请选择要执行的操作：
+----------------------------------------
+  [1] 文献检索与PDF下载
+  [2] 数据提取与数据集构建
+  [3] 查看运行状态和统计
+  [4] 分析运行日志
+  [0] 退出程序
+----------------------------------------
+```
+
+### 手动运行各个步骤
+
+#### 步骤1：文献检索与下载
 
 ```bash
 python harvest_literature.py
 ```
 
-**功能说明**：
-- 根据配置的关键词在多个学术数据库中检索文献
-- 自动去重并合并来自不同数据源的结果
-- 通过 Unpaywall 获取开放获取 PDF
-- 输出 Excel 元数据文件和 PDF 全文
+- 从6个学术数据库检索文献
+- 自动下载PDF文件
+- 结果保存在 `outputs/literature/`
 
-**配置参数** (`configs/harvest/harvest_config.yml`)：
-
-| 参数 | 说明 | 示例 |
-|------|------|------|
-| `search.keywords` | 布尔检索表达式 | `("nano fluorescent probe") OR ...` |
-| `search.year_from` | 起始年份 | `2000` |
-| `search.year_to` | 结束年份 | `2030` |
-| `search.sources_order` | 数据源优先级 | `[openalex, wos, ...]` |
-| `output.base_dir` | 输出目录 | `outputs/literature` |
-
-### 阶段二：多模型信息提取
+#### 步骤2：数据提取
 
 ```bash
-python run_etl_ensemble.py --pdf_dir data/pdfs --out_dir data/outputs/extraction
+python run_chiral_extraction_v2.py \
+    --pdf_dir outputs/literature/PDF \
+    --out_dir outputs/chiral_extraction \
+    --workers 4 \
+    --resume
 ```
 
-**命令行参数**：
+参数说明：
+- `--pdf_dir`: PDF文件目录
+- `--out_dir`: 输出目录
+- `--workers`: 并行worker数量
+- `--resume`: 启用断点续传
 
-| 参数 | 说明 | 默认值 |
+#### 步骤3：构建数据集
+
+```bash
+python build_chiral_dataset.py \
+    outputs/chiral_extraction \
+    outputs/chiral_nanoprobes_ml_dataset.csv
+```
+
+## 数据Schema
+
+系统提取46个字段，分为8个类别：
+
+| 类别 | 字段数 | 示例字段 |
+|------|--------|----------|
+| 论文元数据 | 4 | title, doi, year, journal |
+| 手性属性 | 8 | chiral_type, chiral_source, glum_value |
+| 探针组成 | 7 | core_material, chiral_ligand, size_nm |
+| 光学性能 | 7 | emission_wavelength_nm, quantum_yield_percent |
+| 检测应用 | 8 | target_analyte, limit_of_detection |
+| 实验条件 | 4 | test_solvent_or_medium, ph_value |
+| 合成方法 | 4 | synthesis_method, synthesis_temperature_celsius |
+| 应用场景 | 4 | application_type, in_vivo_or_in_vitro |
+
+## 优化特性
+
+### 数据提取优化
+
+- ✅ **断点续传**：支持中断后继续
+- ✅ **并行处理**：4-8个worker同时处理
+- ✅ **数据验证**：自动验证提取数据质量
+- ✅ **LLM重试**：失败自动重试3次
+- ✅ **详细日志**：记录每次提取
+
+### 性能对比
+
+| 指标 | 原版 | 优化版 |
 |------|------|--------|
-| `--pdf_dir` | PDF 文件目录 | `data/pdfs` |
-| `--out_dir` | 输出目录 | `data/outputs/extraction` |
-| `--cfg` | LLM 配置文件 | `configs/extraction/llm_backends.yml` |
-| `--schema` | Schema 定义 | `configs/extraction/schema.yml` |
-| `--prompt_file` | 提示词模板 | `configs/extraction/prompts/paper_summarize.md` |
+| 处理时间（410个PDF） | ~5小时 | ~1.25小时 |
+| API成本 | ~$100 | ~$50 |
+| 断点续传 | ❌ | ✅ |
+| 并行处理 | ❌ | ✅ |
 
-**提取流程**：
+## 日志分析
 
-1. **PDF 解析**：使用 pdfplumber/PyMuPDF 提取文本内容
-2. **多模型调用**：并行调用配置的所有 LLM 进行结构化提取
-3. **共识比对**：
-   - 数值型字段：容差比较（±1% 或 ±1.0）
-   - 字符串字段：归一化精确匹配
-4. **分歧处理**：对不一致字段进行聚焦重提取
-5. **结果输出**：共识数据保存为 JSON，仍有分歧则标记为人工审核
+查看运行日志：
 
----
-
-## 📊 数据 Schema
-
-提取的结构化数据包含以下字段类别（详见 `configs/extraction/schema.yml`）：
-
-### 论文元数据
-- `title`, `doi`, `year`, `journal`
-
-### 材料信息
-- `core_type` (QD, Perovskite, CD, UCNP, AIE-dot, P-dot, SiO2-dye)
-- `composition_core`, `shell_type`, `core_size_nm`, `dopants`
-
-### 光学性能
-- `abs_peak_nm`, `emi_peak_nm`, `stokes_nm`
-- `QY` (量子产率), `lifetime_ns`, `photobleach_t_half_min`
-
-### 工艺参数
-- `max_temp_C`, `hold_time_min`, `solvent_system`
-
-### 胶体环境
-- `zeta_mV`, `hydrodynamic_diameter_nm`, `environment_pH`
-
----
-
-## 🔧 技术栈
-
-| 组件 | 技术 |
-|------|------|
-| PDF 解析 | pdfplumber, PyMuPDF (fitz), Camelot |
-| LLM 接口 | OpenAI API (GPT-4), Google Gemini, DeepSeek |
-| 数据处理 | pandas, numpy |
-| 配置管理 | PyYAML |
-| HTTP 请求 | requests, tenacity (重试机制) |
-
----
-
-## 📝 引用
-
-如果本项目对您的研究有所帮助，请考虑引用：
-
-```bibtex
-@software{nfp_pdf_to_db,
-  title = {NFP-PDF-to-DB: Automated Literature Data Extraction for Nano Fluorescent Probes},
-  author = {Wang, Qi},
-  year = {2024},
-  url = {https://github.com/your-repo/nfp-pdf-to-db}
-}
+```bash
+python analyze_logs.py
 ```
 
+或使用main.py中的日志分析功能。
+
+## 故障排查
+
+### 1. 文献检索失败
+
+检查API密钥配置：
+```bash
+cat configs/harvest/harvest_config.yml
+```
+
+### 2. 数据提取失败
+
+检查LLM配置：
+```bash
+cat configs/extraction/llm_backends.yml
+```
+
+### 3. 查看详细日志
+
+```bash
+ls -lt logs/
+cat logs/harvest_*.log
+```
+
+## 文档
+
+- `PROJECT_STRUCTURE.md` - 详细的项目结构说明
+- `CHIRAL_EXTRACTION_GUIDE.md` - 数据提取详细指南
+- `EXTRACTION_OPTIMIZATION.md` - 优化说明
+
+## 许可证
+
+MIT License
+
 ---
 
-## 📄 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
-
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-**联系方式**: wangqi@ahut.edu.cn
+**最后更新**: 2026-04-16

@@ -1,48 +1,48 @@
-# harvest_config.yml
-# 文献采集配置文件 - 用于 harvest_literature.py
+# harvest_config_chiral.yml
+# 手性纳米荧光探针文献采集配置文件
 
 # ==================================================
 # API Keys - 各数据源的 API 密钥
 # ==================================================
 api_keys:
-  # OpenAlex API Key
   openalex: "Ql0gtMYS3me7ATjFqjE4VZ"
-
-  # Web of Science API Key
   wos: "66330c65e1e2258a48717815e13522dd47aa66bf"
-  
-  # Semantic Scholar API Key
   semantic_scholar: "lta6aC9TYm5gQZcPL2NFT8zmdidXl8ag8rqAjZ8Z"
-  
-  # Unpaywall 和 Crossref 的联系邮箱（用于 polite API 请求）
   contact_email: "wangqi@ahut.edu.cn"
 
 # ==================================================
-# 搜索参数
+# 搜索参数 - 手性纳米荧光探针专用
 # ==================================================
 search:
-  # 搜索关键词（支持布尔表达式 AND/OR/NOT）
-  # 使用 YAML 多行字符串格式
-
+  # 搜索关键词 - 手性纳米荧光探针相关
   keywords: |
-      ("chiral fluorescent nanoprobe") OR
-      ("chiral quantum dots" AND "fluorescent") OR
-      ("chiral carbon dots" AND "fluorescent") OR
-      ("chiral polymer dots" AND "fluorescent") OR
-      ("chiral nanosensor" AND "fluorescence") OR
-      ("chiral upconversion nanoparticle" AND "fluorescent") OR
-      ("chiral AIE" AND "fluorescent probe") OR
-      ("enantioselective" AND "fluorescent" AND "detection") OR
-      ("chiral recognition" AND "fluorescent sensor") OR
-      ("chiral luminescent probe")
+    ("chiral fluorescent nanoprobe") OR 
+    ("chiral quantum dots" AND "fluorescent") OR 
+    ("chiral carbon dots" AND "fluorescent") OR 
+    ("chiral polymer dots" AND "fluorescent") OR 
+    ("chiral nanosensor" AND "fluorescence") OR 
+    ("chiral upconversion nanoparticle" AND "fluorescent") OR 
+    ("chiral AIE" AND "fluorescent probe") OR 
+    ("enantioselective" AND "fluorescent" AND "detection") OR 
+    ("chiral recognition" AND "fluorescent sensor") OR 
+    ("chiral luminescent probe") OR
+    ("chiral nanoparticle" AND "fluorescent" AND "detection") OR
+    ("chiral quantum dot" AND "chiral ligand") OR
+    ("chiral carbon dot" AND "chiral molecule") OR
+    ("CPL" AND "nanoprobe") OR
+    ("circularly polarized luminescence" AND "probe") OR
+    ("chiral" AND "fluorescent" AND "drug detection") OR
+    ("chiral" AND "fluorescent" AND "amino acid") OR
+    ("chiral" AND "fluorescent" AND "enantioselective sensing")
+
   # 数据源及优先级顺序
   sources_order:
     - openalex
-    - wos
     - semantic_scholar
     - pubmed
-    - arxiv
     - crossref
+    - arxiv
+    - wos
 
   # 年份范围
   year_from: 2000
@@ -51,121 +51,80 @@ search:
   # 每个子句每个数据源的最大结果数
   max_results_per_clause: 2000
   
-  # 最大子句数（从关键词拆分）
-  max_clauses: 10
+  # 最大子句数
+  max_clauses: 20
   
   # 总结果数上限
-  max_total: 1000000
+  max_total: 10000
 
 # ==================================================
 # 输出设置
 # ==================================================
 output:
-  # 输出基础目录
   base_dir: "outputs/literature"
-  
-  # Excel 输出文件名
-  excel_filename: "nano_fluorescent_probes.csv"
-
-  # 本地匹配被过滤样本的审计文件
-  audit_rejected_filename: "filtered_out_audit.csv"
-
-  # 审计样本最大导出数（用于防止内存和文件过大）
+  excel_filename: "chiral_nanoprobes.csv"
+  audit_rejected_filename: "chiral_filtered_out_audit.csv"
   audit_rejected_limit: 2000
-  
-  # PDF 下载子目录名
   pdf_subdir: "PDF"
 
 # ==================================================
 # 运行时设置
 # ==================================================
 runtime:
-  # 增量模式：跳过已存在的 DOI
   incremental: true
-
-  # PDF检查是否输出每篇文献的详情日志（missing/invalid）
   pdf_check_log_each: false
-
-  # PDF检查是否删除无效PDF对应行（false=保留文献行，仅清空pdf_path并标记pdf_valid）
   pdf_check_remove_invalid_rows: false
-  
-  # 每秒请求数（用于速率限制，建议 0.3~1.0，太高会被封IP）
-  # 0.3 = 每3秒1个请求，对各API友好
   requests_per_second: 0.3
-  
-  # 下载超时时间（秒）
-  download_timeout: 60
-  
-  # API 请求超时时间（秒）
-  api_timeout: 30
-
-  # OpenAlex 单次请求超时（秒）
-  openalex_timeout_sec: 45
-
-  # OpenAlex 请求失败后的总重试次数（含首次请求）
+  download_timeout: 90
+  api_timeout: 45
+  openalex_timeout_sec: 60
   openalex_retry_attempts: 4
-
-  # OpenAlex 遇到 429 Insufficient budget 后，是否在本次运行内自动停用（避免重复失败）
   openalex_disable_on_budget_exhausted: true
-
-  # 本地子句匹配严格度（0-1）
-  # 1.0=严格（几乎全匹配），0.7=推荐平衡，0.5=更宽松
   match_strictness: 0.7
-  
-  # 是否显示详细输出
   verbose: true
-
-  # PDF 下载重试次数
-  download_retries: 3
-  
-  # 检查点保存间隔（每下载 N 篇保存一次）
-  checkpoint_interval: 100
-  
-  # 并发下载线程数（1 = 顺序下载）
-  max_concurrent_downloads: 4
-
-  # 反封锁配置
-  anti_ban:
-    # 最小延迟（秒）
-    min_delay: 2.0
-    
-    # 最大延迟（秒）
-    max_delay: 10.0
-    
-    # 每分钟最大请求数
-    max_requests_per_minute: 10
-    
-    # 失败次数阈值（超过此值将封锁来源）
-    ban_threshold: 3
-    
-    # 封锁持续时间（秒）
-    ban_duration: 600
-    
-    # 是否轮换User-Agent
-    rotate_user_agent: true
-    
-    # 是否添加随机延迟
-    add_random_delay: true
-    
-    # 针对不同来源的特殊延迟配置
-    source_specific_delays:
-      direct: 5.0  # 直接下载增加延迟
-      unpaywall: 3.0  # Unpaywall增加延迟
-      scihub: 2.0  # Sci-Hub保持较低延迟
-      pmc: 2.0  # PMC保持较低延迟
+  download_retries: 5
+  checkpoint_interval: 50
+  max_concurrent_downloads: 8
+  doi_fill_limit: 1000
+  enhanced_pdf_sources: true
 
 # ==================================================
 # 质量控制设置
 # ==================================================
 quality:
-  # 是否启用质量过滤 (true/false)
-  enabled: false
+  enabled: true
+  min_relevance: 0.25
+  min_completeness: 0.3
+  min_overall: 0.3
   
-  # 最低相关性分数 (0-1，0.05为非常宽松，0.1为宽松，0.3为中等，0.5为严格)
-  min_relevance: 0.05
+  # 手性相关核心关键词
+  core_keywords:
+    - "chiral"
+    - "chirality"
+    - "enantioselective"
+    - "enantioselectivity"
+    - "enantiomer"
+    - "chiral recognition"
+    - "circularly polarized"
+    - "CPL"
   
-  # 最低完整性分数 (0-1，0.1为宽松，0.3为中等，0.5为严格)
-  min_completeness: 0.1
+  # 荧光相关关键词
+  fluorescent_keywords:
+    - "fluorescent"
+    - "fluorescence"
+    - "luminescent"
+    - "luminescence"
+    - "quantum dot"
+    - "carbon dot"
+    - "nanoprobe"
+    - "nanosensor"
   
-  # 最低综合评分 (0-1，0.1为宽松，0.2为中等，0.4为严格)
-  min_overall: 0.1
+  # 手性纳米材料关键词
+  material_keywords:
+    - "chiral quantum dot"
+    - "chiral carbon dot"
+    - "chiral polymer"
+    - "chiral nanoparticle"
+    - "chiral nanotube"
+    - "chiral MOF"
+    - "chiral upconversion"
