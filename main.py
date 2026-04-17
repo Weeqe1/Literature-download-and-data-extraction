@@ -357,7 +357,7 @@ def analyze_logs():
             print(f"\n分析日志: {selected_log.name}")
             
             # 调用analyze_logs.py
-            from analyze_logs import parse_log_file, print_comparison_report
+            from analyze_logs import parse_log_file
             
             stats = parse_log_file(str(selected_log))
             
